@@ -1,4 +1,4 @@
-![Brand Logo](./client/public/logo.png)
+<img src="./client/public/logo.png" alt="Brand Logo" width="180"/>
 
 # Google AuthZ 3DDX - Authentication & Authorization Demo
 
