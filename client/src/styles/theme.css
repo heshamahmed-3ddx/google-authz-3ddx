@@ -6,23 +6,23 @@
 /* CSS Custom Properties for Theme Colors */
 :root {
   /* 3D Diagnostix Brand Colors */
-  --diagnostix-blue: #0066CC;
-  --diagnostix-teal: #00BCD4;
-  --diagnostix-green: #2E7D32;
-  --diagnostix-grey: #37474F;
-  
+  --diagnostix-blue: #0066cc;
+  --diagnostix-teal: #00bcd4;
+  --diagnostix-green: #2e7d32;
+  --diagnostix-grey: #37474f;
+
   /* Medical/Healthcare Colors */
-  --medical-primary: #0066CC;
-  --medical-secondary: #00BCD4;
-  --patient-data: #2E7D32;
-  --imaging-primary: #1565C0;
-  --report-accent: #F57C00;
-  
+  --medical-primary: #0066cc;
+  --medical-secondary: #00bcd4;
+  --patient-data: #2e7d32;
+  --imaging-primary: #1565c0;
+  --report-accent: #f57c00;
+
   /* Animation Timings */
   --theme-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --fast-transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --slow-transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Spacing Scale */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -30,13 +30,13 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-xxl: 48px;
-  
+
   /* Border Radius Scale */
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
-  
+
   /* Shadow Definitions */
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -134,11 +134,11 @@
 }
 
 /* RTL headings and titles alignment */
-.rtl h1, 
-.rtl h2, 
-.rtl h3, 
-.rtl h4, 
-.rtl h5, 
+.rtl h1,
+.rtl h2,
+.rtl h3,
+.rtl h4,
+.rtl h5,
 .rtl h6,
 .rtl .text-h1,
 .rtl .text-h2,
@@ -177,10 +177,11 @@
 
 /* Global Theme Transitions */
 * {
-  transition: background-color var(--theme-transition),
-              color var(--theme-transition),
-              border-color var(--theme-transition),
-              box-shadow var(--theme-transition);
+  transition:
+    background-color var(--theme-transition),
+    color var(--theme-transition),
+    border-color var(--theme-transition),
+    box-shadow var(--theme-transition);
 }
 
 /* Enhanced Material Design Elements */
@@ -443,19 +444,19 @@
     transition: none !important;
     animation: none !important;
   }
-  
+
   .v-card:hover {
     transform: none !important;
   }
-  
+
   .v-btn:hover {
     transform: none !important;
   }
-  
+
   .v-list-item:hover {
     transform: none !important;
   }
-  
+
   .v-chip:hover {
     transform: none !important;
   }
@@ -466,11 +467,11 @@
   .v-card {
     border: 2px solid rgb(var(--v-theme-outline)) !important;
   }
-  
+
   .v-btn {
     border-width: 2px !important;
   }
-  
+
   .v-list-item {
     border: 1px solid rgba(var(--v-theme-outline), 0.3) !important;
   }
@@ -485,12 +486,12 @@
   .v-btn[aria-label*="theme"] {
     display: none !important;
   }
-  
+
   .v-card {
     box-shadow: none !important;
     border: 1px solid #ccc !important;
   }
-  
+
   * {
     transition: none !important;
   }

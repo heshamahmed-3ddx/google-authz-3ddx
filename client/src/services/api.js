@@ -4,10 +4,10 @@
  * @requires axios
  */
 
-import axios from 'axios'
+import axios from "axios";
 
 /** @constant {string} BASE_URL - Base URL for API requests */
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 /**
  * Axios instance configured for the application API
@@ -18,42 +18,46 @@ const apiClient = axios.create({
   timeout: 10000,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json",
+  },
+});
 
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
     // Add any auth headers here if needed
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    return response
+    return response;
   },
   (error) => {
     // Don't log 401 errors for authentication checks - they're expected
     if (error.response?.status === 401) {
       // Silently handle unauthorized access - this is expected for auth checks
       // Only log if it's not the /auth/me endpoint
-      if (!error.config?.url?.includes('/auth/me')) {
-        console.warn('Unauthorized access detected for:', error.config?.url)
+      if (!error.config?.url?.includes("/auth/me")) {
+        console.warn("Unauthorized access detected for:", error.config?.url);
       }
     } else {
       // Log other errors normally
-      console.error('API Error:', error.response?.status, error.response?.data || error.message)
+      console.error(
+        "API Error:",
+        error.response?.status,
+        error.response?.data || error.message,
+      );
     }
-    
-    return Promise.reject(error)
-  }
-)
+
+    return Promise.reject(error);
+  },
+);
 
 /**
  * API service object providing HTTP methods for backend communication
@@ -112,7 +116,7 @@ export const apiService = {
    * @returns {Promise<AxiosResponse>}
    */
   patch: (url, data = {}, config = {}) => apiClient.patch(url, data, config),
-  
+
   /**
    * Silent auth check that calls `/auth/me` but suppresses logging for 401
    * responses (used for initial auth probes).
@@ -122,16 +126,16 @@ export const apiService = {
    */
   silentAuthCheck: async () => {
     try {
-      const response = await apiClient.get('/auth/me')
-      return response.data
+      const response = await apiClient.get("/auth/me");
+      return response.data;
     } catch (error) {
       if (error.response?.status === 401) {
         // Return null for unauthorized without logging
-        return null
+        return null;
       }
-      throw error
+      throw error;
     }
-  }
-}
+  },
+};
 
-export default apiClient
+export default apiClient;

@@ -4,27 +4,36 @@
       <v-col cols="12" md="10" lg="8" xl="6">
         <v-card class="pa-8" elevation="3">
           <v-card-title class="text-h4 text-center mb-6">
-            <v-icon size="large" color="primary" class="mr-2">mdi-google</v-icon>
-            {{ $t('home.title') || 'Google Authorization Demo' }}
+            <v-icon size="large" color="primary" class="mr-2"
+              >mdi-google</v-icon
+            >
+            {{ $t("home.title") || "Google Authorization Demo" }}
           </v-card-title>
 
           <v-card-text class="text-center">
-            <p class="text-h6 mb-4">{{ $t('home.subtitle') || 'Secure access with Google OAuth' }}</p>
-            
-            <p class="text-body-1 mb-6">{{ $t('home.description') || 'Click below to login with your Google account and access the dashboard.' }}</p>
+            <p class="text-h6 mb-4">
+              {{ $t("home.subtitle") || "Secure access with Google OAuth" }}
+            </p>
+
+            <p class="text-body-1 mb-6">
+              {{
+                $t("home.description") ||
+                "Click below to login with your Google account and access the dashboard."
+              }}
+            </p>
 
             <v-divider class="my-6"></v-divider>
 
             <div>
               <v-btn
-                @click="login"
                 size="large"
                 color="primary"
                 prepend-icon="mdi-google"
                 :loading="authStore.loading"
                 class="mb-4"
+                @click="login"
               >
-                {{ $t('auth.loginWithGoogle') || 'Login with Google' }}
+                {{ $t("auth.loginWithGoogle") || "Login with Google" }}
               </v-btn>
             </div>
 
@@ -32,17 +41,26 @@
 
             <!-- API Documentation Links -->
             <div class="mb-6">
-              <p class="text-h6 mb-4">{{ $t('dashboard.apiDocumentation') || 'API Documentation' }}</p>
+              <p class="text-h6 mb-4">
+                {{ $t("dashboard.apiDocumentation") || "API Documentation" }}
+              </p>
               <v-row class="justify-center">
                 <v-col cols="12" md="6">
                   <v-card class="h-100 pa-4" elevation="1">
                     <v-card-title class="text-center">
-                      <v-icon color="success" size="large" class="mb-2">mdi-api</v-icon>
-                      <br>
-                      {{ $t('dashboard.swaggerDocs') || 'Swagger API' }}
+                      <v-icon color="success" size="large" class="mb-2"
+                        >mdi-api</v-icon
+                      >
+                      <br />
+                      {{ $t("dashboard.swaggerDocs") || "Swagger API" }}
                     </v-card-title>
                     <v-card-text class="text-center">
-                      <p class="text-body-2 mb-4">{{ $t('dashboard.swaggerDescription') || 'Explore and test the API endpoints using interactive Swagger documentation.' }}</p>
+                      <p class="text-body-2 mb-4">
+                        {{
+                          $t("dashboard.swaggerDescription") ||
+                          "Explore and test the API endpoints using interactive Swagger documentation."
+                        }}
+                      </p>
                       <v-btn
                         :href="swaggerUrl"
                         target="_blank"
@@ -51,8 +69,12 @@
                         prepend-icon="mdi-api"
                         class="w-100"
                       >
-                        {{ $t('dashboard.viewSwaggerDocs') || 'View Swagger Docs' }}
-                        <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
+                        {{
+                          $t("dashboard.viewSwaggerDocs") || "View Swagger Docs"
+                        }}
+                        <v-icon size="small" class="ml-2"
+                          >mdi-open-in-new</v-icon
+                        >
                       </v-btn>
                     </v-card-text>
                   </v-card>
@@ -60,12 +82,19 @@
                 <v-col cols="12" md="6">
                   <v-card class="h-100 pa-4" elevation="1">
                     <v-card-title class="text-center">
-                      <v-icon color="info" size="large" class="mb-2">mdi-book-open-variant</v-icon>
-                      <br>
-                      {{ $t('dashboard.jsdocDocs') || 'JSDoc Documentation' }}
+                      <v-icon color="info" size="large" class="mb-2"
+                        >mdi-book-open-variant</v-icon
+                      >
+                      <br />
+                      {{ $t("dashboard.jsdocDocs") || "JSDoc Documentation" }}
                     </v-card-title>
                     <v-card-text class="text-center">
-                      <p class="text-body-2 mb-4">{{ $t('dashboard.jsdocDescription') || 'Browse detailed code documentation generated from JSDoc comments in the codebase.' }}</p>
+                      <p class="text-body-2 mb-4">
+                        {{
+                          $t("dashboard.jsdocDescription") ||
+                          "Browse detailed code documentation generated from JSDoc comments in the codebase."
+                        }}
+                      </p>
                       <v-btn
                         :href="jsdocUrl"
                         target="_blank"
@@ -74,8 +103,10 @@
                         prepend-icon="mdi-book-open-variant"
                         class="w-100"
                       >
-                        {{ $t('dashboard.viewJSDocDocs') || 'View JSDoc' }}
-                        <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
+                        {{ $t("dashboard.viewJSDocDocs") || "View JSDoc" }}
+                        <v-icon size="small" class="ml-2"
+                          >mdi-open-in-new</v-icon
+                        >
                       </v-btn>
                     </v-card-text>
                   </v-card>
@@ -113,59 +144,59 @@
 </template>
 
 <script setup>
-import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-import { onMounted, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
+import { onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 
-const authStore = useAuthStore()
-const router = useRouter()
-const { t } = useI18n()
+const authStore = useAuthStore();
+const router = useRouter();
+const { t } = useI18n();
 
 // API Documentation URLs
-const baseApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-const swaggerUrl = computed(() => `${baseApiUrl}/docs`)
-const jsdocUrl = computed(() => `${baseApiUrl}/jsdoc`)
+const baseApiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const swaggerUrl = computed(() => `${baseApiUrl}/docs`);
+const jsdocUrl = computed(() => `${baseApiUrl}/jsdoc`);
 
 // Features for display - using computed for reactivity
 const features = computed(() => [
   {
-    title: t('home.features.oauth.title'),
-    description: t('home.features.oauth.description'),
-    icon: 'mdi-shield-check',
-    color: 'success'
+    title: t("home.features.oauth.title"),
+    description: t("home.features.oauth.description"),
+    icon: "mdi-shield-check",
+    color: "success",
   },
   {
-    title: t('home.features.api.title'),
-    description: t('home.features.api.description'),
-    icon: 'mdi-api',
-    color: 'green'
+    title: t("home.features.api.title"),
+    description: t("home.features.api.description"),
+    icon: "mdi-api",
+    color: "green",
   },
   {
-    title: t('home.features.session.title'),
-    description: t('home.features.session.description'),
-    icon: 'mdi-account-clock',
-    color: 'warning'
-  }
-])
+    title: t("home.features.session.title"),
+    description: t("home.features.session.description"),
+    icon: "mdi-account-clock",
+    color: "warning",
+  },
+]);
 
 const login = async () => {
   try {
-    await authStore.login()
+    await authStore.login();
     // Navigate to dashboard after login
-    router.push('/dashboard')
+    router.push("/dashboard");
   } catch (e) {
     // fallback to redirect
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/auth/google`
+    window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/auth/google`;
   }
-}
+};
 
 // If already authenticated, redirect to dashboard
 onMounted(() => {
   if (authStore.isAuthenticated) {
-    router.push('/dashboard')
+    router.push("/dashboard");
   }
-})
+});
 </script>
 
 <style scoped>

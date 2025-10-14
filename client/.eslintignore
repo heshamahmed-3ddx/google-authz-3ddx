@@ -1,0 +1,8 @@
+# ESLint ignore patterns for client
+node_modules/
+dist/
+coverage/
+.vite/
+*.d.ts
+docs/jsdoc/
+public/

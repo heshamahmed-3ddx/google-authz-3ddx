@@ -12,6 +12,16 @@
     "warning": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
     "brand": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
   },
-  "required": ["primary", "secondary", "background", "surface", "error", "success", "info", "warning", "brand"],
+  "required": [
+    "primary",
+    "secondary",
+    "background",
+    "surface",
+    "error",
+    "success",
+    "info",
+    "warning",
+    "brand"
+  ],
   "additionalProperties": false
 }

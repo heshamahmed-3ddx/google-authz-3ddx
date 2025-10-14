@@ -1,15 +1,15 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { apiService } from '@/services/api'
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { apiService } from "@/services/api";
 
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
-  const tokens = ref(null)
-  const loading = ref(false)
-  const lastAuthCheck = ref(0)
-  const authCheckPromise = ref(null)
+export const useAuthStore = defineStore("auth", () => {
+  const user = ref(null);
+  const tokens = ref(null);
+  const loading = ref(false);
+  const lastAuthCheck = ref(0);
+  const authCheckPromise = ref(null);
 
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value);
 
   /**
    * Initiate Google OAuth login by requesting an auth URL from the backend
@@ -20,24 +20,24 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const login = async () => {
     try {
-      loading.value = true
-      
+      loading.value = true;
+
       // Get Google OAuth URL from backend
-      const { data } = await apiService.get('/auth/google')
-      
+      const { data } = await apiService.get("/auth/google");
+
       // Redirect to Google OAuth using the URL from backend
       if (data && data.authUrl) {
-        window.location.href = data.authUrl
+        window.location.href = data.authUrl;
       } else {
-        throw new Error('No auth URL received from backend')
+        throw new Error("No auth URL received from backend");
       }
     } catch (error) {
-      console.error('Login error:', error)
-      throw error
+      console.error("Login error:", error);
+      throw error;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Handle the OAuth callback flow on the client by sending the authorization
@@ -51,41 +51,41 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const handleCallback = async (code, state) => {
     try {
-      loading.value = true
-      
+      loading.value = true;
+
       if (!code) {
-        throw new Error('No authorization code provided')
+        throw new Error("No authorization code provided");
       }
-      
+
       // Send the authorization code to the backend for processing
-      const { data } = await apiService.post('/auth/google/callback', { 
+      const { data } = await apiService.post("/auth/google/callback", {
         code: code,
-        state: state 
-      })
-      
+        state: state,
+      });
+
       if (data && data.user) {
-        user.value = data.user
+        user.value = data.user;
         // Fetch local user details (groups/roles) to merge into user
         try {
-          await fetchUserDetails()
+          await fetchUserDetails();
         } catch (err) {
           // ignore
         }
-        return { success: true, user: data.user }
+        return { success: true, user: data.user };
       } else {
         // Fallback: check auth status
-        await checkAuth()
-        return { success: true }
+        await checkAuth();
+        return { success: true };
       }
     } catch (error) {
-      console.error('Callback error:', error)
-      user.value = null
-      tokens.value = null
-      throw error
+      console.error("Callback error:", error);
+      user.value = null;
+      tokens.value = null;
+      throw error;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Log the user out.
@@ -98,25 +98,25 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     try {
       // Clear local state immediately so UI can react and redirect
-      user.value = null
-      tokens.value = null
-      loading.value = true
+      user.value = null;
+      tokens.value = null;
+      loading.value = true;
 
       // Attempt server-side logout; failures are non-blocking for UI
       try {
-        await apiService.post('/auth/logout')
+        await apiService.post("/auth/logout");
       } catch (err) {
-        console.warn('Server logout failed (non-blocking):', err)
+        console.warn("Server logout failed (non-blocking):", err);
       }
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error("Logout error:", error);
       // Ensure local state cleared
-      user.value = null
-      tokens.value = null
+      user.value = null;
+      tokens.value = null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Check authentication status against the backend (/auth/me) and populate
@@ -128,49 +128,49 @@ export const useAuthStore = defineStore('auth', () => {
   const checkAuth = async () => {
     // Prevent multiple concurrent auth checks
     if (authCheckPromise.value) {
-      return await authCheckPromise.value
+      return await authCheckPromise.value;
     }
 
     // Rate limit auth checks - only allow one every 2 seconds
-    const now = Date.now()
+    const now = Date.now();
     if (now - lastAuthCheck.value < 2000) {
-      return isAuthenticated.value
+      return isAuthenticated.value;
     }
 
     authCheckPromise.value = (async () => {
       try {
-        loading.value = true
-        lastAuthCheck.value = now
-        
-        const { data } = await apiService.get('/auth/me')
-        
+        loading.value = true;
+        lastAuthCheck.value = now;
+
+        const { data } = await apiService.get("/auth/me");
+
         if (data && data.authenticated && data.user) {
-          user.value = data.user
+          user.value = data.user;
           // Merge additional local user details (groups/roles)
           try {
-            await fetchUserDetails()
+            await fetchUserDetails();
           } catch (err) {
             // ignore
           }
-          return true
+          return true;
         } else {
-          user.value = null
-          tokens.value = null
-          return false
+          user.value = null;
+          tokens.value = null;
+          return false;
         }
       } catch (error) {
         // Silently handle auth check failures - this is expected for non-authenticated users
-        user.value = null
-        tokens.value = null
-        return false
+        user.value = null;
+        tokens.value = null;
+        return false;
       } finally {
-        loading.value = false
-        authCheckPromise.value = null
+        loading.value = false;
+        authCheckPromise.value = null;
       }
-    })()
+    })();
 
-    return await authCheckPromise.value
-  }
+    return await authCheckPromise.value;
+  };
 
   /**
    * Refresh profile information. Prefer the local `/api/user/details` which
@@ -184,25 +184,25 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Prefer local system details which include groups/roles
       try {
-        const { data } = await apiService.get('/api/user/details')
+        const { data } = await apiService.get("/api/user/details");
         if (data?.data) {
           // merge returned user details into the auth user object
-          user.value = { ...user.value, ...data.data }
+          user.value = { ...user.value, ...data.data };
         }
-        return data
+        return data;
       } catch (err) {
         // Fallback to Google profile endpoint
-        const { data } = await apiService.get('/api/profile')
+        const { data } = await apiService.get("/api/profile");
         if (data.profile) {
-          user.value = { ...user.value, ...data.profile }
+          user.value = { ...user.value, ...data.profile };
         }
-        return data
+        return data;
       }
     } catch (error) {
-      console.error('Profile refresh error:', error)
-      throw error
+      console.error("Profile refresh error:", error);
+      throw error;
     }
-  }
+  };
 
   // Fetch user details from local API (includes groups/roles/org info)
   /**
@@ -214,17 +214,17 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const fetchUserDetails = async () => {
     try {
-      const { data } = await apiService.get('/api/user/details')
+      const { data } = await apiService.get("/api/user/details");
       if (data?.data) {
-        user.value = { ...user.value, ...data.data }
-        return data.data
+        user.value = { ...user.value, ...data.data };
+        return data.data;
       }
-      return null
+      return null;
     } catch (error) {
-      console.warn('Failed to fetch user details:', error)
-      return null
+      console.warn("Failed to fetch user details:", error);
+      return null;
     }
-  }
+  };
 
   return {
     user,
@@ -235,6 +235,6 @@ export const useAuthStore = defineStore('auth', () => {
     handleCallback,
     logout,
     checkAuth,
-    refreshProfile
-  }
-})
+    refreshProfile,
+  };
+});

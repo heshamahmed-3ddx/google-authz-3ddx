@@ -3,7 +3,7 @@
     <v-app-bar :elevation="2" color="primary" dark>
       <v-app-bar-title class="d-flex align-center">
         <v-icon left>mdi-google</v-icon>
-        <span class="mr-2 d-none d-sm-inline">{{ $t('app.title') }}</span>
+        <span class="mr-2 d-none d-sm-inline">{{ $t("app.title") }}</span>
         <small class="app-version d-none d-md-inline">v{{ appVersion }}</small>
       </v-app-bar-title>
 
@@ -19,7 +19,11 @@
       <router-view />
     </v-main>
 
-    <div v-if="snackbar.show" :class="['simple-toast', `toast-${snackbar.color}`]" @click="snackbar.show = false">
+    <div
+      v-if="snackbar.show"
+      :class="['simple-toast', `toast-${snackbar.color}`]"
+      @click="snackbar.show = false"
+    >
       {{ snackbar.message }}
       <v-icon class="toast-close" size="small">mdi-close</v-icon>
     </div>
@@ -27,80 +31,83 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
-import ThemeToggle from '@/components/ThemeToggle.vue'
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useTheme, useLocale } from 'vuetify'
-import { isRTL } from '@/i18n'
-import rootPkg from '../../package.json'
+import { reactive, watch } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
+import ThemeToggle from "@/components/ThemeToggle.vue";
+import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
+import { useI18n } from "vue-i18n";
+import { useTheme, useLocale } from "vuetify";
+import { isRTL } from "@/i18n";
+import rootPkg from "../../package.json";
 
-const authStore = useAuthStore()
-const themeStore = useThemeStore()
-const router = useRouter()
-const { t, locale } = useI18n()
-const appVersion = rootPkg.version || ''
-const vuetifyTheme = useTheme()
-const vuetifyLocale = useLocale()
+const authStore = useAuthStore();
+const themeStore = useThemeStore();
+const { locale } = useI18n();
+const appVersion = rootPkg.version || "";
+const vuetifyTheme = useTheme();
+const vuetifyLocale = useLocale();
 
 // Watch for theme changes and apply to Vuetify
-watch(() => themeStore.currentTheme, (newTheme) => {
-  vuetifyTheme.change(newTheme)
-  console.log(`🎨 Applied theme to Vuetify: ${newTheme}`)
-}, { immediate: true })
+watch(
+  () => themeStore.currentTheme,
+  (newTheme) => {
+    vuetifyTheme.change(newTheme);
+    console.log(`🎨 Applied theme to Vuetify: ${newTheme}`);
+  },
+  { immediate: true },
+);
 
 // Watch for locale changes and update RTL
-watch(() => locale.value, (newLocale) => {
-  const shouldBeRTL = isRTL(newLocale)
-  
-  // Update Vuetify RTL
-  vuetifyLocale.isRtl.value = shouldBeRTL
-  
-  // Update document direction and language
-  document.documentElement.dir = shouldBeRTL ? 'rtl' : 'ltr'
-  document.documentElement.lang = newLocale
-  
-  // Add CSS classes for custom RTL styling
-  document.documentElement.classList.toggle('rtl', shouldBeRTL)
-  document.documentElement.classList.toggle('ltr', !shouldBeRTL)
-  document.body.classList.toggle('rtl', shouldBeRTL)
-  document.body.classList.toggle('ltr', !shouldBeRTL)
-  
-  // Force a small delay to ensure Vuetify processes the RTL change
-  setTimeout(() => {
-    console.log(`🌐 RTL updated: ${shouldBeRTL} for locale: ${newLocale}`)
-  }, 50)
-}, { immediate: true })
+watch(
+  () => locale.value,
+  (newLocale) => {
+    const shouldBeRTL = isRTL(newLocale);
+
+    // Update Vuetify RTL
+    vuetifyLocale.isRtl.value = shouldBeRTL;
+
+    // Update document direction and language
+    document.documentElement.dir = shouldBeRTL ? "rtl" : "ltr";
+    document.documentElement.lang = newLocale;
+
+    // Add CSS classes for custom RTL styling
+    document.documentElement.classList.toggle("rtl", shouldBeRTL);
+    document.documentElement.classList.toggle("ltr", !shouldBeRTL);
+    document.body.classList.toggle("rtl", shouldBeRTL);
+    document.body.classList.toggle("ltr", !shouldBeRTL);
+
+    // Force a small delay to ensure Vuetify processes the RTL change
+    setTimeout(() => {
+      console.log(`🌐 RTL updated: ${shouldBeRTL} for locale: ${newLocale}`);
+    }, 50);
+  },
+  { immediate: true },
+);
 
 const snackbar = reactive({
   show: false,
-  message: '',
-  color: 'success',
-  timeout: 4000
-})
+  message: "",
+  color: "success",
+  timeout: 4000,
+});
 
-const showMessage = (message, color = 'success') => {
-  snackbar.message = message
-  snackbar.color = color
-  snackbar.show = true
-  
-  // Auto-hide after timeout
-  setTimeout(() => {
-    snackbar.show = false
-  }, snackbar.timeout)
-}
-
-
-
-
+// Function to show snackbar messages (currently not used but may be needed)
+// const showMessage = (message, color = "success") => {
+//   snackbar.message = message;
+//   snackbar.color = color;
+//   snackbar.show = true;
+//
+//   // Auto-hide after timeout
+//   setTimeout(() => {
+//     snackbar.show = false;
+//   }, snackbar.timeout);
+// };
 
 // Check authentication status on app load - silently handle failures
 authStore.checkAuth().catch(() => {
   // Silently handle initial auth check failure - this is expected for non-authenticated users
-})
+});
 </script>
 
 <style scoped>
@@ -110,28 +117,31 @@ authStore.checkAuth().catch(() => {
 
 /* Global theme transition styles */
 :deep(.v-application) {
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced card styles for theme support */
 :deep(.v-card) {
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Enhanced button styles */
 :deep(.v-btn) {
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-version {
   opacity: 0.85;
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .simple-toast {
@@ -194,11 +204,11 @@ authStore.checkAuth().catch(() => {
    ======================================== */
 
 /* Global RTL text alignment for headings */
-[dir="rtl"] h1, 
-[dir="rtl"] h2, 
-[dir="rtl"] h3, 
-[dir="rtl"] h4, 
-[dir="rtl"] h5, 
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
 [dir="rtl"] h6,
 [dir="rtl"] .v-card-title,
 [dir="rtl"] .v-card-subtitle,

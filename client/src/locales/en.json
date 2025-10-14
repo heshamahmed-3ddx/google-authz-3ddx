@@ -152,7 +152,7 @@
   "admin": {
     "title": "Admin Panel - User & Policy Management",
     "users": "Users",
-    "policies": "Policies", 
+    "policies": "Policies",
     "groups": "Groups",
     "userManagement": "User Management",
     "policyManagement": "Policy Management",

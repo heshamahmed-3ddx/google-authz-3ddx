@@ -351,11 +351,11 @@ class CasbinService {
   }
 
   /**
-   * Get group assignments for a user
-   * @param {string} userEmail - User email
+   * Get user groups for admin management
+   * @param {string} _userEmail - User email (unused, gets all groupings)
    * @returns {Promise<Array>} - User's group assignments
    */
-  async getUserGroups(userEmail) {
+  async getUserGroups(_userEmail) {
     if (!this.enforcer) {
       throw new Error('Casbin enforcer not initialized');
     }

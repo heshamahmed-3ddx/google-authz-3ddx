@@ -71,7 +71,8 @@ dist
 
 # Gatsby files
 .cache/
-public
+!client/public/logo.png
+!client/public/logo.png
 
 # vue-press build output
 .vuepress/dist
