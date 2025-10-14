@@ -350,8 +350,24 @@ router.get('/user/details', requireAuth, async (req, res) => {
       };
       usersData.users.push(newUser);
       fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      
+      // Force reload Casbin data
       await casbinService.initialize();
-      userInfo = newUser;
+      
+      // Verify user was added successfully
+      userInfo = casbinService.getUserInfo(userEmail);
+      if (!userInfo) {
+        console.error('Failed to add user to system:', userEmail);
+        return res.status(500).json({
+          error: {
+            code: 'USER_CREATION_FAILED',
+            http: 500,
+            message: 'Failed to create user in authorization system'
+          },
+          requestId: req.requestId || 'unknown'
+        });
+      }
+      console.log('✅ Auto-added new user:', userEmail, 'with groups:', newUser.groups);
     }
     // Combine Google OAuth data with our user data
     const userDetails = {
@@ -479,8 +495,24 @@ router.get('/user/rights', requireAuth, async (req, res) => {
       };
       usersData.users.push(newUser);
       fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      
+      // Force reload Casbin data
       await casbinService.initialize();
+      
+      // Re-fetch user rights after reload
       userRights = await casbinService.getUserRights(userEmail);
+      if (!userRights.found) {
+        console.error('Failed to get user rights after auto-add:', userEmail);
+        return res.status(500).json({
+          error: {
+            code: 'USER_RIGHTS_FAILED',
+            http: 500,
+            message: 'Failed to evaluate user rights after account creation'
+          },
+          requestId: req.requestId || 'unknown'
+        });
+      }
+      console.log('✅ Auto-added new user and loaded rights:', userEmail, 'groups:', userRights.groups);
     }
     // Log the authorization evaluation for audit
     req.logger?.info({

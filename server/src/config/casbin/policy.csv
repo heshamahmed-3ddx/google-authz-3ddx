@@ -4,6 +4,12 @@
 # g = group/role assignment
 
 # Policy Rules - Define what each role can do
+
+# Default permissions for new users
+p, default, dashboard, read
+p, default, profile, read
+p, default, profile, update
+
 p, engineering, invoices, read
 p, engineering, invoices, create
 p, engineering, projects, read
