@@ -1,4 +1,6 @@
-<img src="./client/public/logo.png" alt="Brand Logo" width="180"/>
+<div align="center">
+  <img src="./client/public/logo.png" alt="Brand Logo" width="240"/>
+</div>
 
 # Google AuthZ 3DDX - Authentication & Authorization Demo
 
