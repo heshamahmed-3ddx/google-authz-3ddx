@@ -40,14 +40,27 @@ npm run dev
 
 Visit http://localhost:3000 to view the application.
 
-## 🧑‍� Demo Flows
+## 🧑‍💻 Demo Flows
 
 The SPA demonstrates:
 - **Login with Google**: Authenticate using your Google Workspace account with automatic user registration
 - **View Dashboard**: Access protected dashboard and see your groups/roles/rights (Casbin-powered)
-- **Admin Panel**: Manage users, policies, and group assignments in real-time (admin users only)
+- **Admin Panel**: Comprehensive management interface for users, policies, and group assignments (admin users only)
+  - **Users Tab**: View all system users, edit group memberships, manage user details
+  - **Policies Tab**: Add/remove authorization policies, view complete policy matrix
+  - **Groups Tab**: Manage user-group assignments with real-time updates
+- **User Rights Testing**: Test authorization for specific resources and actions
 - **Multi-language**: Switch between English and Arabic with full RTL support
 - **Theme System**: Toggle between light and dark modes
+
+### Quick Admin Testing
+Users with admin privileges can:
+1. **Manage Users**: Add users to groups, view organizational details
+2. **Control Policies**: Define who can access what resources
+3. **Test Permissions**: Verify authorization rules in real-time
+4. **Monitor System**: View complete user and permission overview
+
+> **Admin Access**: Use `heshamahmed8877@gmail.com` to test admin features or add your email to `server/src/config/casbin/users.json` with admin group membership. See [Admin Testing Guide](./docs/admin-testing-guide.md) for details.
 
 Main links:
 - `Login with Google` (on homepage)
@@ -111,6 +124,32 @@ google-authz-3ddx/
    - **Client ID** and **Client Secret**
    - **Authorized redirect URIs**: `http://localhost:3001/auth/google/callback`
    - **Authorized JavaScript origins**: `http://localhost:3000`
+
+### User & Permission Configuration
+
+#### Casbin User Management
+Users, groups, and roles are configured in:
+```
+server/src/config/casbin/users.json
+server/src/config/casbin/policy.csv
+```
+
+#### Adding Admin Users for Testing
+To add yourself as an admin user, add your Gmail to `server/src/config/casbin/users.json`:
+
+```json
+{
+  "email": "your-email@gmail.com",
+  "fullName": "Your Name (Admin)",
+  "groups": ["admin", "engineering"],
+  "orgUnit": "IT/Administration",
+  "roles": ["admin", "system-admin"],
+  "twoStepEnabled": true,
+  "department": "IT"
+}
+```
+
+See [Casbin User Management Guide](./docs/casbin-user-management.md) for complete documentation and [Admin Testing Guide](./docs/admin-testing-guide.md) for quick setup instructions.
 
 ### Environment Variables
 
@@ -204,41 +243,48 @@ npm run clean:build      # Clean build artifacts
 ### Authorization & Access Control
 - **Casbin RBAC** with groups, roles, and policies
 - **Real-time policy evaluation** for all API requests
-- **Admin panel** for user and policy management
+- **Comprehensive admin panel** with user, policy, and group management
+- **User management interface** - View, edit, and assign groups to users
+- **Policy management** - Add/remove authorization policies dynamically
+- **Group assignment system** - Manage user group memberships
+- **Live authorization testing** - Test permissions in real-time
 - **Fine-grained permissions** per resource and action
+- **Auto-user registration** with configurable default permissions
 
 ### Frontend Features
 - **Responsive Material Design** UI with Vuetify
 - **Multi-language support** (English/Arabic) with RTL
 - **Dark/Light theme system** with user preferences
 - **State management** with Pinia and persistent storage
-- Route protection
-- Error handling and user feedback
-- Loading states and animations
-- Admin panel for user/policy management
-- Real-time authorization testing interface
+- **Route protection** with authentication guards
+- **Error handling** and comprehensive user feedback
+- **Loading states** and smooth animations
+- **Three-tab admin panel** for complete system management:
+  - **Users Tab**: View all users, edit group assignments, manage user details
+  - **Policies Tab**: Add/remove authorization policies, view policy matrix
+  - **Groups Tab**: Manage user-group assignments, bulk operations
+- **Real-time authorization testing** interface with permission validation
+- **User rights visualization** with detailed permissions breakdown
 
 ## 📚 Documentation
 
-## 🗂️ Sample Casbin Policy & User Mapping
-
-- `server/src/config/casbin/policy.csv` — Example Casbin policy file
-- `server/src/config/casbin/users.json` — Example user-to-group mapping
-
-See [docs/implementation-guide.md](./docs/implementation-guide.md) for details on structure and usage.
-
-## 📖 API & Function Documentation
-
-- **OpenAPI Spec**: [docs/api-spec.yaml](./docs/api-spec.yaml) and served at `/api/docs`
-- **JSDoc HTML**: Generated docs in `client/docs/jsdoc/`
-- See [docs/jsdoc.md](./docs/jsdoc.md) for instructions to generate/view function docs.
-
+### Core Documentation
 - [Getting Started](./docs/getting-started.md) - Setup and development guide
 - [API Reference](./docs/api-reference.md) - Backend API documentation
 - [Architecture](./docs/architecture.md) - System design overview
 - [Security](./docs/security.md) - Security considerations
 - [Reuse Guide](./docs/reuse-guide.md) - How to adapt this system for future projects
 - [Testing Guide](./tests/README.md) - Testing documentation
+
+### Casbin & User Management
+- **[Casbin User Management Guide](./docs/casbin-user-management.md)** - Complete guide for managing users, groups, and roles
+- **[Admin Testing Guide](./docs/admin-testing-guide.md)** - Quick reference for testing admin features
+- [Implementation Guide](./docs/implementation-guide.md) - Details on Casbin structure and usage
+
+### API & Function Documentation
+- **OpenAPI Spec**: [docs/api-spec.yaml](./docs/api-spec.yaml) and served at `/api/docs`
+- **JSDoc HTML**: Generated docs in `client/docs/jsdoc/`
+- See [docs/jsdoc.md](./docs/jsdoc.md) for instructions to generate/view function docs.
 
 ## ♻️ Reusing for Future Projects
 
