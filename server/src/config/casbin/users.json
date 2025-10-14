@@ -13,8 +13,8 @@
       "email": "heshamahmed8877@gmail.com",
       "fullName": "Hesham Ahmed (Admin)",
       "groups": ["admin", "engineering"],
-      "orgUnit": "Administration",
-      "roles": ["admin", "developer"],
+      "orgUnit": "IT/Administration",
+      "roles": ["admin", "system-admin", "developer"],
       "twoStepEnabled": true,
       "department": "IT"
     },
@@ -96,6 +96,10 @@
     {
       "name": "system-admin",
       "description": "Technical system administrator"
+    },
+    {
+      "name": "user",
+      "description": "Standard user with basic access"
     }
   ]
 }
