@@ -209,7 +209,18 @@ See [docs/implementation-guide.md](./docs/implementation-guide.md) for details o
 - [API Reference](./docs/api-reference.md) - Backend API documentation
 - [Architecture](./docs/architecture.md) - System design overview
 - [Security](./docs/security.md) - Security considerations
+- [Reuse Guide](./docs/reuse-guide.md) - How to adapt this system for future projects
 - [Testing Guide](./tests/README.md) - Testing documentation
+
+## ♻️ Reusing for Future Projects
+
+See [docs/reuse-guide.md](./docs/reuse-guide.md) for step-by-step instructions on how to adapt this authentication and authorization system for other applications, organizations, or deployments. The guide covers:
+- Customizing branding, UI, and language
+- Setting up Google OAuth for your own project
+- Defining users, groups, and policies
+- Extending the admin panel and API endpoints
+- Security and compliance best practices
+- Extending functionality for new requirements
 
 ## 🧪 Testing
 
