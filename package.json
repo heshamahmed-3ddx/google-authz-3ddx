@@ -1,0 +1,59 @@
+{
+  "name": "google-authz-3ddx",
+  "version": "1.0.0",
+  "description": "Full-stack Google OAuth 2.0 authorization demonstration with Node.js + Express backend and Vue 3 + Vuetify frontend",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client",
+    "tests"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:server && npm run install:client && npm run install:tests",
+    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install",
+    "install:tests": "cd tests && npm install",
+    "dev": "./scripts/dev-start.sh",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "./scripts/build-prod.sh",
+    "build:client": "cd client && npm run build",
+    "test": "./scripts/test-all.sh",
+    "test:server": "cd server && npm test",
+    "test:client": "cd client && npm test",
+    "test:integration": "cd tests && npm test",
+    "test:e2e": "cd tests && npm run test:e2e",
+    "setup": "./scripts/setup-dev.sh",
+    "lint": "npm run lint:server && npm run lint:client",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
+    "clean": "rm -rf node_modules server/node_modules client/node_modules tests/node_modules",
+    "clean:build": "rm -rf client/dist server/dist",
+    "docs:generate": "cd client && npm run docs:generate",
+    "docs:clean": "rm -rf client/docs/jsdoc"
+  },
+  "keywords": [
+    "google",
+    "oauth",
+    "oauth2",
+    "authorization",
+    "authentication",
+    "vue3",
+    "vuetify",
+    "express",
+    "nodejs",
+    "full-stack"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.28.3",
+    "babel-jest": "^30.2.0",
+    "concurrently": "^8.2.0",
+    "vite-plugin-vuetify": "^2.1.2"
+  }
+}

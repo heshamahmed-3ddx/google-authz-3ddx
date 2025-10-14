@@ -1,0 +1,55 @@
+# Sample Casbin Policies for Google AuthZ 3DDX Demo
+# Format: policy_type, subject, object, action
+# p = policy rule
+# g = group/role assignment
+
+# Policy Rules - Define what each role can do
+p, engineering, invoices, read
+p, engineering, invoices, create
+p, engineering, projects, read
+p, engineering, projects, create
+p, engineering, projects, update
+p, engineering, reports, read
+
+p, finance, invoices, read
+p, finance, invoices, approve
+p, finance, invoices, delete
+p, finance, customers, read
+p, finance, customers, create
+p, finance, reports, read
+p, finance, budgets, read
+p, finance, budgets, update
+
+p, admin, invoices, read
+p, admin, invoices, create
+p, admin, invoices, approve
+p, admin, invoices, delete
+p, admin, customers, read
+p, admin, customers, create
+p, admin, customers, update
+p, admin, customers, delete
+p, admin, projects, read
+p, admin, projects, create
+p, admin, projects, update
+p, admin, projects, delete
+p, admin, reports, read
+p, admin, reports, create
+p, admin, budgets, read
+p, admin, budgets, update
+p, admin, users, read
+p, admin, users, manage
+
+p, platform, systems, read
+p, platform, systems, update
+p, platform, monitoring, read
+p, platform, logs, read
+
+# Group/Role Assignments - Assign users to roles
+# Format: g, user_email, role_name
+g, hesham.ahmed@3ddx.com, engineering
+g, hesham.ahmed@3ddx.com, platform
+g, heshamahmed8877@gmail.com, admin
+g, alice@3ddx.com, engineering
+g, bob@3ddx.com, finance
+g, admin@3ddx.com, admin
+g, platform@3ddx.com, platform

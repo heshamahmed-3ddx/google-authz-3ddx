@@ -1,0 +1,596 @@
+openapi: 3.0.3
+info:
+  title: 3D Diagnostix Authorization API
+  description: |
+    Enterprise-grade authentication and authorization system for 3D Diagnostix platform.
+    
+    ## Features
+    - Google Workspace SSO authentication
+    - Policy-based authorization using Casbin RBAC
+    - Structured audit logging with request correlation
+    - User details and rights management
+    
+    ## Authentication
+    This API uses session-based authentication with Google OAuth 2.0. Users must authenticate
+    via the `/auth/google` endpoint before accessing protected resources.
+    
+    ## Authorization
+    User permissions are evaluated using Casbin policies based on:
+    - User groups (Engineering, Finance, Admin)
+    - Organizational roles (engineer, manager, admin)
+    - Resource-action combinations
+    
+    ## Audit Logging
+    All API calls are logged with structured JSON including:
+    - Request correlation IDs
+    - User context and IP addresses
+    - Authorization decisions and resource access
+  version: 1.0.0
+  contact:
+    name: 3D Diagnostix Development Team
+    email: dev@3ddiagnostix.com
+  license:
+    name: Proprietary
+    url: https://3ddiagnostix.com/license
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.3ddiagnostix.com
+    description: Production server
+
+security:
+  - SessionAuth: []
+
+components:
+  securitySchemes:
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Session-based authentication using Google OAuth 2.0
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - requestId
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - http
+            - message
+          properties:
+            code:
+              type: string
+              enum: [AUTH_REQUIRED, NOT_FOUND, VALIDATION_ERROR, INTERNAL_ERROR]
+              description: Machine-readable error code
+            http:
+              type: integer
+              description: HTTP status code
+            message:
+              type: string
+              description: Human-readable error message
+        requestId:
+          type: string
+          description: Unique request identifier for debugging
+
+    UserProfile:
+      type: object
+      properties:
+        profile:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Google user ID
+            name:
+              type: string
+              description: User's full name
+            email:
+              type: string
+              format: email
+              description: User's email address
+            picture:
+              type: string
+              format: uri
+              description: URL to user's profile picture
+        source:
+          type: string
+          enum: [Google API]
+          description: Data source identifier
+
+    UserDetails:
+      type: object
+      required:
+        - data
+        - requestId
+      properties:
+        data:
+          type: object
+          required:
+            - fullName
+            - email
+            - groups
+            - roles
+            - orgUnit
+            - department
+            - twoStepEnabled
+          properties:
+            fullName:
+              type: string
+              description: User's complete name
+              example: "John Doe"
+            email:
+              type: string
+              format: email
+              description: User's corporate email address
+              example: "john.doe@3ddiagnostix.com"
+            groups:
+              type: array
+              items:
+                type: string
+              description: User's assigned groups
+              example: ["Engineering", "R&D"]
+            roles:
+              type: array
+              items:
+                type: string
+              description: User's organizational roles
+              example: ["engineer", "team_lead"]
+            orgUnit:
+              type: string
+              description: Organizational unit
+              example: "Software Development"
+            department:
+              type: string
+              description: Department name
+              example: "Engineering"
+            twoStepEnabled:
+              type: boolean
+              description: Whether 2FA is enabled
+              example: true
+            picture:
+              type: string
+              format: uri
+              nullable: true
+              description: URL to user's profile picture
+        requestId:
+          type: string
+          description: Unique request identifier
+
+    UserRights:
+      type: object
+      required:
+        - data
+        - requestId
+      properties:
+        data:
+          type: object
+          required:
+            - rights
+            - userEmail
+            - groups
+            - roles
+            - evaluatedAt
+          properties:
+            rights:
+              type: array
+              items:
+                type: object
+                required:
+                  - resource
+                  - action
+                  - allowed
+                properties:
+                  resource:
+                    type: string
+                    description: Resource identifier
+                    example: "patient_data"
+                  action:
+                    type: string
+                    description: Action being evaluated
+                    example: "read"
+                  allowed:
+                    type: boolean
+                    description: Whether action is permitted
+                    example: true
+            userEmail:
+              type: string
+              format: email
+              description: User's email address
+              example: "john.doe@3ddiagnostix.com"
+            groups:
+              type: array
+              items:
+                type: string
+              description: User's groups
+              example: ["Engineering"]
+            roles:
+              type: array
+              items:
+                type: string
+              description: User's roles
+              example: ["engineer"]
+            orgUnit:
+              type: string
+              description: Organizational unit
+              example: "Software Development"
+            evaluatedAt:
+              type: string
+              format: date-time
+              description: Timestamp of rights evaluation
+              example: "2025-10-08T10:00:00.000Z"
+        requestId:
+          type: string
+          description: Unique request identifier
+
+    AuthorizationRequest:
+      type: object
+      required:
+        - resource
+        - action
+      properties:
+        resource:
+          type: string
+          description: Resource identifier to check access for
+          example: "patient_data"
+        action:
+          type: string
+          description: Action to authorize
+          example: "read"
+
+    AuthorizationResult:
+      type: object
+      required:
+        - data
+        - requestId
+      properties:
+        data:
+          type: object
+          required:
+            - allowed
+            - resource
+            - action
+            - userEmail
+            - userGroups
+            - evaluatedAt
+          properties:
+            allowed:
+              type: boolean
+              description: Whether the action is authorized
+              example: true
+            resource:
+              type: string
+              description: Resource that was checked
+              example: "patient_data"
+            action:
+              type: string
+              description: Action that was checked
+              example: "read"
+            userEmail:
+              type: string
+              format: email
+              description: User who requested authorization
+              example: "john.doe@3ddiagnostix.com"
+            userGroups:
+              type: array
+              items:
+                type: string
+              description: User's groups at time of evaluation
+              example: ["Engineering"]
+            evaluatedAt:
+              type: string
+              format: date-time
+              description: Timestamp of authorization check
+              example: "2025-10-08T10:00:00.000Z"
+        requestId:
+          type: string
+          description: Unique request identifier
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+        - casbin
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall system health status
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp
+          example: "2025-10-08T10:00:00.000Z"
+        version:
+          type: string
+          description: API version
+          example: "1.0.0"
+        casbin:
+          type: string
+          enum: [initialized, not_initialized]
+          description: Casbin authorization engine status
+          example: "initialized"
+
+    TestResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+        - authenticated
+      properties:
+        message:
+          type: string
+          description: Test message
+          example: "API is working!"
+        timestamp:
+          type: string
+          format: date-time
+          description: Response timestamp
+          example: "2025-10-08T10:00:00.000Z"
+        authenticated:
+          type: boolean
+          description: Whether user is authenticated
+          example: true
+
+paths:
+  /api/profile:
+    get:
+      summary: Get user profile from Google API
+      description: Retrieves the authenticated user's profile information directly from Google API
+      tags: [User Data]
+      security:
+        - SessionAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/drive/files:
+    get:
+      summary: List user's Google Drive files
+      description: Retrieves a list of the authenticated user's Google Drive files (requires additional OAuth scope)
+      tags: [Google Services]
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: pageSize
+          in: query
+          description: Number of files to return (default 10)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Drive files retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        mimeType:
+                          type: string
+                        modifiedTime:
+                          type: string
+                          format: date-time
+                  nextPageToken:
+                    type: string
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/user/details:
+    get:
+      summary: Get authenticated user details
+      description: |
+        Retrieves comprehensive user information including:
+        - Personal details (name, email, profile picture)
+        - Organization structure (department, unit)
+        - Group memberships and roles
+        - Security settings (2FA status)
+        
+        **US-003: Show Authenticated User Details**
+      tags: [User Data]
+      security:
+        - SessionAuth: []
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found in system
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/user/rights:
+    get:
+      summary: Get user permissions and rights
+      description: |
+        Evaluates and returns user permissions based on Casbin RBAC policies.
+        Returns all resources the user can access with their permitted actions.
+        
+        **US-004: Display User Entitlements via Casbin**
+      tags: [Authorization]
+      security:
+        - SessionAuth: []
+      responses:
+        '200':
+          description: User rights evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRights'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found in authorization system
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/authorize:
+    post:
+      summary: Test authorization for specific resource and action
+      description: |
+        Performs a real-time authorization check for a specific resource and action.
+        Useful for feature flagging and runtime permission validation.
+      tags: [Authorization]
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationRequest'
+            examples:
+              patient_data_read:
+                summary: Check read access to patient data
+                value:
+                  resource: "patient_data"
+                  action: "read"
+              financial_reports_write:
+                summary: Check write access to financial reports
+                value:
+                  resource: "financial_reports"
+                  action: "write"
+      responses:
+        '200':
+          description: Authorization check completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResult'
+        '400':
+          description: Invalid request - resource and action required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health:
+    get:
+      summary: Health check endpoint
+      description: |
+        Returns system health status and component information.
+        Used for monitoring, load balancer health checks, and status verification.
+      tags: [System]
+      responses:
+        '200':
+          description: System health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /api/test:
+    get:
+      summary: Test API connectivity
+      description: |
+        Simple connectivity test endpoint that returns basic system information
+        and authentication status. Useful for debugging and integration testing.
+      tags: [System]
+      responses:
+        '200':
+          description: API connectivity confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+
+tags:
+  - name: User Data
+    description: User profile and details endpoints
+  - name: Authorization
+    description: Permission evaluation and authorization endpoints
+  - name: Google Services
+    description: Integration with Google Workspace services
+  - name: System
+    description: Health checks and system status endpoints
+
+externalDocs:
+  description: 3D Diagnostix Developer Documentation
+  url: https://docs.3ddiagnostix.com

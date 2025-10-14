@@ -1,0 +1,47 @@
+{
+  "name": "google-authz-3ddx-tests",
+  "version": "1.0.0",
+  "description": "Test suite for Google AuthZ 3DDX",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js unit/",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js integration/",
+    "test:e2e": "playwright test",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@playwright/test": "^1.37.1",
+    "@swc/jest": "^0.2.39",
+    "axios": "^1.5.0",
+    "babel-jest": "^30.2.0",
+    "jest": "^30.2.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "rootDir": "../",
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.js$": ["@swc/jest"]
+    },
+    "globals": {
+      "jest": {
+        "useESM": true
+      }
+    },
+    "collectCoverageFrom": [
+      "../server/src/**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/e2e/**"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/e2e/"
+    ],
+    "testTimeout": 20000
+  }
+}

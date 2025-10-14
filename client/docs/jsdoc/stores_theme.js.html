@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: stores/theme.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: stores/theme.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file theme.js
+ * @description Pinia store for theme management with dark/light mode toggle
+ * @author 3D Diagnostix Development Team
+ */
+
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+/**
+ * 3D Diagnostix Theme Color Palette
+ * Professional medical/diagnostic color scheme
+ */
+const themeConfig = {
+  light: {
+    name: 'light',
+    displayName: 'Light Theme',
+    colors: {
+      // Primary brand colors
+      primary: '#0066CC',           // Professional blue
+      'primary-lighten-1': '#1976D2',
+      'primary-lighten-2': '#42A5F5',
+      'primary-darken-1': '#004C99',
+      'primary-darken-2': '#003366',
+      
+      // Secondary colors
+      secondary: '#37474F',         // Professional grey-blue
+      'secondary-lighten-1': '#546E7A',
+      'secondary-darken-1': '#263238',
+      
+      // Accent colors
+      accent: '#00BCD4',           // Medical teal/cyan
+      'accent-lighten-1': '#26C6DA',
+      'accent-darken-1': '#0097A7',
+      
+      // Status colors
+      success: '#2E7D32',          // Medical green
+      'success-lighten-1': '#4CAF50',
+      warning: '#F57C00',          // Attention orange
+      'warning-lighten-1': '#FF9800',
+      error: '#C62828',            // Medical red
+      'error-lighten-1': '#E53935',
+      info: '#1565C0',             // Information blue
+      'info-lighten-1': '#1976D2',
+      
+      // Surface colors
+      surface: '#FFFFFF',
+      'surface-variant': '#F5F5F5',
+      'surface-bright': '#FAFAFA',
+      
+      // Background colors
+      background: '#FAFAFA',
+      'on-background': '#212121',
+      'on-surface': '#212121',
+      'on-primary': '#FFFFFF',
+      'on-secondary': '#FFFFFF',
+      'on-accent': '#FFFFFF',
+      'on-success': '#FFFFFF',
+      'on-warning': '#000000',
+      'on-error': '#FFFFFF',
+      'on-info': '#FFFFFF',
+      
+      // Custom 3D Diagnostix colors
+      'diagnostix-blue': '#0066CC',
+      'diagnostix-teal': '#00BCD4',
+      'diagnostix-green': '#2E7D32',
+      'diagnostix-grey': '#37474F',
+      
+      // Medical/healthcare specific colors
+      'medical-primary': '#0066CC',
+      'medical-secondary': '#00BCD4',
+      'patient-data': '#2E7D32',
+      'imaging-primary': '#1565C0',
+      'report-accent': '#F57C00'
+    }
+  },
+  
+  dark: {
+    name: 'dark',
+    displayName: 'Dark Theme',
+    colors: {
+      // Primary brand colors (adjusted for dark mode)
+      primary: '#1E88E5',           // Brighter blue for dark
+      'primary-lighten-1': '#42A5F5',
+      'primary-lighten-2': '#64B5F6',
+      'primary-darken-1': '#1565C0',
+      'primary-darken-2': '#0D47A1',
+      
+      // Secondary colors
+      secondary: '#546E7A',         // Lighter grey-blue for dark
+      'secondary-lighten-1': '#78909C',
+      'secondary-darken-1': '#37474F',
+      
+      // Accent colors
+      accent: '#26C6DA',           // Brighter teal for dark
+      'accent-lighten-1': '#4DD0E1',
+      'accent-darken-1': '#00ACC1',
+      
+      // Status colors (enhanced for dark mode)
+      success: '#43A047',          // Brighter green
+      'success-lighten-1': '#66BB6A',
+      warning: '#FB8C00',          // Brighter orange
+      'warning-lighten-1': '#FFA726',
+      error: '#E53935',            // Brighter red
+      'error-lighten-1': '#EF5350',
+      info: '#1E88E5',             // Brighter info blue
+      'info-lighten-1': '#42A5F5',
+      
+      // Surface colors (dark mode)
+      surface: '#1E1E1E',
+      'surface-variant': '#2D2D2D',
+      'surface-bright': '#383838',
+      
+      // Background colors (dark mode)
+      background: '#121212',
+      'on-background': '#FFFFFF',
+      'on-surface': '#FFFFFF',
+      'on-primary': '#000000',
+      'on-secondary': '#FFFFFF',
+      'on-accent': '#000000',
+      'on-success': '#000000',
+      'on-warning': '#000000',
+      'on-error': '#FFFFFF',
+      'on-info': '#FFFFFF',
+      
+      // Custom 3D Diagnostix colors (dark mode)
+      'diagnostix-blue': '#1E88E5',
+      'diagnostix-teal': '#26C6DA',
+      'diagnostix-green': '#43A047',
+      'diagnostix-grey': '#546E7A',
+      
+      // Medical/healthcare specific colors (dark mode)
+      'medical-primary': '#1E88E5',
+      'medical-secondary': '#26C6DA',
+      'patient-data': '#43A047',
+      'imaging-primary': '#1E88E5',
+      'report-accent': '#FB8C00'
+    }
+  }
+}
+
+/**
+ * Theme Store for managing application themes
+ */
+export const useThemeStore = defineStore('theme', () => {
+  // State
+  const currentTheme = ref('light')
+  const isAutoTheme = ref(false) // Auto-detect system preference
+  
+  // Getters
+  const isDark = computed(() => currentTheme.value === 'dark')
+  const isLight = computed(() => currentTheme.value === 'light')
+  const themeDisplayName = computed(() => themeConfig[currentTheme.value]?.displayName || 'Unknown Theme')
+  const themeColors = computed(() => themeConfig[currentTheme.value]?.colors || {})
+  
+  // Available themes
+  const availableThemes = computed(() => [
+    { value: 'light', label: 'Light', icon: 'mdi-white-balance-sunny' },
+    { value: 'dark', label: 'Dark', icon: 'mdi-moon-waning-crescent' }
+  ])
+  
+  // Actions
+  
+  /**
+   * Set the current theme
+   * @param {string} theme - Theme name ('light' or 'dark')
+   */
+  const setTheme = (theme) => {
+    if (themeConfig[theme]) {
+      currentTheme.value = theme
+      isAutoTheme.value = false
+      
+      // Save to localStorage
+      localStorage.setItem('3ddiagnostix-theme', theme)
+      localStorage.setItem('3ddiagnostix-auto-theme', 'false')
+      
+      console.log(`🎨 Theme changed to: ${theme}`)
+    } else {
+      console.warn(`⚠️ Unknown theme: ${theme}`)
+    }
+  }
+  
+  /**
+   * Toggle between light and dark themes
+   */
+  const toggleTheme = () => {
+    const newTheme = currentTheme.value === 'light' ? 'dark' : 'light'
+    setTheme(newTheme)
+  }
+  
+  /**
+   * Enable automatic theme detection based on system preference
+   */
+  const enableAutoTheme = () => {
+    isAutoTheme.value = true
+    localStorage.setItem('3ddiagnostix-auto-theme', 'true')
+    
+    // Apply system preference
+    detectSystemTheme()
+    
+    console.log('🔄 Auto theme detection enabled')
+  }
+  
+  /**
+   * Disable automatic theme detection
+   */
+  const disableAutoTheme = () => {
+    isAutoTheme.value = false
+    localStorage.setItem('3ddiagnostix-auto-theme', 'false')
+    
+    console.log('🔒 Auto theme detection disabled')
+  }
+  
+  /**
+   * Toggle automatic theme detection
+   */
+  const toggleAutoTheme = () => {
+    if (isAutoTheme.value) {
+      disableAutoTheme()
+    } else {
+      enableAutoTheme()
+    }
+  }
+
+  /**
+   * Detect and apply system theme preference
+   */
+  const detectSystemTheme = () => {
+    if (typeof window !== 'undefined' &amp;&amp; window.matchMedia) {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      const systemTheme = prefersDark ? 'dark' : 'light'
+      
+      if (isAutoTheme.value) {
+        currentTheme.value = systemTheme
+        console.log(`🔍 System theme detected: ${systemTheme}`)
+      }
+      
+      return systemTheme
+    }
+    return 'light'
+  }
+  
+  /**
+   * Initialize theme from localStorage or system preference
+   */
+  const initializeTheme = () => {
+    try {
+      // Check localStorage for saved preferences
+      const savedTheme = localStorage.getItem('3ddiagnostix-theme')
+      const savedAutoTheme = localStorage.getItem('3ddiagnostix-auto-theme')
+      
+      // Set auto theme preference
+      isAutoTheme.value = savedAutoTheme === 'true'
+      
+      if (isAutoTheme.value) {
+        // Use system preference
+        detectSystemTheme()
+      } else if (savedTheme &amp;&amp; themeConfig[savedTheme]) {
+        // Use saved theme
+        currentTheme.value = savedTheme
+      } else {
+        // Default to light theme
+        currentTheme.value = 'light'
+      }
+      
+      console.log(`🎨 Theme initialized: ${currentTheme.value} (auto: ${isAutoTheme.value})`)
+    } catch (error) {
+      console.warn('⚠️ Failed to initialize theme from localStorage:', error)
+      currentTheme.value = 'light'
+    }
+  }
+  
+  /**
+   * Get theme color by key
+   * @param {string} colorKey - Color key from theme config
+   * @returns {string} Color value
+   */
+  const getThemeColor = (colorKey) => {
+    return themeColors.value[colorKey] || colorKey
+  }
+  
+  /**
+   * Get CSS custom properties for current theme
+   * @returns {Object} CSS custom properties object
+   */
+  const getCSSProperties = () => {
+    const colors = themeColors.value
+    const cssProps = {}
+    
+    Object.entries(colors).forEach(([key, value]) => {
+      cssProps[`--color-${key}`] = value
+    })
+    
+    return cssProps
+  }
+  
+  // Listen for system theme changes
+  if (typeof window !== 'undefined' &amp;&amp; window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addListener((e) => {
+      if (isAutoTheme.value) {
+        const systemTheme = e.matches ? 'dark' : 'light'
+        currentTheme.value = systemTheme
+        console.log(`🔄 System theme changed: ${systemTheme}`)
+      }
+    })
+  }
+  
+  return {
+    // State
+    currentTheme,
+    isAutoTheme,
+    
+    // Getters
+    isDark,
+    isLight,
+    themeDisplayName,
+    themeColors,
+    availableThemes,
+    
+    // Actions
+    setTheme,
+    toggleTheme,
+    toggleAutoTheme,
+    enableAutoTheme,
+    disableAutoTheme,
+    detectSystemTheme,
+    initializeTheme,
+    getThemeColor,
+    getCSSProperties
+  }
+})
+
+/**
+ * Export theme configuration for external use
+ */
+export { themeConfig }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#themeConfig">themeConfig</a></li><li><a href="global.html#useThemeStore">useThemeStore</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 12 2025 20:27:11 GMT+0300 (Eastern European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

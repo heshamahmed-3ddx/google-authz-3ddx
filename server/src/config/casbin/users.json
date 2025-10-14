@@ -1,0 +1,101 @@
+{
+  "users": [
+    {
+      "email": "hesham.ahmed@3ddx.com",
+      "fullName": "Hesham Ahmed",
+      "groups": ["engineering", "platform"],
+      "orgUnit": "Engineering/Platform",
+      "roles": ["developer", "platform-engineer"],
+      "twoStepEnabled": true,
+      "department": "Engineering"
+    },
+    {
+      "email": "heshamahmed8877@gmail.com",
+      "fullName": "Hesham Ahmed (Admin)",
+      "groups": ["admin", "engineering"],
+      "orgUnit": "Administration",
+      "roles": ["admin", "developer"],
+      "twoStepEnabled": true,
+      "department": "IT"
+    },
+    {
+      "email": "alice@3ddx.com",
+      "fullName": "Alice Ahmed",
+      "groups": ["engineering"],
+      "orgUnit": "Engineering/Software",
+      "roles": ["senior-developer"],
+      "twoStepEnabled": true,
+      "department": "Engineering"
+    },
+    {
+      "email": "bob@3ddx.com",
+      "fullName": "Bob Johnson",
+      "groups": ["finance"],
+      "orgUnit": "Finance/Accounting",
+      "roles": ["accountant"],
+      "twoStepEnabled": false,
+      "department": "Finance"
+    },
+    {
+      "email": "admin@3ddx.com",
+      "fullName": "System Administrator",
+      "groups": ["admin"],
+      "orgUnit": "IT/Administration",
+      "roles": ["system-admin"],
+      "twoStepEnabled": true,
+      "department": "IT"
+    },
+    {
+      "email": "platform@3ddx.com",
+      "fullName": "Platform Engineer",
+      "groups": ["platform", "engineering"],
+      "orgUnit": "Engineering/Platform",
+      "roles": ["platform-engineer"],
+      "twoStepEnabled": true,
+      "department": "Engineering"
+    }
+  ],
+  "departments": [
+    {
+      "name": "Engineering",
+      "orgUnit": "Engineering",
+      "description": "Software development and platform engineering"
+    },
+    {
+      "name": "Finance",
+      "orgUnit": "Finance", 
+      "description": "Financial operations and accounting"
+    },
+    {
+      "name": "IT",
+      "orgUnit": "IT",
+      "description": "Information technology and system administration"
+    }
+  ],
+  "roles": [
+    {
+      "name": "developer",
+      "description": "Software developer with code and project access"
+    },
+    {
+      "name": "senior-developer", 
+      "description": "Senior software developer with additional privileges"
+    },
+    {
+      "name": "platform-engineer",
+      "description": "Platform and infrastructure engineer"
+    },
+    {
+      "name": "accountant",
+      "description": "Financial operations and invoice management"
+    },
+    {
+      "name": "admin",
+      "description": "System administrator with full access"
+    },
+    {
+      "name": "system-admin",
+      "description": "Technical system administrator"
+    }
+  ]
+}

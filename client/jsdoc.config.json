@@ -1,0 +1,22 @@
+{
+  "source": {
+    "include": ["./src/"],
+    "includePattern": "\\.(js|vue)$",
+    "exclude": ["node_modules/"]
+  },
+  "opts": {
+    "destination": "./docs/jsdoc/",
+    "recurse": true
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "metadata": {
+    "title": "Google AuthZ 3DDX - Client Documentation",
+    "description": "JavaScript documentation for the Vue.js client application"
+  }
+}

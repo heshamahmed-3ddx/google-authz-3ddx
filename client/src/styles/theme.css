@@ -1,0 +1,497 @@
+/**
+ * 3D Diagnostix Theme Variables and Global Styles
+ * Professional medical/diagnostic styling with theme support
+ */
+
+/* CSS Custom Properties for Theme Colors */
+:root {
+  /* 3D Diagnostix Brand Colors */
+  --diagnostix-blue: #0066CC;
+  --diagnostix-teal: #00BCD4;
+  --diagnostix-green: #2E7D32;
+  --diagnostix-grey: #37474F;
+  
+  /* Medical/Healthcare Colors */
+  --medical-primary: #0066CC;
+  --medical-secondary: #00BCD4;
+  --patient-data: #2E7D32;
+  --imaging-primary: #1565C0;
+  --report-accent: #F57C00;
+  
+  /* Animation Timings */
+  --theme-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --fast-transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --slow-transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Spacing Scale */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  
+  /* Border Radius Scale */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  
+  /* Shadow Definitions */
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark Theme Overrides */
+[data-theme="dark"] {
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* RTL Support */
+:root {
+  direction: ltr;
+}
+
+:root[dir="rtl"] {
+  direction: rtl;
+}
+
+/* RTL-specific styles */
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+/* RTL overrides for common elements */
+.rtl .v-app-bar-title {
+  flex-direction: row-reverse;
+}
+
+.rtl .v-btn--prepend .v-btn__prepend {
+  margin-inline-start: 8px;
+  margin-inline-end: 0;
+}
+
+.rtl .v-btn--append .v-btn__append {
+  margin-inline-start: 0;
+  margin-inline-end: 8px;
+}
+
+.rtl .v-list-item__prepend {
+  padding-inline-end: 16px;
+  padding-inline-start: 0;
+}
+
+.rtl .v-list-item__append {
+  padding-inline-start: 16px;
+  padding-inline-end: 0;
+}
+
+/* RTL margins and padding utilities */
+.rtl .mr-2 {
+  margin-right: 0 !important;
+  margin-left: 8px !important;
+}
+
+.rtl .ml-2 {
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+}
+
+.rtl .mr-3 {
+  margin-right: 0 !important;
+  margin-left: 12px !important;
+}
+
+.rtl .ml-3 {
+  margin-left: 0 !important;
+  margin-right: 12px !important;
+}
+
+.rtl .mr-4 {
+  margin-right: 0 !important;
+  margin-left: 16px !important;
+}
+
+.rtl .ml-4 {
+  margin-left: 0 !important;
+  margin-right: 16px !important;
+}
+
+/* RTL text alignment */
+.rtl .text-left {
+  text-align: right !important;
+}
+
+.rtl .text-right {
+  text-align: left !important;
+}
+
+/* RTL headings and titles alignment */
+.rtl h1, 
+.rtl h2, 
+.rtl h3, 
+.rtl h4, 
+.rtl h5, 
+.rtl h6,
+.rtl .text-h1,
+.rtl .text-h2,
+.rtl .text-h3,
+.rtl .text-h4,
+.rtl .text-h5,
+.rtl .text-h6,
+.rtl .v-card-title,
+.rtl .v-card-subtitle,
+.rtl .v-app-bar-title,
+.rtl .v-list-item-title,
+.rtl .v-list-item-subtitle,
+.rtl .v-alert-title {
+  text-align: right !important;
+}
+
+/* RTL body text and paragraphs */
+.rtl p,
+.rtl .text-body-1,
+.rtl .text-body-2,
+.rtl .text-subtitle-1,
+.rtl .text-subtitle-2,
+.rtl .v-card-text {
+  text-align: right !important;
+}
+
+/* Override center alignment when explicitly needed */
+.rtl .text-center {
+  text-align: center !important;
+}
+
+/* RTL flexbox utilities */
+.rtl .d-flex {
+  flex-direction: row-reverse;
+}
+
+/* Global Theme Transitions */
+* {
+  transition: background-color var(--theme-transition),
+              color var(--theme-transition),
+              border-color var(--theme-transition),
+              box-shadow var(--theme-transition);
+}
+
+/* Enhanced Material Design Elements */
+
+/* Cards with theme-aware styling */
+.v-card {
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: var(--shadow-light) !important;
+  transition: all var(--theme-transition) !important;
+}
+
+.v-card:hover {
+  box-shadow: var(--shadow-medium) !important;
+  transform: translateY(-2px);
+}
+
+.v-card--variant-elevated {
+  box-shadow: var(--shadow-medium) !important;
+}
+
+/* Enhanced buttons */
+.v-btn {
+  border-radius: var(--border-radius-md) !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  transition: all var(--fast-transition) !important;
+}
+
+.v-btn:hover {
+  transform: translateY(-1px);
+}
+
+.v-btn--variant-outlined {
+  border-width: 1.5px !important;
+}
+
+/* Medical/diagnostic specific button styles */
+.v-btn.medical-primary {
+  background-color: var(--medical-primary) !important;
+  color: white !important;
+}
+
+.v-btn.patient-data {
+  background-color: var(--patient-data) !important;
+  color: white !important;
+}
+
+.v-btn.imaging-primary {
+  background-color: var(--imaging-primary) !important;
+  color: white !important;
+}
+
+/* Enhanced navigation */
+.v-app-bar {
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.12);
+  border-radius: 0 !important;
+  padding-right: var(--spacing-lg);
+}
+
+/* Enhanced lists */
+.v-list {
+  border-radius: var(--border-radius-lg) !important;
+}
+
+.v-list-item {
+  border-radius: var(--border-radius-md) !important;
+  margin: 2px 4px !important;
+  transition: all var(--fast-transition) !important;
+}
+
+.v-list-item:hover {
+  transform: translateX(4px);
+}
+
+/* Enhanced chips */
+.v-chip {
+  border-radius: var(--border-radius-md) !important;
+  font-weight: 500 !important;
+  transition: all var(--fast-transition) !important;
+}
+
+.v-chip:hover {
+  transform: scale(1.05);
+}
+/* Enhanced form elements */
+.v-text-field,
+.v-select,
+.v-textarea {
+  border-radius: var(--border-radius-md) !important;
+}
+
+.v-text-field .v-field,
+.v-select .v-field,
+.v-textarea .v-field {
+  border-radius: var(--border-radius-md) !important;
+  transition: all var(--theme-transition) !important;
+}
+
+/* Enhanced alerts */
+.v-alert {
+  border-radius: var(--border-radius-lg) !important;
+  border-left: 4px solid currentColor !important;
+}
+
+/* Enhanced avatars */
+.v-avatar {
+  transition: all var(--fast-transition) !important;
+}
+
+.v-avatar:hover {
+  transform: scale(1.1);
+}
+
+/* Make sure avatar images cover their containers consistently */
+.v-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Enhanced progress indicators */
+.v-progress-circular {
+  transition: all var(--theme-transition) !important;
+}
+
+/* Enhanced tables */
+.v-table {
+  border-radius: var(--border-radius-lg) !important;
+  overflow: hidden !important;
+}
+
+.v-table .v-table__wrapper > table > thead > tr > th {
+  background-color: rgba(var(--v-theme-surface-variant), 0.5) !important;
+  font-weight: 600 !important;
+}
+
+/* Enhanced toolbars */
+.v-toolbar {
+  /* Make toolbars square to match the navbar */
+  border-radius: 0 !important;
+}
+
+/* Enhanced navigation drawer */
+.v-navigation-drawer {
+  /* Remove rounded corners so the drawer and app bar meet flush */
+  border-radius: 0 !important;
+}
+
+/* Stronger override to ensure no curved edges on top navigation across themes */
+.v-application .v-app-bar,
+.v-application .v-toolbar,
+.v-app-bar,
+.v-toolbar {
+  border-radius: 0 !important;
+}
+
+/* App bar actions: provide consistent spacing and prevent sticking to scrollbar */
+.appbar-actions {
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-right: calc(var(--spacing-lg) * 0.5);
+}
+
+/* Enhanced menus */
+.v-menu .v-list {
+  box-shadow: var(--shadow-medium) !important;
+  border: 1px solid rgba(var(--v-theme-outline), 0.12) !important;
+}
+
+/* Enhanced dialogs */
+.v-dialog .v-card {
+  box-shadow: var(--shadow-heavy) !important;
+}
+
+/* Enhanced bottom sheets */
+.v-bottom-sheet .v-card {
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0 !important;
+}
+
+/* Theme-specific utilities */
+.theme-surface {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+}
+
+.theme-surface-variant {
+  background-color: rgb(var(--v-theme-surface-variant)) !important;
+  color: rgb(var(--v-theme-on-surface-variant)) !important;
+}
+
+.diagnostix-primary {
+  background-color: var(--diagnostix-blue) !important;
+  color: white !important;
+}
+
+.diagnostix-secondary {
+  background-color: var(--diagnostix-teal) !important;
+  color: white !important;
+}
+
+/* Medical status indicators */
+.status-healthy {
+  color: var(--patient-data) !important;
+}
+
+.status-warning {
+  color: var(--report-accent) !important;
+}
+
+.status-critical {
+  color: rgb(var(--v-theme-error)) !important;
+}
+
+/* Enhanced scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-primary), 0.5);
+  border-radius: 4px;
+  transition: background var(--theme-transition);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-primary), 0.7);
+}
+
+/* Custom loading spinner */
+.diagnostix-spinner {
+  animation: diagnostix-spin 1s linear infinite;
+}
+
+@keyframes diagnostix-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Accessibility enhancements */
+.focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary)) !important;
+  outline-offset: 2px !important;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .v-card:hover {
+    transform: none !important;
+  }
+  
+  .v-btn:hover {
+    transform: none !important;
+  }
+  
+  .v-list-item:hover {
+    transform: none !important;
+  }
+  
+  .v-chip:hover {
+    transform: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .v-card {
+    border: 2px solid rgb(var(--v-theme-outline)) !important;
+  }
+  
+  .v-btn {
+    border-width: 2px !important;
+  }
+  
+  .v-list-item {
+    border: 1px solid rgba(var(--v-theme-outline), 0.3) !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .v-app-bar,
+  .v-navigation-drawer,
+  .v-bottom-navigation,
+  .theme-toggle,
+  .v-btn[aria-label*="theme"] {
+    display: none !important;
+  }
+  
+  .v-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  * {
+    transition: none !important;
+  }
+}
