@@ -327,17 +327,25 @@ router.get('/user/details', requireAuth, async (req, res) => {
       userAgent: req.get('User-Agent')
     });
     // Get user info from Casbin service (mock data)
-    const userInfo = casbinService.getUserInfo(userEmail);
+    let userInfo = casbinService.getUserInfo(userEmail);
     console.log('[DEBUG] /api/user/details getUserInfo result:', userInfo);
     if (!userInfo) {
-      return res.status(404).json({
-        error: {
-          code: 'NOT_FOUND',
-          http: 404,
-          message: `User not found in system for email: ${userEmail}`
-        },
-        requestId: req.requestId || 'unknown'
-      })
+      // Auto-add user with defaults
+      const usersPath = require('path').join(__dirname, '../config/casbin/users.json');
+      const usersData = JSON.parse(require('fs').readFileSync(usersPath, 'utf8'));
+      const newUser = {
+        email: userEmail,
+        fullName: req.session.user.name || userEmail,
+        groups: ['default'],
+        orgUnit: 'General',
+        roles: ['user'],
+        twoStepEnabled: false,
+        department: 'General'
+      };
+      usersData.users.push(newUser);
+      require('fs').writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      await casbinService.initialize();
+      userInfo = newUser;
     }
     // Combine Google OAuth data with our user data
     const userDetails = {
@@ -448,17 +456,25 @@ router.get('/user/rights', requireAuth, async (req, res) => {
       userAgent: req.get('User-Agent')
     });
     // Get user rights from Casbin
-    const userRights = await casbinService.getUserRights(userEmail);
+    let userRights = await casbinService.getUserRights(userEmail);
     console.log('[DEBUG] /api/user/rights getUserRights result:', userRights);
     if (!userRights.found) {
-      return res.status(404).json({
-        error: {
-          code: 'NOT_FOUND',
-          http: 404,
-          message: `User not found in authorization system for email: ${userEmail}`
-        },
-        requestId: req.requestId || 'unknown'
-      })
+      // Auto-add user with defaults
+      const usersPath = require('path').join(__dirname, '../config/casbin/users.json');
+      const usersData = JSON.parse(require('fs').readFileSync(usersPath, 'utf8'));
+      const newUser = {
+        email: userEmail,
+        fullName: req.session.user.name || userEmail,
+        groups: ['default'],
+        orgUnit: 'General',
+        roles: ['user'],
+        twoStepEnabled: false,
+        department: 'General'
+      };
+      usersData.users.push(newUser);
+      require('fs').writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      await casbinService.initialize();
+      userRights = await casbinService.getUserRights(userEmail);
     }
     // Log the authorization evaluation for audit
     req.logger?.info({
