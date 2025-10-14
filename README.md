@@ -1,3 +1,5 @@
+![Brand Logo](./client/public/logo.png)
+
 # Google AuthZ 3DDX - Authentication & Authorization Demo
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
