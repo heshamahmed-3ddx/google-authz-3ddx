@@ -16,6 +16,12 @@ import { google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import casbinService from '../services/casbin.js'
 import { logUserAccess } from '../services/logging.js'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const router = Router()
 
@@ -331,8 +337,8 @@ router.get('/user/details', requireAuth, async (req, res) => {
     console.log('[DEBUG] /api/user/details getUserInfo result:', userInfo);
     if (!userInfo) {
       // Auto-add user with defaults
-      const usersPath = require('path').join(__dirname, '../config/casbin/users.json');
-      const usersData = JSON.parse(require('fs').readFileSync(usersPath, 'utf8'));
+      const usersPath = path.join(__dirname, '../config/casbin/users.json');
+      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
       const newUser = {
         email: userEmail,
         fullName: req.session.user.name || userEmail,
@@ -343,7 +349,7 @@ router.get('/user/details', requireAuth, async (req, res) => {
         department: 'General'
       };
       usersData.users.push(newUser);
-      require('fs').writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
       await casbinService.initialize();
       userInfo = newUser;
     }
@@ -460,8 +466,8 @@ router.get('/user/rights', requireAuth, async (req, res) => {
     console.log('[DEBUG] /api/user/rights getUserRights result:', userRights);
     if (!userRights.found) {
       // Auto-add user with defaults
-      const usersPath = require('path').join(__dirname, '../config/casbin/users.json');
-      const usersData = JSON.parse(require('fs').readFileSync(usersPath, 'utf8'));
+      const usersPath = path.join(__dirname, '../config/casbin/users.json');
+      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
       const newUser = {
         email: userEmail,
         fullName: req.session.user.name || userEmail,
@@ -472,7 +478,7 @@ router.get('/user/rights', requireAuth, async (req, res) => {
         department: 'General'
       };
       usersData.users.push(newUser);
-      require('fs').writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+      fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
       await casbinService.initialize();
       userRights = await casbinService.getUserRights(userEmail);
     }
