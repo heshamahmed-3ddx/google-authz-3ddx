@@ -10,6 +10,9 @@ p, default, dashboard, read
 p, default, profile, read
 p, default, profile, update
 
+# Only SWD group can read swd-page
+p, SWD, swd-page, read
+
 p, engineering, invoices, read
 p, engineering, invoices, create
 p, engineering, projects, read
@@ -50,12 +53,84 @@ p, platform, systems, update
 p, platform, monitoring, read
 p, platform, logs, read
 
+# Developer role permissions
+p, developer, dashboard, read
+p, developer, projects, read
+p, developer, projects, update
+p, developer, reports, read
+p, developer, systems, read
+p, developer, logs, read
+
+# Platform-engineer role permissions
+p, platform-engineer, systems, read
+p, platform-engineer, systems, update
+p, platform-engineer, monitoring, read
+p, platform-engineer, logs, read
+p, platform-engineer, dashboard, read
+
+# Real Google Workspace groups permissions
+p, 3DDX, dashboard, read
+p, 3DDX, profile, read
+p, 3DDX, profile, update
+
+p, SWD, swd-page, read
+p, SWD, dashboard, read
+p, SWD, projects, read
+p, SWD, projects, create
+p, SWD, projects, update
+p, SWD, reports, read
+p, SWD, systems, read
+p, SWD, logs, read
+p, SWD, invoices, read
+p, SWD, customers, read
+
+p, SWD Meeting Group, dashboard, read
+p, SWD Meeting Group, projects, read
+p, SWD Meeting Group, reports, read
+p, SWD Meeting Group, meetings, read
+p, SWD Meeting Group, meetings, create
+
+# ========================================
+# SURGICAL GUIDE REPORT PERMISSIONS
+# ========================================
+# Finance22 group - Full access to surgical guide reports
+p, Finance22, surgical_guide, read
+p, Finance22, surgical_guide, export
+p, Finance22, surgical_guide_summary, read
+p, Finance22, surgical_guide_doctors, read
+
+# Developers22 group - API documentation access
+p, Developers22, api-documentation, read
+p, Developers22, swagger, read
+p, Developers22, surgical_guide, read
+
+# Admin has full access
+p, admin, surgical_guide, read
+p, admin, surgical_guide, export
+p, admin, surgical_guide_summary, read
+p, admin, surgical_guide_doctors, read
+p, admin, api-documentation, read
+p, admin, swagger, read
+
 # Group/Role Assignments - Assign users to roles
 # Format: g, user_email, role_name
+
+# Real Google Workspace groups for hesham.ahmed@3ddx.com
+g, hesham.ahmed@3ddx.com, 3DDX
+g, hesham.ahmed@3ddx.com, SWD Meeting Group
+g, hesham.ahmed@3ddx.com, SWD
+g, hesham.ahmed@3ddx.com, admin
 g, hesham.ahmed@3ddx.com, engineering
-g, hesham.ahmed@3ddx.com, platform
+g, hesham.ahmed@3ddx.com, developer
+g, hesham.ahmed@3ddx.com, Finance22
+g, hesham.ahmed@3ddx.com, Developers22
+
+# Original test users
 g, heshamahmed8877@gmail.com, admin
+g, heshamahmed8877@gmail.com, Finance22
+g, heshamahmed8877@gmail.com, Developers22
 g, alice@3ddx.com, engineering
 g, bob@3ddx.com, finance
+g, bob@3ddx.com, Finance22
 g, admin@3ddx.com, admin
 g, platform@3ddx.com, platform

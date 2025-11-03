@@ -37,8 +37,10 @@
     "no": "لا",
     "notProvided": "غير متوفر",
     "unknown": "غير معروف",
+  "none": "لم يتم التعيين بعد",
     "userDetailsOrganization": "تفاصيل المستخدم والمؤسسة",
     "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
     "organizationUnit": "وحدة المؤسسة",
     "department": "القسم",
     "groupsRoles": "المجموعات والأدوار",
@@ -60,6 +62,7 @@
     "tfaDisabled": "لم يتم تفعيل المصادقة الثنائية",
     "accountStatus": "حالة الحساب",
     "active": "نشط",
+    "suspended": "معلق",
     "sessionInformation": "معلومات الجلسة",
     "apiDocumentation": "توثيق API",
     "swaggerDocs": "توثيق Swagger",
@@ -207,5 +210,8 @@
     "currentGroups": "المجموعات الحالية",
     "availableGroups": "المجموعات المتاحة",
     "roles": "الأدوار"
+  },
+  "language": {
+    "switch": "تغيير"
   }
 }

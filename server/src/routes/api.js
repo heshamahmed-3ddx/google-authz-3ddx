@@ -1,7 +1,7 @@
 
 /**
  * @file api.js
- * @description Express router for user data, Google OAuth, Casbin RBAC, and health endpoints.
+ * @description Express router for user data, Google OAuth, Casbin RBAC, and health endpoints with enhanced logging.
  * @author 3D Diagnostix Development Team
  * @created 2025-10-07
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
@@ -15,15 +15,38 @@ import { Router } from 'express'
 import { google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
 import casbinService from '../services/casbin.js'
-import { logUserAccess } from '../services/logging.js'
+import { createContextLogger, logUserAccess, logSecurityEvent, logExternalService } from '../services/logger.js'
+import { createErrorResponse, createApiResponse, getMessage } from '../services/messages.js'
+import { VERSION } from '../config/version.js'
+import CONFIG from '../config/config.js'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import surgicalGuideReportRoutes from './surgicalGuideReport.routes.js'
 
-const __filename = fileURLToPath(import.meta.url)
+// SWD-only page access middleware
+const requireSWD = async (req, res, next) => {
+  const userEmail = req.session.user?.email;
+  if (!userEmail) {
+    return res.status(401).json(createErrorResponse('auth_required', null, req.requestId));
+  }
+  try {
+    // Enforce SWD group access to swd-page (read)
+    const result = await casbinService.authorize(userEmail, 'swd-page', 'read');
+    if (!result.allowed) {
+      return res.status(403).json(createErrorResponse('forbidden', null, req.requestId));
+    }
+    next();
+  } catch (error) {
+    return res.status(500).json(createErrorResponse('casbin_error', error.message, req.requestId));
+  }
+};
+
+const __filename = 'api.js'
 const __dirname = path.dirname(__filename)
 
 const router = Router()
+const logger = createContextLogger(__filename)
 
 /**
  * Authentication guard middleware
@@ -37,18 +60,25 @@ const router = Router()
  * @param {import('express').NextFunction} next - Next middleware
  * @returns {void}
  */
-const requireAuth = (req, res, next) => {
+const requireAuth = async (req, res, next) => {
   // Why: Prevents access to protected endpoints if user is not authenticated or session is missing tokens.
   if (!req.session.user || !req.session.tokens) {
-    return res.status(401).json({ 
-      error: {
-        code: 'AUTH_REQUIRED',
-        http: 401,
-        message: 'Authentication required'
-      },
-      requestId: req.requestId || 'unknown'
-    })
+    logger.warn('Authentication required - missing user or tokens', {
+      sessionId: req.sessionID,
+      hasUser: !!req.session.user,
+      hasTokens: !!req.session.tokens,
+      ip: req.ip
+    });
+    
+    const errorResponse = await createErrorResponse('auth_required', null, req.requestId);
+    return res.status(401).json(errorResponse);
   }
+  
+  logger.info('Authentication successful', {
+    userEmail: req.session.user.email,
+    sessionId: req.sessionID
+  });
+  
   next()
 }
 
@@ -64,13 +94,18 @@ const requireAuth = (req, res, next) => {
  */
 router.get('/profile', requireAuth, async (req, res) => {
 /**
- * @function GET /api/profile
- * @description Returns the authenticated user's Google profile using OAuth tokens in session.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with Google profile and source
- * @throws {400} If session tokens are invalid
- * @throws {500} On Google API or server error
+ * @swagger
+ * /api/profile:
+ *   get:
+ *     summary: Get user profile from Google API
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: User profile data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
   try {
     // Validate session tokens
@@ -100,7 +135,7 @@ router.get('/profile', requireAuth, async (req, res) => {
       source: 'Google API'
     })
   } catch (error) {
-    console.error('Profile fetch error:', error)
+    logger.error('Profile fetch error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Failed to fetch profile' })
   }
 })
@@ -117,14 +152,30 @@ router.get('/profile', requireAuth, async (req, res) => {
  */
 router.get('/google/sheets/list', requireAuth, async (req, res) => {
 /**
- * @function GET /api/google/sheets/list
- * @description Lists Google Sheets for the authenticated user. Requires Google Drive scope.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with array of sheets and nextPageToken
- * @throws {400} If session tokens are invalid
- * @throws {403} If Google Drive scope is missing
- * @throws {500} On Google API or server error
+ * @swagger
+ * /api/google/sheets/list:
+ *   get:
+ *     summary: List Google Sheets for authenticated user
+ *     tags: [Google]
+ *     responses:
+ *       200:
+ *         description: List of Google Sheets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sheets:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                 nextPageToken:
+ *                   type: string
  */
   try {
     // Validate session tokens
@@ -191,14 +242,25 @@ router.get('/google/sheets/list', requireAuth, async (req, res) => {
  */
 router.get('/google/calendar/events', requireAuth, async (req, res) => {
 /**
- * @function GET /api/google/calendar/events
- * @description Lists calendar events for the authenticated user. Requires Google Calendar scope.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with array of events and nextPageToken
- * @throws {400} If session tokens are invalid
- * @throws {403} If Google Calendar scope is missing
- * @throws {500} On Google API or server error
+ * @swagger
+ * /api/google/calendar/events:
+ *   get:
+ *     summary: List Google Calendar events for authenticated user
+ *     tags: [Google]
+ *     responses:
+ *       200:
+ *         description: List of calendar events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 nextPageToken:
+ *                   type: string
  */
   try {
     // Validate session tokens
@@ -279,16 +341,25 @@ router.get('/google/calendar/events', requireAuth, async (req, res) => {
  *   }
  * }
  */
+// In-memory cache for user details and rights (5 minutes TTL)
+const userDetailsCache = new Map();
+const userRightsCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 router.get('/user/details', requireAuth, async (req, res) => {
 /**
- * @function GET /api/user/details
- * @description Returns comprehensive user details (Google + Casbin) for authenticated user.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with user details and requestId
- * @throws {400} If session user or tokens are invalid
- * @throws {404} If user not found in Casbin
- * @throws {500} On server error
+ * @swagger
+ * /api/user/details:
+ *   get:
+ *     summary: Get authenticated user details
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserDetails'
  */
   try {
     // Validate session user and tokens
@@ -320,76 +391,393 @@ router.get('/user/details', requireAuth, async (req, res) => {
     }
     // Normalize email for matching
     const userEmail = (req.session.user.email || '').trim().toLowerCase();
-    // Log user details access and debug
-    console.log('[DEBUG] /api/user/details session email:', req.session.user.email);
-    console.log('[DEBUG] /api/user/details normalized email:', userEmail);
-    if (casbinService.usersData && casbinService.usersData.users) {
-      console.log('[DEBUG] /api/user/details all user emails:', casbinService.usersData.users.map(u => u.email));
-    }
     logUserAccess('details', {
       requestId: req.requestId,
       userEmail,
       ip: req.ip,
       userAgent: req.get('User-Agent')
     });
-    // Get user info from Casbin service (mock data)
-    let userInfo = casbinService.getUserInfo(userEmail);
-    console.log('[DEBUG] /api/user/details getUserInfo result:', userInfo);
-    if (!userInfo) {
-      // Auto-add user with defaults
-      const usersPath = path.join(__dirname, '../config/casbin/users.json');
-      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-      const newUser = {
-        email: userEmail,
-        fullName: req.session.user.name || userEmail,
-        groups: ['default'],
-        orgUnit: 'General',
-        roles: ['user'],
-        twoStepEnabled: false,
-        department: 'General'
-      };
-      usersData.users.push(newUser);
-      fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+
+    // Check cache first
+    const cacheKey = userEmail;
+    const cached = userDetailsCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      logger.info('Returning cached user details', { userEmail, age: Date.now() - cached.timestamp });
+      return res.json({
+        data: cached.data,
+        requestId: req.requestId || 'unknown',
+        cached: true
+      });
+    }
+
+    // Fetch user info from Google Directory API
+    let googleGroups = [];
+    let googleOrgUnit = '';
+    let googleRoles = [];
+    let userGroupRoles = []; // Declare at proper scope
+    let userRes = null;
+    try {
+      logger.info('Google Directory API sync started', { userEmail });
       
-      // Force reload Casbin data
-      await casbinService.initialize();
+      const client = new OAuth2Client();
+      client.setCredentials(req.session.tokens);
+      const admin = google.admin({ version: 'directory_v1', auth: client });
       
-      // Verify user was added successfully
-      userInfo = casbinService.getUserInfo(userEmail);
-      if (!userInfo) {
-        console.error('Failed to add user to system:', userEmail);
-        return res.status(500).json({
-          error: {
-            code: 'USER_CREATION_FAILED',
-            http: 500,
-            message: 'Failed to create user in authorization system'
-          },
-          requestId: req.requestId || 'unknown'
+      // Get user details using admin.users.get
+      userRes = await admin.users.get({ userKey: userEmail });
+      
+      // Log the full user response to see what's available
+      logger.info('Google user data retrieved', {
+        userEmail,
+        hasCustomSchemas: !!userRes.data.customSchemas,
+        allFields: Object.keys(userRes.data),
+        orgUnitPath: userRes.data.orgUnitPath
+      });
+      
+      logExternalService('Google Directory API', 'user details fetch', 'success', {
+        userEmail,
+        orgUnit: userRes.data.orgUnitPath,
+        userAgent: req.get('User-Agent')
+      });
+      
+      // Strip leading slash from orgUnitPath
+      const orgUnitPath = userRes.data.orgUnitPath || '';
+      googleOrgUnit = orgUnitPath.startsWith('/') ? orgUnitPath.slice(1) : orgUnitPath;
+      
+      // Get user groups and fetch the actual role in each group
+      let groupsRes;
+      try {
+        groupsRes = await admin.groups.list({ userKey: userEmail });
+        
+        logExternalService('Google Directory API', 'groups list fetch', 'success', {
+          userEmail,
+          groupsCount: groupsRes.data.groups?.length || 0
+        });
+      } catch (groupErr) {
+        logger.warn('Google Directory API group fetch error', { error: groupErr.message, userEmail });
+        logExternalService('Google Directory API', 'groups list fetch', 'failed', {
+          userEmail,
+          error: groupErr.message
+        });
+        groupsRes = { data: { groups: [] } };
+      }
+      
+      // Only return group names (no roles)
+      googleGroups = Array.isArray(groupsRes.data.groups) ? groupsRes.data.groups.map(g => g?.name || null).filter(Boolean) : [];
+      
+      // Fetch detailed group information and find current user's role in each group
+      // userGroupRoles already declared at function scope
+      if (Array.isArray(groupsRes.data.groups)) {
+        for (const group of groupsRes.data.groups) {
+          if (group?.email) {
+            try {
+              const groupDetails = await admin.groups.get({ groupKey: group.email });
+              const members = await admin.members.list({ groupKey: group.email });
+              
+              logger.info('Group membership details retrieved', { 
+                userEmail,
+                groupName: group.name, 
+                groupEmail: group.email,
+                memberCount: members.data.members?.length || 0
+              });
+              
+              // Find current logged-in user's role in this group
+              if (members.data.members) {
+                const currentUserMember = members.data.members.find(member => 
+                  member.email && member.email.toLowerCase() === userEmail.toLowerCase()
+                );
+                
+                if (currentUserMember) {
+                  const userRole = currentUserMember.role || 'MEMBER';
+                  userGroupRoles.push({
+                    groupName: group.name,
+                    groupEmail: group.email,
+                    userRole: userRole
+                  });
+                  logger.debug('User role found in group', { groupName: group.name, userRole, userEmail });
+                } else {
+                  logger.debug('User not found in group members', { groupName: group.name, userEmail });
+                }
+              }
+            } catch (groupDetailErr) {
+              logger.warn('Failed to fetch group details', { groupName: group.name, error: groupDetailErr.message });
+            }
+          }
+        }
+      }
+      
+      // Extract roles from all groups
+      googleRoles = userGroupRoles.map(gr => gr.userRole);
+      logger.info('User roles extracted from Google groups', { 
+        userEmail, 
+        roles: googleRoles,
+        groupCount: googleGroups.length,
+        roleCount: googleRoles.length
+      });
+      
+      // Sync with Casbin - update user's groups and roles
+      try {
+        logger.info('Casbin synchronization started', {
+          userEmail,
+          groups: googleGroups,
+          roles: googleRoles,
+          orgUnit: googleOrgUnit
+        });
+        
+        await casbinService.syncUserFromGoogle(userEmail, {
+          fullName: req.session.user.name,
+          groups: googleGroups,
+          roles: googleRoles,
+          orgUnit: googleOrgUnit,
+          department: userRes?.data?.department || null,
+          userGroupRoles: userGroupRoles
+        });
+        
+        logger.info('Casbin synchronization completed successfully', { 
+          userEmail,
+          syncedGroups: googleGroups.length,
+          syncedRoles: googleRoles.length
+        });
+      } catch (casbinErr) {
+        logger.error('Casbin synchronization failed', { 
+          userEmail, 
+          error: casbinErr.message,
+          stack: casbinErr.stack
         });
       }
-      console.log('✅ Auto-added new user:', userEmail, 'with groups:', newUser.groups);
+    } catch (err) {
+      logger.error('Google Directory API integration failed', { 
+        userEmail, 
+        error: err.message,
+        errorCode: err.code,
+        stack: err.stack
+      });
+      
+      logExternalService('Google Directory API', 'user sync', 'failed', {
+        userEmail,
+        error: err.message,
+        errorCode: err.code
+      });
+      return res.status(500).json({
+        error: {
+          code: 'GOOGLE_API_ERROR',
+          http: 500,
+          message: 'Failed to fetch user details from Google Directory API',
+          details: err.message
+        },
+        requestId: req.requestId || 'unknown'
+      });
     }
-    // Combine Google OAuth data with our user data
-    const userDetails = {
-      fullName: userInfo.fullName || req.session.user.name,
-      email: userEmail,
-      groups: userInfo.groups || [],
-      orgUnit: userInfo.orgUnit || 'Unknown',
-      roles: userInfo.roles || [],
-      twoStepEnabled: userInfo.twoStepEnabled || false,
-      department: userInfo.department || 'Unknown',
-      picture: req.session.user.picture || null
+
+    // Extract all user information from Google Directory API
+    const userData = userRes?.data || {};
+    
+    // Extract Employee ID from externalIds (organization type)
+    let employeeId = null;
+    if (userData.externalIds && Array.isArray(userData.externalIds)) {
+      const orgId = userData.externalIds.find(id => id.type === 'organization');
+      employeeId = orgId?.value || null;
+      logger.info('Extracted Employee ID from externalIds', {
+        userEmail,
+        employeeId,
+        externalIds: userData.externalIds
+      });
     }
-    console.log(`✅ User details retrieved for ${userEmail}`)
-    req.logger?.info({
+    
+    // Extract Job Title and Employee Type from organizations
+    let jobTitle = null;
+    let employeeType = null;
+    if (userData.organizations && Array.isArray(userData.organizations)) {
+      const primaryOrg = userData.organizations.find(org => org.primary === true) || userData.organizations[0];
+      if (primaryOrg) {
+        jobTitle = primaryOrg.title || null;
+        employeeType = primaryOrg.customType || primaryOrg.type || null;
+        logger.info('Extracted job info from organizations', {
+          userEmail,
+          jobTitle,
+          employeeType,
+          organizations: userData.organizations
+        });
+      }
+    }
+    
+    // Also check custom schemas as fallback
+    let customSchemaData = {};
+    if (userData.customSchemas && Object.keys(userData.customSchemas).length > 0) {
+      logger.info('Custom schemas found - full structure', {
+        userEmail,
+        schemaKeys: Object.keys(userData.customSchemas),
+        fullCustomSchemas: JSON.stringify(userData.customSchemas, null, 2)
+      });
+      
+      // Check for "Employee information" schema
+      const employeeSchema = userData.customSchemas['Employee information'] || 
+                            userData.customSchemas['Employee Information'] ||
+                            userData.customSchemas['employee information'];
+      
+      if (employeeSchema) {
+        logger.info('Found Employee information schema', {
+          userEmail,
+          fields: Object.keys(employeeSchema)
+        });
+        
+        // Extract all employee information fields from custom schema
+        customSchemaData = {
+          employeeId: employeeSchema['Employee ID'] || employeeId,
+          jobTitle: employeeSchema['Job title'] || jobTitle,
+          type: employeeSchema['Type of employee'] || employeeType,
+          managerEmail: employeeSchema["Manager's email"] || employeeSchema['Manager email'] || null,
+          department: employeeSchema['Department'] || null,
+          costCenter: employeeSchema['Cost center'] || null,
+          buildingId: employeeSchema['Building id'] || null,
+          floorName: employeeSchema['Floor name'] || null,
+          floorSection: employeeSchema['Floor section'] || null,
+          ...employeeSchema
+        };
+        
+        // Override with custom schema values if they exist
+        employeeId = customSchemaData.employeeId || employeeId;
+        jobTitle = customSchemaData.jobTitle || jobTitle;
+        employeeType = customSchemaData.type || employeeType;
+      }
+    }
+    
+    logger.info('Final employee information extracted', {
       userEmail,
+      employeeId,
+      jobTitle,
+      employeeType
+    });
+    
+    // Extract contact information from Google Directory API
+    let phones = [];
+    let addresses = [];
+    let secondaryEmails = [];
+    
+    if (userData.phones && Array.isArray(userData.phones)) {
+      phones = userData.phones.map(phone => ({
+        type: phone.type || 'unknown',
+        value: phone.value || null,
+        primary: phone.primary || false
+      }));
+      logger.info('Extracted phones', { userEmail, phones });
+    }
+    
+    if (userData.addresses && Array.isArray(userData.addresses)) {
+      addresses = userData.addresses.map(address => ({
+        type: address.type || 'unknown',
+        formatted: address.formatted || null,
+        streetAddress: address.streetAddress || null,
+        locality: address.locality || null,
+        region: address.region || null,
+        postalCode: address.postalCode || null,
+        country: address.country || null,
+        primary: address.primary || false
+      }));
+      logger.info('Extracted addresses', { userEmail, addresses });
+    }
+    
+    if (userData.emails && Array.isArray(userData.emails)) {
+      secondaryEmails = userData.emails
+        .filter(email => !email.primary)
+        .map(email => ({
+          address: email.address || null,
+          type: email.type || email.customType || 'unknown'
+        }));
+      logger.info('Extracted secondary emails', { userEmail, secondaryEmails });
+    }
+    
+    // Build comprehensive user details with all Google Directory API fields
+    const userDetails = {
+      // Basic profile
+      fullName: userData.name?.fullName || req.session.user.name,
+      givenName: userData.name?.givenName || null,
+      familyName: userData.name?.familyName || null,
+      email: userEmail,
+      primaryEmail: userData.primaryEmail || userEmail,
+      
+      // IDs
+      id: userData.id || null,
+      customerId: userData.customerId || null,
+      
+      // Status and flags
+      suspended: userData.suspended || false,
+      archived: userData.archived || false,
+      changePasswordAtNextLogin: userData.changePasswordAtNextLogin || false,
+      ipWhitelisted: userData.ipWhitelisted || false,
+      isAdmin: userData.isAdmin || false,
+      isDelegatedAdmin: userData.isDelegatedAdmin || false,
+      isEnforcedIn2Sv: userData.isEnforcedIn2Sv || false,
+      isEnrolledIn2Sv: userData.isEnrolledIn2Sv || false,
+      isMailboxSetup: userData.isMailboxSetup || false,
+      
+      // Organizational info
+      orgUnit: googleOrgUnit,
+      orgUnitPath: userData.orgUnitPath || null,
+      
+      // Dates
+      creationTime: userData.creationTime || null,
+      lastLoginTime: userData.lastLoginTime || null,
+      
+      // Contact info
+      recoveryEmail: userData.recoveryEmail || null,
+      recoveryPhone: userData.recoveryPhone || null,
+      
+      // Additional fields
+      includeInGlobalAddressList: userData.includeInGlobalAddressList !== false,
+      
+      // Groups
+      groups: googleGroups,
+      groupRoles: userGroupRoles, // Array of { groupName, groupEmail, userRole }
+      
+      // Custom schema data (Employee information)
+      customSchemas: customSchemaData,
+      
+      // Employee information fields (extracted from Google Directory API and custom schemas)
+      employeeId: employeeId,
+      jobTitle: jobTitle,
+      type: employeeType,
+      managerEmail: customSchemaData.managerEmail || null,
+      department: customSchemaData.department || userData.department || null,
+      costCenter: customSchemaData.costCenter || null,
+      buildingId: customSchemaData.buildingId || null,
+      floorName: customSchemaData.floorName || null,
+      floorSection: customSchemaData.floorSection || null,
+      
+      // Contact information (from Google Directory API standard fields)
+      phones: phones,
+      addresses: addresses,
+      secondaryEmails: secondaryEmails,
+      
+      // Profile picture
+      picture: req.session.user.picture || userData.thumbnailPhotoUrl || null,
+      
+      // All other data from Google (for completeness)
+      ...userData
+    };
+    
+    logger.info('Complete user details retrieved successfully', {
+      userEmail,
+      hasCustomSchemas: Object.keys(customSchemaData).length > 0,
+      totalFields: Object.keys(userDetails).length,
       groups: userDetails.groups,
-      orgUnit: userDetails.orgUnit
-    }, 'User details retrieved successfully');
+      orgUnit: userDetails.orgUnit,
+      employeeId: userDetails.employeeId,
+      jobTitle: userDetails.jobTitle,
+      type: userDetails.type,
+      isAdmin: userDetails.isAdmin
+    });
+    
+    // Cache the result
+    userDetailsCache.set(cacheKey, {
+      data: userDetails,
+      timestamp: Date.now()
+    });
+    
     res.json({
       data: userDetails,
       requestId: req.requestId || 'unknown'
-    })
+    });
   } catch (error) {
     req.logger?.error({
       error: error.message,
@@ -430,14 +818,38 @@ router.get('/user/details', requireAuth, async (req, res) => {
  */
 router.get('/user/rights', requireAuth, async (req, res) => {
 /**
- * @function GET /api/user/rights
- * @description Returns user rights and permissions as evaluated by Casbin for authenticated user.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with rights, groups, roles, orgUnit, and requestId
- * @throws {400} If session user or tokens are invalid
- * @throws {404} If user not found in Casbin
- * @throws {500} On server error
+ * @swagger
+ * /api/user/rights:
+ *   get:
+ *     summary: Get user rights and permissions
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: User rights and permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rights:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 userEmail:
+ *                   type: string
+ *                 groups:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 roles:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 orgUnit:
+ *                   type: string
+ *                 evaluatedAt:
+ *                   type: string
+ *                   format: date-time
  */
   try {
     // Validate session user and tokens
@@ -469,21 +881,71 @@ router.get('/user/rights', requireAuth, async (req, res) => {
     }
     // Normalize email for matching
     const userEmail = (req.session.user.email || '').trim().toLowerCase();
+    
+    // Check if force refresh is requested
+    const forceRefresh = req.query.refresh === 'true';
+    
+    // Check cache first (unless force refresh)
+    const cacheKey = userEmail;
+    const cached = userRightsCache.get(cacheKey);
+    if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      logger.debug('User rights served from cache', { userEmail });
+      return res.json({
+        data: {
+          ...cached.data,
+          cached: true
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+    
+    if (forceRefresh) {
+      logger.info('Force refresh requested, bypassing cache', { userEmail });
+    }
+    
     // Log authorization request and debug
-    console.log('[DEBUG] /api/user/rights session email:', req.session.user.email);
+    logger.debug('User rights endpoint accessed', { userEmail: req.session.user.email });
     logUserAccess('rights', {
       requestId: req.requestId,
       userEmail,
       ip: req.ip,
       userAgent: req.get('User-Agent')
     });
-    // Get user rights from Casbin
-    let userRights = await casbinService.getUserRights(userEmail);
-    console.log('[DEBUG] /api/user/rights getUserRights result:', userRights);
+  // Get user rights from Casbin using live Google session data
+  // Only use Google-fetched groups/roles for Casbin rights
+  let googleGroups = [];
+  let googleRoles = [];
+  try {
+    const client = new OAuth2Client();
+    client.setCredentials(req.session.tokens);
+    const admin = google.admin({ version: 'directory_v1', auth: client });
+    const groupsRes = await admin.groups.list({ userKey: userEmail });
+    googleGroups = (groupsRes.data.groups || []).map(g => g.name);
+    const userRes = await admin.users.get({ userKey: userEmail });
+    if (userRes.data.customSchemas && userRes.data.customSchemas.Roles) {
+      googleRoles = userRes.data.customSchemas.Roles.values || [];
+    }
+  } catch (err) {
+    logger.warn('Google Directory API error during rights fetch', { userEmail, error: err.message });
+  }
+  // Build a Google-only user object for Casbin
+  const googleUser = {
+    email: userEmail,
+    name: req.session.user.name,
+    groups: googleGroups,
+    roles: googleRoles,
+    orgUnit: null,
+    department: null,
+    twoStepEnabled: false,
+    picture: req.session.user.picture || null
+  };
+  let userRights = await casbinService.getUserRights(userEmail, googleUser);
+    logger.debug('User rights retrieved from Casbin', { userEmail, found: userRights.found });
     if (!userRights.found) {
       // Auto-add user with defaults
       const usersPath = path.join(__dirname, '../config/casbin/users.json');
-      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+      let googleRoles = [];
+      let googleGroupsWithRoles = [];
       const newUser = {
         email: userEmail,
         fullName: req.session.user.name || userEmail,
@@ -493,6 +955,13 @@ router.get('/user/rights', requireAuth, async (req, res) => {
         twoStepEnabled: false,
         department: 'General'
       };
+      let usersData = { users: [] };
+      try {
+        usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+      } catch (err) {
+        // If file doesn't exist or is invalid, start with empty users array
+        usersData = { users: [] };
+      }
       usersData.users.push(newUser);
       fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
       
@@ -502,7 +971,7 @@ router.get('/user/rights', requireAuth, async (req, res) => {
       // Re-fetch user rights after reload
       userRights = await casbinService.getUserRights(userEmail);
       if (!userRights.found) {
-        console.error('Failed to get user rights after auto-add:', userEmail);
+        logger.error('Failed to get user rights after auto-add', { userEmail });
         return res.status(500).json({
           error: {
             code: 'USER_RIGHTS_FAILED',
@@ -512,7 +981,7 @@ router.get('/user/rights', requireAuth, async (req, res) => {
           requestId: req.requestId || 'unknown'
         });
       }
-      console.log('✅ Auto-added new user and loaded rights:', userEmail, 'groups:', userRights.groups);
+      logger.info('Auto-added new user and loaded rights', { userEmail, groups: userRights.groups });
     }
     // Log the authorization evaluation for audit
     req.logger?.info({
@@ -521,15 +990,25 @@ router.get('/user/rights', requireAuth, async (req, res) => {
       resourceCount: userRights.rights.length,
       resources: userRights.rights.map(r => r.resource)
     }, 'Authorization evaluation completed');
+    
+    // Prepare response data
+    const responseData = {
+      rights: userRights.rights,
+      userEmail: userRights.userEmail,
+      groups: userRights.groups,
+      roles: userRights.roles,
+      orgUnit: userRights.orgUnit,
+      evaluatedAt: new Date().toISOString()
+    };
+    
+    // Store in cache
+    userRightsCache.set(cacheKey, {
+      data: responseData,
+      timestamp: Date.now()
+    });
+    
     res.json({
-      data: {
-        rights: userRights.rights,
-        userEmail: userRights.userEmail,
-        groups: userRights.groups,
-        roles: userRights.roles,
-        orgUnit: userRights.orgUnit,
-        evaluatedAt: new Date().toISOString()
-      },
+      data: responseData,
       requestId: req.requestId || 'unknown'
     })
   } catch (error) {
@@ -572,13 +1051,45 @@ router.get('/user/rights', requireAuth, async (req, res) => {
  */
 router.post('/authorize', requireAuth, async (req, res) => {
 /**
- * @function POST /api/authorize
- * @description Checks if authenticated user is allowed to perform an action on a resource (Casbin).
- * @param {import('express').Request} req - Express request object (body: resource, action)
- * @param {import('express').Response} res - Express response object
- * @returns {Object} JSON with authorization result and requestId
- * @throws {400} If request body is invalid
- * @throws {500} On server error
+ * @swagger
+ * /api/authorize:
+ *   post:
+ *     summary: Check authorization for resource/action
+ *     tags: [Authorization]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resource:
+ *                 type: string
+ *               action:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Authorization result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 allowed:
+ *                   type: boolean
+ *                 resource:
+ *                   type: string
+ *                 action:
+ *                   type: string
+ *                 userEmail:
+ *                   type: string
+ *                 userGroups:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 evaluatedAt:
+ *                   type: string
+ *                   format: date-time
  */
   try {
     const { z } = await import('zod')
@@ -588,6 +1099,12 @@ router.post('/authorize', requireAuth, async (req, res) => {
     })
     const parseResult = authorizeSchema.safeParse(req.body)
     if (!parseResult.success) {
+      logger.warn('Authorization request validation failed', {
+        userEmail: req.session.user.email,
+        errors: parseResult.error.errors.map(e => e.message),
+        requestBody: req.body
+      });
+      
       return res.status(400).json({
         error: {
           code: 'VALIDATION_ERROR',
@@ -598,8 +1115,29 @@ router.post('/authorize', requireAuth, async (req, res) => {
         requestId: req.requestId || 'unknown'
       })
     }
+    
     const userEmail = req.session.user.email
     const { resource, action } = parseResult.data
+    
+    logger.info('Authorization request received', {
+      userEmail,
+      resource,
+      action,
+      requestId: req.requestId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    // Log access attempt for audit trail
+    logUserAccess('authorization_check', {
+      userEmail,
+      resource,
+      action,
+      requestId: req.requestId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
     // Perform authorization check
     const authResult = await casbinService.authorize(userEmail, resource, action)
     res.json({
@@ -614,7 +1152,7 @@ router.post('/authorize', requireAuth, async (req, res) => {
       requestId: req.requestId || 'unknown'
     })
   } catch (error) {
-    console.error('❌ Authorization error:', error.message)
+    logger.error('Authorization error', { error: error.message, stack: error.stack });
     res.status(500).json({
       error: {
         code: 'INTERNAL_ERROR',
@@ -653,7 +1191,7 @@ router.get('/session/info', requireAuth, async (req, res) => {
       const { data } = await oauth2.tokeninfo()
       tokenInfo = data
     } catch (error) {
-      console.warn('Could not fetch token info:', error.message)
+      logger.warn('Could not fetch token info', { error: error.message });
     }
 
     res.json({
@@ -664,7 +1202,7 @@ router.get('/session/info', requireAuth, async (req, res) => {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Session info error:', error)
+    logger.error('Session info error', { error: error.message, stack: error.stack });
     res.status(500).json({ 
       error: {
         code: 'INTERNAL_ERROR',
@@ -702,7 +1240,7 @@ router.get('/health', async (req, res) => {
       requestId: req.requestId || 'unknown'
     })
   } catch (error) {
-    console.error('Health check error:', error)
+    logger.error('Health check error', { error: error.message, stack: error.stack });
     res.status(500).json({ 
       error: {
         code: 'INTERNAL_ERROR',
@@ -713,6 +1251,105 @@ router.get('/health', async (req, res) => {
     })
   }
 })
+
+/**
+ * Debug endpoint to see current user email (temporary)
+ * @route GET /api/debug/user-email
+ */
+router.get('/debug/user-email', requireAuth, async (req, res) => {
+  res.json({
+    email: req.session.user.email,
+    normalizedEmail: (req.session.user.email || '').trim().toLowerCase(),
+    sessionUser: req.session.user,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * Debug endpoint to test Casbin permissions directly
+ * @route GET /api/debug/casbin-test
+ */
+router.get('/debug/casbin-test', requireAuth, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    
+    // Test basic authorization
+    const testCases = [
+      { resource: 'invoices', action: 'read' },
+      { resource: 'projects', action: 'read' },
+      { resource: 'reports', action: 'read' },
+      { resource: 'dashboard', action: 'read' }
+    ];
+    
+    const results = [];
+    for (const test of testCases) {
+      try {
+        const authResult = await casbinService.authorize(userEmail, test.resource, test.action);
+        results.push({
+          resource: test.resource,
+          action: test.action,
+          allowed: authResult.allowed,
+          userGroups: authResult.userGroups
+        });
+      } catch (error) {
+        results.push({
+          resource: test.resource,
+          action: test.action,
+          error: error.message
+        });
+      }
+    }
+    
+    // Also test getUserRights
+    let userRights = null;
+    try {
+      userRights = await casbinService.getUserRights(userEmail);
+    } catch (error) {
+      userRights = { error: error.message };
+    }
+    
+    res.json({
+      userEmail,
+      authorizationTests: results,
+      userRights,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * Debug endpoint to clear user rights cache and reload Casbin
+ * @route POST /debug/clear-cache
+ */
+router.post('/debug/clear-cache', async (req, res) => {
+  try {
+    // Clear the user rights cache
+    userRightsCache.clear();
+    userDetailsCache.clear();
+    
+    // Reload Casbin enforcer from policy.csv
+    await casbinService.initialize();
+    
+    logger.info('Cache cleared and Casbin reloaded');
+    
+    res.json({
+      success: true,
+      message: 'Cache cleared and Casbin enforcer reloaded',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to clear cache and reload', { error: error.message });
+    res.status(500).json({
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 /**
  * Test endpoint for checking API status
@@ -740,7 +1377,7 @@ router.get('/test', (req, res) => {
 // ADMIN ENDPOINTS - Policy and User Management
 // =============================================================================
 
-console.log('🔧 Admin API routes loaded')
+logger.info('Admin API routes loaded');
 
 /**
  * Admin authentication middleware
@@ -1080,7 +1717,119 @@ router.delete('/admin/user-groups', requireAuth, requireAdmin, async (req, res) 
   }
 });
 
+/**
+ * Development-only endpoint to get Casbin state for debugging
+ * GET /api/dev/casbin-state
+ * 
+ * @description Returns current Casbin state for the authenticated user, including
+ * groups, roles, and permissions. Only available in development mode.
+ * @access Private (requires authentication + development mode)
+ * @returns {Object} Casbin state information for debugging
+ */
+router.get('/dev/casbin-state', requireAuth, async (req, res) => {
+  try {
+    // Only allow in development mode
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json(createErrorResponse(
+        'NOT_FOUND',
+        404,
+        'Endpoint not available in production'
+      ));
+    }
+
+    const userEmail = req.session.user.email;
+    
+    logger.info('Fetching Casbin state for development panel', {
+      userEmail,
+      requestId: req.requestId
+    });
+
+    // Get user's groups and roles from Casbin
+    let userGroups = [];
+    let userRoles = [];
+    
+    try {
+      userGroups = await casbinService.getUserGroups(userEmail);
+    } catch (error) {
+      logger.warn('Failed to get user groups', { userEmail, error: error.message });
+    }
+    
+    try {
+      userRoles = await casbinService.getUserRoles(userEmail);
+    } catch (error) {
+      logger.warn('Failed to get user roles', { userEmail, error: error.message });
+    }
+    
+    // Get permissions for common resources/actions
+    const allPermissions = [];
+    const resources = ['files', 'admin', 'users', 'reports']; // Common resources
+    const actions = ['read', 'write', 'delete', 'admin']; // Common actions
+    
+    for (const resource of resources) {
+      for (const action of actions) {
+        try {
+          const hasPermission = await casbinService.enforce(userEmail, resource, action);
+          if (hasPermission) {
+            allPermissions.push({ resource, action });
+          }
+        } catch (error) {
+          logger.warn('Failed to check permission', { 
+            userEmail, 
+            resource, 
+            action, 
+            error: error.message 
+          });
+        }
+      }
+    }
+
+    const casbinState = {
+      user: userEmail,
+      groups: userGroups,
+      roles: userRoles,
+      permissions: allPermissions,
+      timestamp: new Date().toISOString()
+    };
+
+    logger.info('Casbin state retrieved successfully', {
+      userEmail,
+      groupCount: userGroups.length,
+      roleCount: userRoles.length,
+      permissionCount: allPermissions.length,
+      requestId: req.requestId
+    });
+
+    res.json(createApiResponse(casbinState, 'Casbin state retrieved successfully'));
+
+  } catch (error) {
+    logger.error('Failed to fetch Casbin state', {
+      error: error.message,
+      stack: error.stack,
+      userEmail: req.session?.user?.email,
+      requestId: req.requestId
+    });
+
+    res.status(500).json(createErrorResponse(
+      'INTERNAL_ERROR',
+      500,
+      'Failed to fetch Casbin state'
+    ));
+  }
+});
+
+// ========================================
+// SURGICAL GUIDE REPORT ROUTES
+// ========================================
+// Mount surgical guide report routes at /api/reports/*
+router.use('/reports', surgicalGuideReportRoutes);
+
 export default router
+
+// --- SWD-only protected endpoint example ---
+// GET /api/swd-page
+router.get('/swd-page', requireAuth, requireSWD, (req, res) => {
+  res.json(createApiResponse({ message: 'Welcome to the SWD-only page!' }, 'Access granted'));
+});
 
 /**
  * Module: API routes

@@ -5,17 +5,26 @@
  */
 
 import axios from "axios";
+import { logApiCall, createClientLogger } from "./logger.js";
 
 /** @constant {string} BASE_URL - Base URL for API requests */
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
+// Create API logger
+const logger = createClientLogger("API");
+
 /**
  * Axios instance configured for the application API
- * @type {import('axios').AxiosInstance}
+ * @typedef {Object} AxiosInstance
+ * @property {Function} get
+ * @property {Function} post
+ * @property {Function} put
+ * @property {Function} delete
+ * @type {AxiosInstance}
  */
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for large report queries
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -25,10 +34,16 @@ const apiClient = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Add any auth headers here if needed
+    // Disabled API request logging to reduce console noise
+    // logApiCall(config.method?.toUpperCase() || 'GET', config.url || '', {
+    //   baseURL: config.baseURL,
+    //   timeout: config.timeout
+    // }, 'request');
+
     return config;
   },
   (error) => {
+    logger.error("Request interceptor error", { error: error.message });
     return Promise.reject(error);
   },
 );
@@ -36,6 +51,19 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
+    // Log successful responses for critical endpoints
+    if (response.config?.url) {
+      logApiCall(
+        response.config.method?.toUpperCase() || "GET",
+        response.config.url,
+        {
+          status: response.status,
+          statusText: response.statusText,
+        },
+        "success",
+      );
+    }
+
     return response;
   },
   (error) => {
@@ -44,14 +72,22 @@ apiClient.interceptors.response.use(
       // Silently handle unauthorized access - this is expected for auth checks
       // Only log if it's not the /auth/me endpoint
       if (!error.config?.url?.includes("/auth/me")) {
-        console.warn("Unauthorized access detected for:", error.config?.url);
+        logger.warn("Unauthorized access detected", {
+          url: error.config?.url,
+          method: error.config?.method,
+        });
       }
     } else {
-      // Log other errors normally
-      console.error(
-        "API Error:",
-        error.response?.status,
-        error.response?.data || error.message,
+      // Log other errors using the new logger
+      logApiCall(
+        error.config?.method?.toUpperCase() || "UNKNOWN",
+        error.config?.url || "unknown",
+        {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        },
+        "error",
       );
     }
 
@@ -69,8 +105,8 @@ export const apiService = {
    * Perform a GET request to retrieve data from the server
    * @memberof apiService
    * @param {string} url - Endpoint path (relative to baseURL)
-   * @param {import('axios').AxiosRequestConfig} [config] - Additional Axios request configuration
-   * @returns {Promise<import('axios').AxiosResponse>} Promise resolving to the response object
+   * @param {Object} [config] - Additional Axios request configuration
+   * @returns {Promise<Object>} Promise resolving to the response object
    * @example
    * // Get user profile
    * const response = await apiService.get('/auth/me')
@@ -83,8 +119,8 @@ export const apiService = {
    * @memberof apiService
    * @param {string} url - Endpoint path (relative to baseURL)
    * @param {Object} [data] - Request body data to send
-   * @param {import('axios').AxiosRequestConfig} [config] - Additional Axios request configuration
-   * @returns {Promise<import('axios').AxiosResponse>} Promise resolving to the response object
+   * @param {Object} [config] - Additional Axios request configuration
+   * @returns {Promise<Object>} Promise resolving to the response object
    * @example
    * // Create a new resource
    * const response = await apiService.post('/api/users', { name: 'John Doe' })

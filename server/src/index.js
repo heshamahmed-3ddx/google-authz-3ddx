@@ -1,16 +1,19 @@
 import express from 'express'
 import cors from 'cors'
 import session from 'express-session'
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
+dotenv.config();
 
 import authRoutes from './routes/auth.js'
 import apiRoutes from './routes/api.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import casbinService from './services/casbin.js'
+import databaseService from './services/database.js'
 import requestIdMiddleware from './middleware/requestId.js'
-import httpLoggerMiddleware from './middleware/logger.js'
+import { createContextLogger, logSystemInit, requestLogger } from './services/logger.js'
+import { preloadMessages } from './services/messages.js'
 import swaggerUi from 'swagger-ui-express'
-import swaggerSpec from './swagger.js'
+import swaggerSpec from './swagger.cjs'
 
 // Import comprehensive security middleware
 import {
@@ -26,19 +29,89 @@ import {
   securityErrorHandler
 } from './middleware/security.js'
 
-// Load environment variables
-dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const logger = createContextLogger('ServerMain', 'ServerMain')
 
-console.log('🔒 Initializing security middleware...')
+// Initialize system components
+async function initializeSystem() {
+  try {
+    logSystemInit('Server Startup', 'started', { port: PORT });
+    
+    // Preload message system
+    await preloadMessages();
+    logSystemInit('Message System', 'initialized');
+    
+    // Initializing security middleware
+    logSystemInit('Security Middleware', 'loading');
+    
+    return true;
+  } catch (error) {
+    logger.error('System initialization failed', { 
+      error: error.message, 
+      stack: error.stack 
+    });
+    throw error;
+  }
+}
 
 // Security headers (must be first)
 app.use(securityHeaders)
 
 // CORS with secure configuration
 app.use(cors(corsOptions))
+        // Populate req.user from session for metrics and downstream middleware
+        app.use((req, res, next) => {
+          if (req.session && req.session.user) {
+            req.user = req.user || {};
+            req.user.email = req.session.user.email;
+            req.user.username = req.session.user.username || req.session.user.name || 'unknown';
+          }
+          next();
+        });
+
+import promClient from 'prom-client'
+// Prometheus metrics registry
+const register = new promClient.Registry()
+promClient.collectDefaultMetrics({ register })
+
+// Phase 1 metrics
+const dbQueryDuration = new promClient.Histogram({
+  name: 'sg_report_db_query_duration_seconds',
+  help: 'Time spent only on database query execution',
+  labelNames: ['user_email', 'user_username']
+})
+const apiFulfillmentDuration = new promClient.Histogram({
+  name: 'sg_report_api_fulfillment_duration_seconds',
+  help: 'End-to-end API latency, including DB time, processing, and response generation',
+  labelNames: ['user_email', 'user_username']
+})
+register.registerMetric(dbQueryDuration)
+register.registerMetric(apiFulfillmentDuration)
+
+// Expose dbQueryDuration globally for service instrumentation
+global.dbQueryDuration = dbQueryDuration;
+
+// Instrument API fulfillment timing for all requests
+app.use((req, res, next) => {
+  const start = process.hrtime();
+  res.on('finish', () => {
+    const duration = process.hrtime(start);
+    const seconds = duration[0] + duration[1] / 1e9;
+    // Replace with actual user context if available
+    const userEmail = req.user?.email || 'unknown';
+    const userUsername = req.user?.username || 'unknown';
+    apiFulfillmentDuration.labels(userEmail, userUsername).observe(seconds);
+  });
+  next();
+});
+
+// /metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType)
+  res.end(await register.metrics())
+})
 
 // Request ID middleware (early in chain for logging)
 app.use(requestIdMiddleware)
@@ -54,8 +127,8 @@ app.use(sanitizeInput)
 // Session with enhanced security
 app.use(session(sessionSecurity))
 
-// Structured logging middleware
-app.use(httpLoggerMiddleware)
+// Enhanced request logging middleware
+app.use(requestLogger)
 
 // API security headers
 app.use(apiSecurityHeaders)
@@ -67,10 +140,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 // Routes with appropriate rate limiting
 app.use('/auth', authRateLimit, authRoutes) // Stricter rate limit for auth
 app.use('/api', apiRoutes)
+import fs from 'fs'
+import yaml from 'js-yaml'
+import path from 'path'
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, 'api-spec.yaml'), 'utf8'))
 
 // Swagger UI (development only)
 if (process.env.NODE_ENV !== 'production') {
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
   
   // Serve JSDoc documentation
   app.use('/jsdoc', express.static('../client/docs/jsdoc'))
@@ -114,52 +194,111 @@ app.use('*', (req, res) => {
 })
 
 // Graceful shutdown handling
-const gracefulShutdown = (signal) => {
-  console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`)
+const gracefulShutdown = async (signal) => {
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
   // Close server
-  server.close(() => {
-    console.log('✅ HTTP server closed')
+  server.close(async () => {
+    logger.info('HTTP server closed');
     
-    // Close any database connections, cleanup resources
-    console.log('🧹 Cleanup completed')
-    process.exit(0)
-  })
+    // Close database connections
+    try {
+      await databaseService.close();
+      logger.info('Database connections closed');
+    } catch (error) {
+      logger.error('Error closing database', { error: error.message });
+    }
+    
+    logger.info('Cleanup completed. Exiting process.');
+    process.exit(0);
+  });
   
   // Force shutdown after 30 seconds
   setTimeout(() => {
-    console.error('❌ Force shutdown after timeout')
-    process.exit(1)
-  }, 30000)
-}
+    logger.error('Force shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+// Log DB env variables for diagnosis
 
 // Start server
 const server = app.listen(PORT, async () => {
-  console.log('🔒 3D Diagnostix Authorization System')
-  console.log('=====================================')
-  console.log(`🚀 Server running on port ${PORT}`)
-  console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`)
-  console.log(`🛡️  Security features: ENABLED`)
-  console.log(`   • Security headers (Helmet)`)
-  console.log(`   • Rate limiting & speed control`)
-  console.log(`   • Request validation & sanitization`)
-  console.log(`   • CORS protection`)
-  console.log(`   • Session security`)
-  console.log(`   • Error handling`)
-  
-  // Initialize Casbin authorization system
   try {
-    await casbinService.initialize()
-    console.log('🔐 Casbin authorization system: READY')
-  } catch (error) {
-    console.error('❌ Failed to initialize Casbin:', error.message)
-    console.error('⚠️  Authorization features will be unavailable')
+    // Initialize system components
+    await initializeSystem();
+    
+    logger.info('3D Diagnostix Authorization System started', {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version,
+      timestamp: new Date().toISOString()
+    });
+    
+    logSystemInit('Security Features', 'enabled', {
+      features: [
+        'Security headers (Helmet)',
+        'Rate limiting & speed control',
+        'Request validation & sanitization',
+        'CORS protection',
+        'Session security',
+        'Error handling'
+      ]
+    });
+    
+    // Initialize Casbin authorization system
+    try {
+      await casbinService.initialize()
+      logSystemInit('Casbin Authorization System', 'ready', {
+        component: 'RBAC',
+        policies: 'loaded'
+      });
+    } catch (error) {
+      logger.error('Casbin initialization failed', {
+        error: error.message,
+        stack: error.stack
+      });
+      logSystemInit('Casbin Authorization System', 'failed', {
+        error: error.message
+      });
+    }
+    
+    // Initialize MySQL database connection (if configured)
+    if (process.env.DB_HOST && process.env.DB_NAME) {
+      try {
+        await databaseService.initialize();
+        logSystemInit('MySQL Database', 'connected', {
+          host: process.env.DB_HOST,
+          database: process.env.DB_NAME
+        });
+      } catch (error) {
+        logger.warn('Database initialization failed - surgical guide reports will not be available', {
+          error: error.message,
+          stack: error.stack
+        });
+        logSystemInit('MySQL Database', 'failed', {
+          error: error.message
+        });
+      }
+    } else {
+      logger.info('Database not configured - surgical guide reports disabled', {
+        hint: 'Set DB_HOST and DB_NAME environment variables to enable'
+      });
+    }
+    
+    logger.info('System ready for requests', {
+      apiEndpoint: `http://localhost:${PORT}`,
+      healthCheck: `http://localhost:${PORT}/health`,
+      documentation: 'docs/api-reference.md'
+    });
+    
+  } catch (initError) {
+    logger.error('Server initialization failed', {
+      error: initError.message,
+      stack: initError.stack
+    });
+    process.exit(1);
   }
-  
-  console.log(`\n🌐 API available at: http://localhost:${PORT}`)
-  console.log(`📊 Health check: http://localhost:${PORT}/health`)
-  console.log(`📚 API docs: See docs/api-reference.md`)
-  console.log('\n✨ System ready for requests!')
 })
 
 // Handle graceful shutdown
@@ -168,12 +307,12 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error)
+  // Uncaught Exception
   process.exit(1)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
+  // Unhandled Rejection
   process.exit(1)
 })
 

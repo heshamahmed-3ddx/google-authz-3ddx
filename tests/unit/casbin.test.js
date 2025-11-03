@@ -27,7 +27,17 @@ const mockEnforcer = {
   getPolicy: jest.fn(),
   addPolicy: jest.fn(),
   removePolicy: jest.fn(),
-  loadPolicy: jest.fn()
+  loadPolicy: jest.fn(),
+  getGroupingPolicy: jest.fn(),
+  addGroupingPolicy: jest.fn(),
+  removeGroupingPolicy: jest.fn(),
+  getRolesForUser: jest.fn(),
+  getUsersForRole: jest.fn(),
+  getFilteredPolicy: jest.fn(),
+  getAllSubjects: jest.fn(),
+  getAllObjects: jest.fn(),
+  getAllActions: jest.fn(),
+  getAllRoles: jest.fn()
 };
 
 jest.mock('casbin', () => ({
@@ -79,9 +89,17 @@ describe('CasbinService', () => {
       }))
       
       mockEnforcer.getPolicy.mockResolvedValue([
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'write'],
+        ['john.doe@3ddiagnostix.com', 'imaging_systems', 'read'],
         ['p', 'Engineering', 'patient_data', 'read'],
         ['p', 'Engineering', 'patient_data', 'write'],
+        ['p', 'Engineering', 'imaging_systems', 'read'],
         ['p', 'Finance', 'financial_reports', 'read']
+      ])
+      mockEnforcer.getGroupingPolicy.mockResolvedValue([
+        ['g', 'Engineering', 'role:engineer'],
+        ['g', 'Finance', 'role:manager']
       ])
     })
 

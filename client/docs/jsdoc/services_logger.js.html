@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: services/logger.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: services/logger.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file logger.js
+ * @description Client-side logging system with [CLIENT] prefix and colors
+ * @author 3D Diagnostix Development Team
+ * @created 2025-10-20
+ * @version 1.0.0
+ * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ */
+
+/**
+ * Get current timestamp in YYYY-MM-DD HH:mm:ss format
+ * @returns {string} Formatted timestamp
+ */
+function getTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Get caller file and line information
+ * @returns {Object} Object with filename and line number
+ */
+function getCallerInfo() {
+  const error = new Error();
+  const stack = error.stack.split('\n');
+  const callerLine = stack[3] || stack[2]; // Get caller's line
+  
+  // Extract filename and line number
+  const match = callerLine.match(/([^/\\]+\.(js|vue|ts)):(\d+):\d+/);
+  if (match) {
+    const filename = match[1].replace('.js', '').replace('.vue', '').replace('.ts', '');
+    const lineNumber = match[3];
+    return { filename, lineNumber };
+  }
+  
+  return { filename: 'unknown', lineNumber: '0' };
+}
+
+/**
+ * Check if a log message is critical enough to log
+ * @param {string} message - Log message
+ * @param {string} level - Log level
+ * @returns {boolean} True if should log
+ */
+function isCriticalLog(message, level) {
+  if (level === 'error' || level === 'warn') return true;
+  
+  const criticalKeywords = [
+    'auth', 'login', 'logout', 'error', 'failed', 'success',
+    'api', 'request', 'response', 'navigation', 'route',
+    'user', 'session', 'token', 'permission', 'access'
+  ];
+  
+  const messageLower = message.toLowerCase();
+  return criticalKeywords.some(keyword => messageLower.includes(keyword));
+}
+
+/**
+ * Create a client logger with [CLIENT] prefix and colors
+ * @param {string} context - Context or component name
+ * @returns {Object} Logger object with info, warn, error methods
+ */
+export function createClientLogger(context = 'App') {
+  // Color constants
+  const colors = {
+    CLIENT: '\x1b[34m',    // Blue for [CLIENT]
+    ERROR: '\x1b[31m',     // Red
+    WARN: '\x1b[33m',      // Yellow
+    INFO: '\x1b[36m',      // Cyan
+    DEBUG: '\x1b[35m',     // Magenta
+    RESET: '\x1b[0m'       // Reset
+  };
+
+  /**
+   * Format log message with [CLIENT] prefix and colors
+   * @param {string} level - Log level
+   * @param {string} message - Log message
+   * @param {Object} meta - Additional metadata
+   * @returns {string} Formatted log message
+   */
+  function formatMessage(level, message, meta = {}) {
+    const timestamp = getTimestamp();
+    const { filename, lineNumber } = getCallerInfo();
+    
+    // For production builds or non-dev environments, use plain format
+    if (import.meta.env.PROD) {
+      return `[CLIENT]|${timestamp}|${level.toUpperCase()}|[${filename}:${lineNumber}]|${message}`;
+    }
+    
+    // For development, use colored format
+    const clientColor = colors.CLIENT;
+    const levelColor = colors[level.toUpperCase()] || colors.INFO;
+    const reset = colors.RESET;
+    
+    return `${clientColor}[CLIENT]${reset}|${timestamp}|${levelColor}${level.toUpperCase()}${reset}|[${filename}:${lineNumber}]|${message}`;
+  }
+
+  return {
+    /**
+     * Log info messages (only critical ones)
+     * @param {string} message - Log message
+     * @param {Object} meta - Additional metadata
+     */
+    info: (message, meta = {}) => {
+      // Client-side logging disabled
+    },
+
+    /**
+     * Log warning messages
+     * @param {string} message - Log message
+     * @param {Object} meta - Additional metadata
+     */
+    warn: (message, meta = {}) => {
+      // Client-side logging disabled
+    },
+
+    /**
+     * Log error messages
+     * @param {string} message - Log message
+     * @param {Object} meta - Additional metadata
+     */
+    error: (message, meta = {}) => {
+      // Client-side logging disabled
+    },
+
+    /**
+     * Log debug messages (only in development)
+     * @param {string} message - Log message
+     * @param {Object} meta - Additional metadata
+     */
+    debug: (message, meta = {}) => {
+      // Client-side logging disabled
+    }
+  };
+}
+
+/**
+ * Default logger instance
+ */
+export const logger = createClientLogger('App');
+
+/**
+ * Log API requests and responses
+ * @param {string} method - HTTP method
+ * @param {string} url - Request URL
+ * @param {Object} data - Request/response data
+ * @param {string} status - Request status (success/error)
+ */
+/**
+ * Log API requests and responses (disabled)
+ * @param {string} method - HTTP method
+ * @param {string} url - Request URL
+ * @param {Object} data - Request/response data
+ * @param {string} status - Request status (success/error)
+ */
+export function logApiCall(method, url, data, status) {
+  // Client-side logging disabled
+}
+
+export function logApiRequest(method, url, data, status) {
+  // Client-side logging disabled
+}
+
+/**
+ * Log navigation events (disabled)
+ * @param {string} from - Previous route
+ * @param {string} to - Target route
+ * @param {Object} meta - Additional route metadata
+ */
+export function logNavigation(from, to, meta = {}) {
+  // Client-side logging disabled
+}
+
+/**
+ * Log authentication events (disabled)
+ * @param {string} event - Auth event (login, logout, etc.)
+ * @param {Object} details - Event details
+ */
+export function logAuth(event, details = {}) {
+  // Client-side logging disabled
+}
+
+export default logger;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#createClientLogger">createClientLogger</a></li><li><a href="global.html#debug">debug</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getCallerInfo">getCallerInfo</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#isCriticalLog">isCriticalLog</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#logApiCall">logApiCall</a></li><li><a href="global.html#logAuth">logAuth</a></li><li><a href="global.html#logNavigation">logNavigation</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#warn">warn</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 03 2025 15:32:30 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

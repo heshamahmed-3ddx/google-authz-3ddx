@@ -390,11 +390,11 @@ const fetchUsers = async () => {
     availableGroups.value = response.data.data.groups || [];
     availableRoles.value = response.data.data.roles || [];
   } catch (error) {
-    console.error("Failed to fetch users:", error);
+    // console.error("Failed to fetch users:", error);
     if (error.response?.status === 404) {
-      console.warn(
-        "Admin API endpoints not available. Server may need restart.",
-      );
+      // console.warn(
+      //   "Admin API endpoints not available. Server may need restart.",
+      // );
     }
   } finally {
     loading.users = false;
@@ -408,11 +408,11 @@ const fetchPolicies = async () => {
     policies.value = response.data.data.policies || [];
     groupAssignments.value = response.data.data.groupings || [];
   } catch (error) {
-    console.error("Failed to fetch policies:", error);
+    // console.error("Failed to fetch policies:", error);
     if (error.response?.status === 404) {
-      console.warn(
-        "Admin API endpoints not available. Server may need restart.",
-      );
+      // console.warn(
+      //   "Admin API endpoints not available. Server may need restart.",
+      // );
     }
   } finally {
     loading.policies = false;
@@ -431,7 +431,7 @@ const addPolicy = async () => {
     // Refresh policies
     await fetchPolicies();
   } catch (error) {
-    console.error("Failed to add policy:", error);
+    // console.error("Failed to add policy:", error);
   } finally {
     loading.addPolicy = false;
   }
@@ -443,7 +443,7 @@ const removePolicy = async (policy) => {
     await api.delete("/api/admin/policies", { data: policy });
     await fetchPolicies();
   } catch (error) {
-    console.error("Failed to remove policy:", error);
+    // console.error("Failed to remove policy:", error);
   } finally {
     loading.removePolicy = false;
   }
@@ -461,7 +461,7 @@ const addAssignment = async () => {
     // Refresh data
     await Promise.all([fetchUsers(), fetchPolicies()]);
   } catch (error) {
-    console.error("Failed to add assignment:", error);
+    // console.error("Failed to add assignment:", error);
   } finally {
     loading.addAssignment = false;
   }
@@ -478,7 +478,7 @@ const removeAssignment = async (assignment) => {
     });
     await Promise.all([fetchUsers(), fetchPolicies()]);
   } catch (error) {
-    console.error("Failed to remove assignment:", error);
+    // console.error("Failed to remove assignment:", error);
   } finally {
     loading.removeAssignment = false;
   }
@@ -499,7 +499,7 @@ const addUserGroup = async (userEmail, group) => {
       editingUser.value.groups.push(group);
     }
   } catch (error) {
-    console.error("Failed to add user to group:", error);
+    // console.error("Failed to add user to group:", error);
   }
 };
 
@@ -517,7 +517,7 @@ const removeUserGroup = async (userEmail, group) => {
       );
     }
   } catch (error) {
-    console.error("Failed to remove user from group:", error);
+    // console.error("Failed to remove user from group:", error);
   }
 };
 

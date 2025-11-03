@@ -10,9 +10,10 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import slowDown from 'express-slow-down'
 import csrf from 'csurf'
-import { createLogger } from '../services/logging.js'
+import { createContextLogger } from '../services/logger.js'
 
-const logger = createLogger({ service: 'security' })
+// For Jest compatibility, use a static string for filename context
+const logger = createContextLogger('/server/src/middleware/security.js', 'SecurityMiddleware')
 
 /**
  * Security Headers Configuration using Helmet
@@ -127,13 +128,13 @@ export const generalRateLimit = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   handler: (req, res, next, options) => {
-    logger.warn({
+    logger.warn('Rate limit exceeded', {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       path: req.path,
       limit: options.max,
       windowMs: options.windowMs
-    }, 'Rate limit exceeded')
+    })
     
     res.status(options.statusCode).json(options.message)
   }
@@ -160,12 +161,12 @@ export const authRateLimit = rateLimit({
   },
   skipSuccessfulRequests: true, // Don't count successful requests
   handler: (req, res, next, options) => {
-    logger.warn({
+    logger.warn('Authentication rate limit exceeded', {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       path: req.path,
       type: 'authentication_rate_limit'
-    }, 'Authentication rate limit exceeded')
+    })
     
     res.status(options.statusCode).json(options.message)
   }
@@ -185,11 +186,11 @@ export const speedLimiter = slowDown({
   delayMs: 500, // Add 500ms delay per request after delayAfter
   maxDelayMs: 20000, // Maximum delay of 20 seconds
   onLimitReached: (req, res, options) => {
-    logger.info({
+    logger.info('Speed limiter applied', {
       ip: req.ip,
       path: req.path,
       delay: options.delayMs
-    }, 'Speed limiter applied')
+    })
   }
 })
 
@@ -232,7 +233,7 @@ export const csrfProtection = csrf({
  */
 export const requestValidation = (req, res, next) => {
   // Log security-relevant request information
-  logger.info({
+  logger.info('Request received', {
     ip: req.ip,
     method: req.method,
     path: req.path,
@@ -240,7 +241,7 @@ export const requestValidation = (req, res, next) => {
     referer: req.get('Referer'),
     origin: req.get('Origin'),
     requestId: req.requestId
-  }, 'Request received')
+  })
   
   // Check for suspicious patterns
   const suspiciousPatterns = [
@@ -255,12 +256,12 @@ export const requestValidation = (req, res, next) => {
   
   for (const pattern of suspiciousPatterns) {
     if (pattern.test(requestStr)) {
-      logger.warn({
+      logger.warn('Suspicious request pattern detected', {
         ip: req.ip,
         path: req.path,
         pattern: pattern.toString(),
         requestId: req.requestId
-      }, 'Suspicious request pattern detected')
+      })
       
       return res.status(400).json({
         error: {
@@ -329,10 +330,10 @@ export const corsOptions = {
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
-      logger.warn({
+      logger.warn('CORS origin not allowed', {
         origin,
         type: 'cors_violation'
-      }, 'CORS origin not allowed')
+      })
       
       callback(new Error('Not allowed by CORS'), false)
     }
@@ -455,12 +456,12 @@ export const apiSecurityHeaders = (req, res, next) => {
 export const securityErrorHandler = (err, req, res, next) => {
   // Log security-related errors
   if (err.code === 'EBADCSRFTOKEN') {
-    logger.warn({
+    logger.warn('CSRF protection triggered', {
       ip: req.ip,
       path: req.path,
       userAgent: req.get('User-Agent'),
       error: 'CSRF token mismatch'
-    }, 'CSRF protection triggered')
+    })
     
     return res.status(403).json({
       error: {
@@ -485,12 +486,12 @@ export const securityErrorHandler = (err, req, res, next) => {
   }
   
   // Log unexpected security errors
-  logger.error({
+  logger.error('Security error occurred', {
     error: err.message,
     stack: err.stack,
     ip: req.ip,
     path: req.path
-  }, 'Security error occurred')
+  })
   
   next(err)
 }

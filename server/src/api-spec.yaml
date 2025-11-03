@@ -1,0 +1,515 @@
+openapi: 3.0.1
+info:
+  title: 3D Diagnostix - AuthZ Demo API
+  version: 1.0.0
+  description: Minimal OpenAPI spec for the Google SSO + Casbin demo
+servers:
+  - url: http://localhost:3001
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: 3ddiagnostix.sid
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        picture:
+          type: string
+          format: uri
+    UserDetails:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        groups:
+          type: array
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            http:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: Invalid request parameters
+            details:
+              type: object
+        requestId:
+          type: string
+          example: req_abc123
+paths:
+  /api/profile:
+    get:
+      summary: Get user profile from Google API
+      tags:
+        - User
+      responses:
+        "200":
+          description: User profile data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /api/google/sheets/list:
+    get:
+      summary: List Google Sheets for authenticated user
+      tags:
+        - Google
+      responses:
+        "200":
+          description: List of Google Sheets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sheets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                  nextPageToken:
+                    type: string
+  /api/google/calendar/events:
+    get:
+      summary: List Google Calendar events for authenticated user
+      tags:
+        - Google
+      responses:
+        "200":
+          description: List of calendar events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      type: object
+                  nextPageToken:
+                    type: string
+  /api/user/details:
+    get:
+      summary: Get authenticated user details
+      tags:
+        - User
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetails"
+  /api/user/rights:
+    get:
+      summary: Get user rights and permissions
+      tags:
+        - User
+      responses:
+        "200":
+          description: User rights and permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rights:
+                    type: array
+                    items:
+                      type: object
+                  userEmail:
+                    type: string
+                  groups:
+                    type: array
+                    items:
+                      type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  orgUnit:
+                    type: string
+                  evaluatedAt:
+                    type: string
+                    format: date-time
+  /api/authorize:
+    post:
+      summary: Check authorization for resource/action
+      tags:
+        - Authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resource:
+                  type: string
+                action:
+                  type: string
+      responses:
+        "200":
+          description: Authorization result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allowed:
+                    type: boolean
+                  resource:
+                    type: string
+                  action:
+                    type: string
+                  userEmail:
+                    type: string
+                  userGroups:
+                    type: array
+                    items:
+                      type: string
+                  evaluatedAt:
+                    type: string
+                    format: date-time
+  /api/reports/surgical_guide:
+    get:
+      tags:
+        - Surgical Guide Reports
+      summary: Get surgical guide report data
+      description: >
+        Retrieves surgical guide report data with date range filtering,
+        pagination, and sorting.
+
+        **Access:** Finance22 group members only
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+            example: 2024-01-01
+          description: Start date for report (YYYY-MM-DD format)
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date
+            example: 2024-12-31
+          description: End date for report (YYYY-MM-DD format)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            example: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+            example: 50
+          description: Number of records per page (max 100)
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum:
+              - date
+              - dDoctor
+              - patientName
+              - cost
+              - caseNumber
+            default: date
+            example: date
+          description: Field to sort by
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+            example: desc
+          description: Sort order (ascending or descending)
+      responses:
+        "200":
+          description: Report data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1234
+                        caseNumber:
+                          type: string
+                          example: SG-2024-001
+                        date:
+                          type: string
+                          format: date
+                          example: 2024-06-15
+                        dDoctor:
+                          type: string
+                          example: Dr. John Smith
+                        patientName:
+                          type: string
+                          example: Jane Doe
+                        cost:
+                          type: number
+                          format: float
+                          example: 1500
+                        procedureType:
+                          type: string
+                          example: Full Arch
+                        status:
+                          type: string
+                          example: Completed
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 50
+                      total:
+                        type: integer
+                        example: 150
+                      totalPages:
+                        type: integer
+                        example: 3
+                      hasNextPage:
+                        type: boolean
+                        example: true
+                      hasPrevPage:
+                        type: boolean
+                        example: false
+                  sort:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        example: date
+                      order:
+                        type: string
+                        example: DESC
+                  requestId:
+                    type: string
+                    example: req_abc123
+        "400":
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+        "403":
+          description: Access denied - Finance22 group membership required
+        "500":
+          description: Internal server error
+  /api/reports/surgical_guide/summary:
+    get:
+      tags:
+        - Surgical Guide Reports
+      summary: Get report summary statistics
+      description: |
+        Retrieves aggregated statistics for the surgical guide report.
+        **Access:** Finance22 group members only
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+            example: 2024-01-01
+          description: Start date (YYYY-MM-DD)
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date
+            example: 2024-12-31
+          description: End date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Summary statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      totalCases:
+                        type: integer
+                        example: 150
+                      totalCost:
+                        type: number
+                        format: float
+                        example: 225000
+                      averageCost:
+                        type: number
+                        format: float
+                        example: 1500
+                      minCost:
+                        type: number
+                        format: float
+                        example: 500
+                      maxCost:
+                        type: number
+                        format: float
+                        example: 5000
+                      uniqueDoctors:
+                        type: integer
+                        example: 12
+                      uniquePatients:
+                        type: integer
+                        example: 145
+        "400":
+          description: Invalid date parameters
+        "401":
+          description: Authentication required
+        "403":
+          description: Access denied
+        "500":
+          description: Internal server error
+  /api/reports/surgical_guide/export:
+    get:
+      tags:
+        - Surgical Guide Reports
+      summary: Export report to CSV
+      description: |
+        Exports all surgical guide report data to CSV format.
+        **Access:** Finance22 group members only
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date (YYYY-MM-DD)
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: CSV file generated successfully
+          content:
+            text/csv:
+              schema:
+                type: string
+                example: >
+                  Case Number,Date,Doctor Name,Patient Name,Cost,Procedure
+                  Type,Status
+
+                  SG-2024-001,2024-06-15,"Dr. John Smith","Jane Doe",1500.00,"Full Arch",Completed
+        "401":
+          description: Authentication required
+        "403":
+          description: Access denied
+        "500":
+          description: Internal server error
+  /api/reports/surgical_guide/access:
+    get:
+      tags:
+        - Surgical Guide Reports
+      summary: Check user access permissions
+      description: >
+        Returns the current user's access permissions for surgical guide report
+        features.
+
+        Includes report access and Swagger documentation visibility.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Access permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      hasReportAccess:
+                        type: boolean
+                        example: true
+                        description: Can access surgical guide report
+                      hasSwaggerAccess:
+                        type: boolean
+                        example: false
+                        description: Can see Swagger documentation link
+                      userGroups:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - Finance22
+                          - users
+                        description: User's Casbin groups
+        "500":
+          description: Internal server error
+tags: []

@@ -1,6 +1,39 @@
 <template>
   <v-app>
+    <!-- Loading Progress Bar -->
+    <v-progress-linear
+      v-if="isRouteLoading"
+      indeterminate
+      color="orange"
+      height="3"
+      style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999"
+    ></v-progress-linear>
+
+    <!-- Full Screen Loading Overlay for Route Transitions -->
+    <v-overlay
+      v-model="isRouteLoading"
+      class="align-center justify-center"
+      persistent
+      contained
+      style="z-index: 9998"
+    >
+      <v-progress-circular
+        color="orange"
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
+
+    <!-- Navigation Sidebar (only show when authenticated) -->
+    <NavigationSidebar v-if="authStore.isAuthenticated" v-model="drawer" />
+
     <v-app-bar :elevation="2" color="primary" dark>
+      <!-- Menu button for sidebar toggle -->
+      <v-app-bar-nav-icon
+        v-if="authStore.isAuthenticated"
+        @click="drawer = !drawer"
+      ></v-app-bar-nav-icon>
+
       <v-app-bar-title class="d-flex align-center">
         <v-icon left>mdi-google</v-icon>
         <span class="mr-2 d-none d-sm-inline">{{ $t("app.title") }}</span>
@@ -15,9 +48,12 @@
       </div>
     </v-app-bar>
 
-    <v-main>
+    <v-main class="main-content-stable">
       <router-view />
     </v-main>
+
+    <!-- Development Toolbar (only in dev mode) -->
+    <DevToolbar v-if="authStore.isAuthenticated" />
 
     <div
       v-if="snackbar.show"
@@ -31,11 +67,14 @@
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import { reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
+import DevToolbar from "@/components/DevToolbar.vue";
+import NavigationSidebar from "@/components/NavigationSidebar.vue";
 import { useI18n } from "vue-i18n";
 import { useTheme, useLocale } from "vuetify";
 import { isRTL } from "@/i18n";
@@ -47,13 +86,37 @@ const { locale } = useI18n();
 const appVersion = rootPkg.version || "";
 const vuetifyTheme = useTheme();
 const vuetifyLocale = useLocale();
+const router = useRouter();
+
+// Drawer state
+const drawer = ref(true);
+
+// Route loading state
+const isRouteLoading = ref(false);
+
+// Show loading overlay during route transitions
+router.beforeEach((to, from, next) => {
+  // Show loading immediately on navigation
+  isRouteLoading.value = true;
+  next();
+});
+
+router.afterEach(() => {
+  // Wait for next frame to ensure component is rendered
+  requestAnimationFrame(() => {
+    // Then wait a bit more to ensure content is painted
+    setTimeout(() => {
+      isRouteLoading.value = false;
+    }, 300);
+  });
+});
 
 // Watch for theme changes and apply to Vuetify
 watch(
   () => themeStore.currentTheme,
   (newTheme) => {
     vuetifyTheme.change(newTheme);
-    console.log(`🎨 Applied theme to Vuetify: ${newTheme}`);
+    // Applied theme to Vuetify
   },
   { immediate: true },
 );
@@ -65,7 +128,7 @@ watch(
     const shouldBeRTL = isRTL(newLocale);
 
     // Update Vuetify RTL
-    vuetifyLocale.isRtl.value = shouldBeRTL;
+    vuetifyLocale.isRtl = shouldBeRTL;
 
     // Update document direction and language
     document.documentElement.dir = shouldBeRTL ? "rtl" : "ltr";
@@ -79,7 +142,7 @@ watch(
 
     // Force a small delay to ensure Vuetify processes the RTL change
     setTimeout(() => {
-      console.log(`🌐 RTL updated: ${shouldBeRTL} for locale: ${newLocale}`);
+      // RTL updated
     }, 50);
   },
   { immediate: true },
@@ -342,3 +405,6 @@ authStore.checkAuth().catch(() => {
   text-align: right;
 }
 </style>
+/* Reserve space for main content to reduce CLS */ .main-content-stable {
+min-height: 600px; /* Adjust as needed for your typical dashboard height */
+display: flex; flex-direction: column; justify-content: flex-start; }

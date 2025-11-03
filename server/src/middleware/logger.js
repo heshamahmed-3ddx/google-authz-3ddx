@@ -6,7 +6,7 @@
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
  */
 
-import { createLogger, logPageView } from '../services/logging.js';
+import { createLogger, logPageView as defaultLogPageView } from '../services/logging.js';
 
 /**
  * HTTP request logging middleware
@@ -25,19 +25,14 @@ import { createLogger, logPageView } from '../services/logging.js';
  * @param {import('express').NextFunction} next - Next middleware
  * @returns {void}
  */
-export const httpLoggerMiddleware = (req, res, next) => {
+export const httpLoggerMiddleware = (req, res, next, logPageView = defaultLogPageView) => {
   const startTime = Date.now();
-  
   // Create request-specific logger
   const logger = createLogger({
     requestId: req.requestId,
     userEmail: req.userEmail
   });
-  
-  // Store logger on request for use in routes
   req.logger = logger;
-  
-  // Log incoming request
   logger.info({
     method: req.method,
     url: req.url,
@@ -45,12 +40,9 @@ export const httpLoggerMiddleware = (req, res, next) => {
     userAgent: req.get('User-Agent'),
     authenticated: !!req.userEmail
   }, `${req.method} ${req.url}`);
-  
-  // Override res.end to log response
   const originalEnd = res.end;
   res.end = function(chunk, encoding) {
     const duration = Date.now() - startTime;
-    
     logger.info({
       method: req.method,
       url: req.url,
@@ -58,8 +50,6 @@ export const httpLoggerMiddleware = (req, res, next) => {
       responseTime: duration,
       contentLength: res.get('content-length') || 0
     }, `${req.method} ${req.url} ${res.statusCode} ${duration}ms`);
-    
-    // Log page views for frontend routes
     if (req.method === 'GET' && !req.url.startsWith('/api/')) {
       logPageView(req.url, {
         requestId: req.requestId,
@@ -68,10 +58,8 @@ export const httpLoggerMiddleware = (req, res, next) => {
         userAgent: req.get('User-Agent')
       });
     }
-    
     originalEnd.call(this, chunk, encoding);
   };
-  
   next();
 };
 

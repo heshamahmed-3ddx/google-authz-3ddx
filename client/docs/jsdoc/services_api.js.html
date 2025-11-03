@@ -32,56 +32,96 @@
  * @requires axios
  */
 
-import axios from 'axios'
+import axios from "axios";
+import { logApiCall, createClientLogger } from "./logger.js";
 
 /** @constant {string} BASE_URL - Base URL for API requests */
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+// Create API logger
+const logger = createClientLogger('API');
 
 /**
  * Axios instance configured for the application API
- * @type {import('axios').AxiosInstance}
+ * @typedef {Object} AxiosInstance
+ * @property {Function} get
+ * @property {Function} post
+ * @property {Function} put
+ * @property {Function} delete
+ * @type {AxiosInstance}
  */
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for large report queries
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json",
+  },
+});
 
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Add any auth headers here if needed
-    return config
+    // Disabled API request logging to reduce console noise
+    // logApiCall(config.method?.toUpperCase() || 'GET', config.url || '', {
+    //   baseURL: config.baseURL,
+    //   timeout: config.timeout
+    // }, 'request');
+    
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
-  }
-)
+    logger.error('Request interceptor error', { error: error.message });
+    return Promise.reject(error);
+  },
+);
 
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    return response
+    // Log successful responses for critical endpoints
+    if (response.config?.url) {
+      logApiCall(
+        response.config.method?.toUpperCase() || 'GET',
+        response.config.url,
+        {
+          status: response.status,
+          statusText: response.statusText
+        },
+        'success'
+      );
+    }
+    
+    return response;
   },
   (error) => {
     // Don't log 401 errors for authentication checks - they're expected
     if (error.response?.status === 401) {
       // Silently handle unauthorized access - this is expected for auth checks
       // Only log if it's not the /auth/me endpoint
-      if (!error.config?.url?.includes('/auth/me')) {
-        console.warn('Unauthorized access detected for:', error.config?.url)
+      if (!error.config?.url?.includes("/auth/me")) {
+        logger.warn("Unauthorized access detected", { 
+          url: error.config?.url,
+          method: error.config?.method 
+        });
       }
     } else {
-      // Log other errors normally
-      console.error('API Error:', error.response?.status, error.response?.data || error.message)
+      // Log other errors using the new logger
+      logApiCall(
+        error.config?.method?.toUpperCase() || 'UNKNOWN',
+        error.config?.url || 'unknown',
+        {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        },
+        'error'
+      );
     }
-    
-    return Promise.reject(error)
-  }
-)
+
+    return Promise.reject(error);
+  },
+);
 
 /**
  * API service object providing HTTP methods for backend communication
@@ -93,8 +133,8 @@ export const apiService = {
    * Perform a GET request to retrieve data from the server
    * @memberof apiService
    * @param {string} url - Endpoint path (relative to baseURL)
-   * @param {import('axios').AxiosRequestConfig} [config] - Additional Axios request configuration
-   * @returns {Promise&lt;import('axios').AxiosResponse>} Promise resolving to the response object
+  * @param {Object} [config] - Additional Axios request configuration
+  * @returns {Promise&lt;Object>} Promise resolving to the response object
    * @example
    * // Get user profile
    * const response = await apiService.get('/auth/me')
@@ -107,8 +147,8 @@ export const apiService = {
    * @memberof apiService
    * @param {string} url - Endpoint path (relative to baseURL)
    * @param {Object} [data] - Request body data to send
-   * @param {import('axios').AxiosRequestConfig} [config] - Additional Axios request configuration
-   * @returns {Promise&lt;import('axios').AxiosResponse>} Promise resolving to the response object
+  * @param {Object} [config] - Additional Axios request configuration
+  * @returns {Promise&lt;Object>} Promise resolving to the response object
    * @example
    * // Create a new resource
    * const response = await apiService.post('/api/users', { name: 'John Doe' })
@@ -140,7 +180,7 @@ export const apiService = {
    * @returns {Promise&lt;AxiosResponse>}
    */
   patch: (url, data = {}, config = {}) => apiClient.patch(url, data, config),
-  
+
   /**
    * Silent auth check that calls `/auth/me` but suppresses logging for 401
    * responses (used for initial auth probes).
@@ -150,19 +190,20 @@ export const apiService = {
    */
   silentAuthCheck: async () => {
     try {
-      const response = await apiClient.get('/auth/me')
-      return response.data
+      const response = await apiClient.get("/auth/me");
+      return response.data;
     } catch (error) {
       if (error.response?.status === 401) {
         // Return null for unauthorized without logging
-        return null
+        return null;
       }
-      throw error
+      throw error;
     }
-  }
-}
+  },
+};
 
-export default apiClient</code></pre>
+export default apiClient;
+</code></pre>
         </article>
     </section>
 
@@ -172,13 +213,13 @@ export default apiClient</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#themeConfig">themeConfig</a></li><li><a href="global.html#useThemeStore">useThemeStore</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#createClientLogger">createClientLogger</a></li><li><a href="global.html#debug">debug</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getCallerInfo">getCallerInfo</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#isCriticalLog">isCriticalLog</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#logApiCall">logApiCall</a></li><li><a href="global.html#logAuth">logAuth</a></li><li><a href="global.html#logNavigation">logNavigation</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#warn">warn</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 12 2025 20:27:11 GMT+0300 (Eastern European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 03 2025 15:32:30 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

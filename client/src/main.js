@@ -78,7 +78,7 @@ const pinia = createPinia();
 
 // Development-only: suppress specific noisy Vue warnings in headless environments
 if (import.meta.env.DEV) {
-  app.config.warnHandler = (msg, instance, trace) => {
+  app.config.warnHandler = (msg) => {
     if (
       msg.includes(
         "onScopeDispose() is called when there is no active effect scope",
@@ -91,7 +91,7 @@ if (import.meta.env.DEV) {
       return;
     }
     // Log other warnings normally
-    console.warn(`[Vue warn]: ${msg}`, trace);
+    // console.warn(`[Vue warn]: ${msg}`, trace);
   };
 }
 
@@ -108,6 +108,11 @@ app.use(router);
 
 // Mount app
 app.mount("#app");
+
+// Remove initial loader once app is mounted
+setTimeout(() => {
+  document.body.classList.add("app-mounted");
+}, 100);
 
 // Development-only: expose app internals for smoke-tests and debugging
 if (import.meta.env.DEV) {

@@ -86,7 +86,7 @@ const handleCallback = async () => {
       router.push("/dashboard");
     }, 2000);
   } catch (err) {
-    console.error("Callback handling error:", err);
+    // console.error("Callback handling error:", err);
     error.value = err.message || "Authentication failed";
   } finally {
     loading.value = false;

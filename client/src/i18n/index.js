@@ -68,7 +68,7 @@ export const setLocale = (locale) => {
     window.vuetifyInstance.framework.rtl.value = isRtl;
   }
 
-  console.log(`🌐 Locale changed to: ${locale} (RTL: ${isRtl})`);
+  // Locale changed
 };
 
 // Initialize document direction on load

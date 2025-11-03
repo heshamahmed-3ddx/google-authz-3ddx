@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { OAuth2Client } from 'google-auth-library'
+import { google } from 'googleapis'
 
 const router = Router()
 
@@ -16,11 +17,10 @@ const router = Router()
  */
 // Test session endpoint
 router.get('/test-session', (req, res) => {
-  console.log('🧪 Session test:', {
+  req.logger?.debug('Session test endpoint accessed', {
     sessionId: req.sessionID,
     hasSession: !!req.session,
-    cookies: req.headers.cookie,
-    userAgent: req.headers['user-agent']
+    hasUserAgent: !!req.headers['user-agent']
   })
   
   // Set a test value in session
@@ -55,8 +55,10 @@ router.get('/google', (req, res) => {
     
     const scopes = [
       'openid',
-      'email',
-      'profile'
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/admin.directory.user.readonly',
+      'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ]
 
     const authUrl = client.generateAuthUrl({
@@ -67,7 +69,7 @@ router.get('/google', (req, res) => {
 
     res.json({ authUrl })
   } catch (error) {
-    console.error('OAuth error:', error)
+    req.logger?.error('OAuth error during auth URL generation', { error: error.message });
     res.status(500).json({ error: 'Failed to generate auth URL' })
   }
 })
@@ -95,84 +97,80 @@ router.get('/google/callback', async (req, res) => {
   try {
     const { code, error } = req.query
 
-    console.log('🔍 OAuth callback received:', {
+    req.logger?.info('OAuth callback received', {
       hasCode: !!code,
-      error: error,
-      query: req.query
-    })
+      hasError: !!error
+    });
 
     if (error) {
-      console.error('❌ OAuth error from Google:', error)
+      req.logger?.error('OAuth error from Google', { error });
       return res.redirect(`${process.env.CLIENT_URL}/?error=oauth_rejected`)
     }
 
     if (!code) {
-      console.error('❌ No authorization code provided')
+      req.logger?.error('No authorization code provided');
       return res.redirect(`${process.env.CLIENT_URL}/?error=no_code`)
     }
 
-    console.log('✅ Creating OAuth client with:', {
-      clientId: process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
+    req.logger?.debug('Creating OAuth client', {
+      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
       redirectUri: process.env.GOOGLE_REDIRECT_URI
-    })
+    });
 
-    // Create client inside the route to ensure env vars are loaded
+    // Create OAuth2 client
     const client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.GOOGLE_REDIRECT_URI
     )
 
-    console.log('🔄 Exchanging code for tokens...')
+    // Exchange code for tokens
     const { tokens } = await client.getToken(code)
     client.setCredentials(tokens)
 
-    console.log('✅ Tokens received, verifying ID token...')
-    // Get user info
+    // Get basic user info from ID token
     const ticket = await client.verifyIdToken({
       idToken: tokens.id_token,
       audience: process.env.GOOGLE_CLIENT_ID
     })
-
     const payload = ticket.getPayload()
+
+    // Use Directory API to get groups and profile
+    const directory = google.admin({ version: 'directory_v1', auth: client })
+    // Get user profile (orgUnit, department, etc.)
+    const userProfileRes = await directory.users.get({ userKey: payload.email })
+    const userProfile = userProfileRes.data
+
+    // Get user groups
+    const groupsRes = await directory.groups.list({ userKey: payload.email })
+    const groups = (groupsRes.data.groups || []).map(g => g.name)
+
+    // Build user info from Google data
     const userInfo = {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
-      picture: payload.picture
+      picture: payload.picture,
+      orgUnit: userProfile.orgUnitPath || null,
+      department: userProfile.department || null,
+      groups,
+      roles: userProfile.relations ? userProfile.relations.filter(r => r.type === 'manager').map(r => r.value) : [],
+      googleRaw: { profile: userProfile, groups: groupsRes.data.groups }
     }
 
-    console.log('✅ User info extracted:', {
-      email: userInfo.email,
-      name: userInfo.name,
-      id: userInfo.id
-    })
-
-    // Store user session
     req.session.user = userInfo
     req.session.tokens = tokens
-    
-    console.log('✅ Session created:', {
-      sessionId: req.sessionID,
-      userId: userInfo.id,
-      email: userInfo.email,
-      hasTokens: !!tokens,
-      sessionData: req.session
-    })
-    
-    // Force session save before redirect
+
+    // Save session and redirect
     req.session.save((err) => {
       if (err) {
-        console.error('❌ Session save error:', err)
+        req.logger?.error('Session save error', { error: err.message });
         return res.redirect(`${process.env.CLIENT_URL}/?error=session_failed`)
       }
-      
-      console.log('✅ Session saved successfully, redirecting to:', `${process.env.CLIENT_URL}/dashboard`)
-      // Redirect to frontend dashboard instead of returning JSON
       res.redirect(`${process.env.CLIENT_URL}/dashboard`)
     })
   } catch (error) {
-    console.error('❌ OAuth callback error:', {
+    req.logger?.error('OAuth callback error', {
       message: error.message,
       stack: error.stack,
       response: error.response?.data
@@ -212,23 +210,21 @@ router.post('/logout', (req, res) => {
  */
 // Get current user
 router.get('/me', (req, res) => {
-  console.log('🔍 /me endpoint called:', {
+  req.logger?.debug('/me endpoint accessed', {
     sessionId: req.sessionID,
     hasSession: !!req.session,
     hasUser: !!req.session?.user,
-    cookies: req.headers.cookie ? 'present' : 'missing',
-    cookieDetails: req.headers.cookie,
+    hasCookies: !!req.headers.cookie,
     origin: req.headers.origin,
-    referer: req.headers.referer,
     userAgent: req.headers['user-agent']?.substring(0, 50)
   })
   
   if (!req.session.user) {
-    console.log('❌ No user in session - Session contents:', req.session)
+    req.logger?.debug('No user in session');
     return res.status(401).json({ error: 'Not authenticated' })
   }
 
-  console.log('✅ User authenticated:', req.session.user.email)
+  req.logger?.debug('User authenticated', { userEmail: req.session.user.email });
   res.json({
     user: req.session.user,
     authenticated: true

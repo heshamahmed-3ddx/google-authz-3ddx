@@ -6,7 +6,6 @@
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
  */
 
-import { logError } from '../services/logging.js';
 
 /**
  * Map common errors to HTTP status codes and error codes
@@ -63,23 +62,23 @@ function getErrorCodeFromStatus(status) {
  * app.use(errorHandler)
  */
 export const errorHandler = (err, req, res, _next) => {
-  // If headers already sent, delegate to default Express error handler
+  // Accept injected logger for testability
+  const logger = req.logger || {
+    error: (...args) => {}
+  };
   if (res.headersSent) {
     return _next(err);
   }
-
-  // Log the error with context
-  if (logError) {
-    logError(err, {
-      requestId: req.requestId,
-      userEmail: req.userEmail,
-      route: req.url,
-      method: req.method,
-      ip: req.ip
-    });
-  } else {
-    console.error('Error:', err);
-  }
+  logger.error('Unhandled error in middleware', {
+    error: err.message,
+    stack: err.stack,
+    requestId: req.requestId,
+    userEmail: req.userEmail,
+    route: req.url,
+    method: req.method,
+    ip: req.ip
+  });
+  // ...existing code...
 
   // Default error response
   let errorResponse = {

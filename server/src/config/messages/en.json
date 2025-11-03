@@ -1,0 +1,55 @@
+{
+  "errors": {
+    "auth_required": "Authentication required",
+    "validation_error": "Invalid session user or tokens",
+    "google_api_error": "Failed to fetch user details from Google Directory API",
+    "internal_error": "Failed to fetch user details",
+    "user_rights_failed": "Failed to evaluate user rights after account creation",
+    "insufficient_scope_drive": "Insufficient permissions. Google Drive scope required for Sheets access.",
+    "insufficient_scope_calendar": "Insufficient permissions. Google Calendar scope required.",
+    "unauthorized": "Authentication required",
+    "forbidden": "Admin privileges required",
+    "validation_required_fields": "subject, object, and action are required",
+    "validation_user_group_fields": "userEmail and group are required"
+  },
+  "success": {
+    "user_details_retrieved": "User details retrieved successfully",
+    "authorization_completed": "Authorization evaluation completed",
+    "user_synced_casbin": "Successfully synced user with Casbin",
+    "user_auto_added": "Auto-added new user and loaded rights",
+    "policy_added": "Policy added successfully",
+    "policy_removed": "Policy removed successfully",
+    "user_group_assigned": "User assigned to group successfully",
+    "user_group_removed": "User removed from group successfully"
+  },
+  "info": {
+    "admin_api_loaded": "Admin API routes loaded",
+    "google_api_warning": "Google Directory API error",
+    "group_fetch_warning": "Google Directory API group fetch error",
+    "casbin_sync_warning": "Failed to sync with Casbin",
+    "token_info_warning": "Could not fetch token info"
+  },
+  "api": {
+    "health_status": "ok",
+    "test_message": "API is working!",
+    "profile_source": "Google API"
+  },
+  "validation": {
+    "resource_required": "Resource is required",
+    "action_required": "Action is required",
+    "email_invalid": "Invalid email format",
+    "name_required": "Name is required",
+    "access_token_required": "Access token is required",
+    "id_token_required": "ID token is required"
+  },
+  "debug": {
+    "user_rights_session": "/api/user/rights session email",
+    "user_rights_result": "/api/user/rights getUserRights result",
+    "user_res_data": "userRes data",
+    "group_details": "Group Details for",
+    "group_members": "Members for group",
+    "user_role_found": "Current user role in",
+    "user_not_found_group": "Current user not found in members list for",
+    "all_user_roles": "All user roles across groups"
+  }
+}

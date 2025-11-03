@@ -1,23 +1,20 @@
 import { jest } from '@jest/globals';
-import { logError } from '../../server/src/services/logging.js';
 import { errorHandler } from '../../server/src/middleware/errorHandler.js';
-
-jest.mock('../../server/src/services/logging.js', () => ({
-  logError: jest.fn()
-}));
 
 describe('errorHandler.js', () => {
   let req, res, next;
 
+  let mockLogger;
   beforeEach(() => {
-    req = { method: 'GET', url: '/test', requestId: 'abc', userEmail: 'u' };
+    req = { method: 'GET', url: '/test', requestId: 'abc', userEmail: 'u', logger: { error: jest.fn() } };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
       headersSent: false
     };
     next = jest.fn();
-    logError.mockClear();
+    mockLogger = req.logger;
+    jest.clearAllMocks();
   });
 
   it('handles known error types', () => {
@@ -26,7 +23,7 @@ describe('errorHandler.js', () => {
     errorHandler(err, req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.objectContaining({ code: 'VALIDATION_ERROR' }) }));
-    expect(logError).toHaveBeenCalledWith(err, expect.any(Object));
+  expect(mockLogger.error).toHaveBeenCalledWith('Unhandled error in middleware', expect.objectContaining({ error: err.message, stack: err.stack, requestId: req.requestId, userEmail: req.userEmail, route: req.url, method: req.method, ip: req.ip }));
   });
 
   it('handles unknown error types', () => {
@@ -35,7 +32,7 @@ describe('errorHandler.js', () => {
     errorHandler(err, req, res, next);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.objectContaining({ code: 'INTERNAL_ERROR' }) }));
-    expect(logError).toHaveBeenCalledWith(err, expect.any(Object));
+  expect(mockLogger.error).toHaveBeenCalledWith('Unhandled error in middleware', expect.objectContaining({ error: err.message, stack: err.stack, requestId: req.requestId, userEmail: req.userEmail, route: req.url, method: req.method, ip: req.ip }));
   });
 
   it('handles error with custom status', () => {

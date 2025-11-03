@@ -22,7 +22,38 @@ This application provides a complete demonstration of:
 - **Structured logging** and comprehensive audit trails
 - **Enterprise-grade security** with rate limiting and CSRF protection
 
-### Current Status: ✅ **Production Ready** | ✅ **All Features Complete**
+
+## 📊 Prometheus Metrics & Monitoring
+
+The backend exposes detailed performance and usage metrics for Prometheus and Grafana integration.
+
+### Metrics Endpoint
+
+- **URL:** `http://localhost:3000/metrics`
+- **Format:** Prometheus exposition format (compatible with prom-client)
+
+### Key Metrics
+- `sg_report_db_query_duration_seconds` — Time spent on database query execution (histogram, labeled by user email/username)
+- `sg_report_api_fulfillment_duration_seconds` — End-to-end API latency (histogram, labeled by user email/username)
+
+### How to Use
+1. Start the backend server (`npm run dev` or `npm start`).
+2. Access metrics at `http://localhost:3000/metrics`.
+3. Configure Prometheus to scrape this endpoint.
+4. Visualize and alert in Grafana as needed.
+
+### Example Prometheus Scrape Config
+```yaml
+scrape_configs:
+  - job_name: 'sg_report_backend'
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: /metrics
+```
+
+### Notes
+- Metrics are updated on every report API request.
+- For deployment, coordinate with your DevOps team for Prometheus/Grafana access and scraping setup.
 
 ## 🚀 Quick Start
 

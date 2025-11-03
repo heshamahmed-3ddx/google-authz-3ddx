@@ -2,96 +2,152 @@
   "users": [
     {
       "email": "hesham.ahmed@3ddx.com",
-      "fullName": "Hesham Ahmed",
-      "groups": ["engineering", "platform"],
-      "orgUnit": "Engineering/Platform",
-      "roles": ["developer", "platform-engineer"],
-      "twoStepEnabled": true,
-      "department": "Engineering"
+      "fullName": "Hesham Ahmed Mohamed",
+      "groups": [
+        "3DDX",
+        "SWD Meeting Group",
+        "SWD",
+        "admin",
+        "engineering",
+        "developer"
+      ],
+      "orgUnit": "/Software Development",
+      "roles": [
+        "developer",
+        "admin"
+      ],
+      "twoStepEnabled": false,
+      "department": "Software Development"
     },
     {
       "email": "heshamahmed8877@gmail.com",
       "fullName": "Hesham Ahmed (Admin)",
-      "groups": ["admin", "engineering"],
+      "groups": [
+        "admin",
+        "engineering",
+        "finance"
+      ],
       "orgUnit": "IT/Administration",
-      "roles": ["admin", "system-admin", "developer"],
+      "roles": [
+        "admin",
+        "system-admin",
+        "developer"
+      ],
       "twoStepEnabled": true,
       "department": "IT"
     },
     {
       "email": "alice@3ddx.com",
       "fullName": "Alice Ahmed",
-      "groups": ["engineering"],
+      "groups": [
+        "engineering"
+      ],
       "orgUnit": "Engineering/Software",
-      "roles": ["senior-developer"],
-      "twoStepEnabled": true,
+      "roles": [
+        "developer"
+      ],
+      "twoStepEnabled": false,
       "department": "Engineering"
     },
     {
       "email": "bob@3ddx.com",
-      "fullName": "Bob Johnson",
-      "groups": ["finance"],
+      "fullName": "Bob Smith",
+      "groups": [
+        "finance"
+      ],
       "orgUnit": "Finance/Accounting",
-      "roles": ["accountant"],
-      "twoStepEnabled": false,
+      "roles": [
+        "accountant"
+      ],
+      "twoStepEnabled": true,
       "department": "Finance"
     },
     {
       "email": "admin@3ddx.com",
       "fullName": "System Administrator",
-      "groups": ["admin"],
+      "groups": [
+        "admin"
+      ],
       "orgUnit": "IT/Administration",
-      "roles": ["system-admin"],
+      "roles": [
+        "admin",
+        "system-admin"
+      ],
       "twoStepEnabled": true,
       "department": "IT"
     },
     {
       "email": "platform@3ddx.com",
       "fullName": "Platform Engineer",
-      "groups": ["platform", "engineering"],
+      "groups": [
+        "platform"
+      ],
       "orgUnit": "Engineering/Platform",
-      "roles": ["platform-engineer"],
+      "roles": [
+        "platform-engineer"
+      ],
       "twoStepEnabled": true,
       "department": "Engineering"
     }
   ],
-  "departments": [
+  "groups": [
     {
-      "name": "Engineering",
-      "orgUnit": "Engineering",
-      "description": "Software development and platform engineering"
+      "name": "admin",
+      "description": "System administrators with full access"
     },
     {
-      "name": "Finance",
-      "orgUnit": "Finance", 
-      "description": "Financial operations and accounting"
+      "name": "engineering",
+      "description": "Engineering team members"
     },
     {
-      "name": "IT",
-      "orgUnit": "IT",
-      "description": "Information technology and system administration"
+      "name": "finance",
+      "description": "Finance and accounting team"
+    },
+    {
+      "name": "platform",
+      "description": "Platform engineering team"
+    },
+    {
+      "name": "SWD",
+      "description": "Software Development Department"
+    },
+    {
+      "name": "SWD Meeting Group",
+      "description": "SWD group meeting members"
+    },
+    {
+      "name": "3DDX",
+      "description": "All 3DDX organization members"
+    },
+    {
+      "name": "default",
+      "description": "Default group for new users"
+    },
+    {
+      "name": "Finance22",
+      "description": "Finance department with access to surgical guide reports"
+    },
+    {
+      "name": "Developers22",
+      "description": "Developers with API documentation access"
     }
   ],
   "roles": [
     {
-      "name": "developer",
-      "description": "Software developer with code and project access"
+      "name": "admin",
+      "description": "Administrator with management privileges"
     },
     {
-      "name": "senior-developer", 
-      "description": "Senior software developer with additional privileges"
+      "name": "developer",
+      "description": "Software developer"
     },
     {
       "name": "platform-engineer",
-      "description": "Platform and infrastructure engineer"
+      "description": "Platform infrastructure engineer"
     },
     {
       "name": "accountant",
-      "description": "Financial operations and invoice management"
-    },
-    {
-      "name": "admin",
-      "description": "System administrator with full access"
+      "description": "Financial accountant"
     },
     {
       "name": "system-admin",

@@ -1,15 +1,10 @@
 import { jest } from '@jest/globals';
-import { createLogger, logPageView } from '../../server/src/services/logging.js';
 import { httpLoggerMiddleware } from '../../server/src/middleware/logger.js';
-
-jest.mock('../../server/src/services/logging.js', () => ({
-  createLogger: jest.fn(() => ({ info: jest.fn() })),
-  logPageView: jest.fn()
-}));
 
 describe('httpLoggerMiddleware', () => {
   let req, res, next;
 
+  let mockLogPageView;
   beforeEach(() => {
     req = {
       method: 'GET',
@@ -25,6 +20,7 @@ describe('httpLoggerMiddleware', () => {
       end: jest.fn(function(chunk, encoding) { return undefined; })
     };
     next = jest.fn();
+    mockLogPageView = jest.fn();
     jest.clearAllMocks();
   });
 
@@ -36,20 +32,20 @@ describe('httpLoggerMiddleware', () => {
   });
 
   it('logs page view for non-API GET requests', () => {
-  httpLoggerMiddleware(req, res, next);
+  httpLoggerMiddleware(req, res, next, mockLogPageView);
   res.end();
   expect(req.url.startsWith('/api/')).toBe(false);
   expect(req.method).toBe('GET');
-  expect(logPageView).toHaveBeenCalledWith('/dashboard', expect.objectContaining({ requestId: 'abc', userEmail: 'user@example.com', ip: '127.0.0.1', userAgent: 'UA' }));
+  expect(mockLogPageView).toHaveBeenCalledWith('/dashboard', expect.objectContaining({ requestId: 'abc', userEmail: 'user@example.com', ip: '127.0.0.1', userAgent: 'UA' }));
   expect(next).toHaveBeenCalled();
   });
 
   it('does not log page view for API GET requests', () => {
-    req.url = '/api/test';
-    httpLoggerMiddleware(req, res, next);
-    expect(req.url.startsWith('/api/')).toBe(true);
-    expect(logPageView).not.toHaveBeenCalled();
-    expect(next).toHaveBeenCalled();
+  req.url = '/api/test';
+  httpLoggerMiddleware(req, res, next, mockLogPageView);
+  expect(req.url.startsWith('/api/')).toBe(true);
+  expect(mockLogPageView).not.toHaveBeenCalled();
+  expect(next).toHaveBeenCalled();
   });
 
   it('logs response on res.end', () => {

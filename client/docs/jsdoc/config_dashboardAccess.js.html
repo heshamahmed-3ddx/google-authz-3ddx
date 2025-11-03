@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: config/dashboardAccess.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: config/dashboardAccess.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Dashboard Access Control Configuration
+ * 
+ * This file defines which user groups have access to different dashboard sections.
+ * 
+ * Special values:
+ * - '*' : All authenticated users have access
+ * - ['group1', 'group2'] : Only users in these groups have access
+ * 
+ * To modify access:
+ * 1. Add/remove group names from the arrays
+ * 2. Use '*' to allow all users
+ * 3. Use empty array [] to deny all users
+ * 
+ * @example
+ * // Allow only admin group
+ * userRights: ['admin']
+ * 
+ * // Allow multiple groups
+ * technicalInfo: ['SWD', 'admin', 'developers']
+ * 
+ * // Allow all users
+ * userDetails: ['*']
+ */
+
+export const DASHBOARD_ACCESS_CONFIG = {
+  // ========================================
+  // BASIC USER INFORMATION
+  // ========================================
+  
+  /**
+   * User Details &amp; Organization section
+   * Displays basic user information, account status, and organization details
+   */
+  userDetails: ['*'],
+  
+  /**
+   * Employee Information section
+   * Shows employee ID, job title, department, manager, etc.
+   */
+  employeeInfo: ['*'],
+  
+  /**
+   * Contact Information section
+   * Displays phone numbers, secondary emails, and addresses
+   */
+  contactInfo: ['*'],
+  
+  /**
+   * Groups section
+   * Shows Google Workspace groups the user belongs to
+   */
+  groups: ['*'],
+  
+  // ========================================
+  // ADVANCED FEATURES (RESTRICTED)
+  // ========================================
+  
+  /**
+   * User Rights &amp; Permissions section
+   * Shows Casbin authorization policies and user rights
+   * Allows testing authorization for different resources/actions
+   */
+  userRights: ['SWD', 'admin', 'developers'],
+  
+  /**
+   * Technical Information section
+   * Displays raw user data JSON and field descriptions
+   * Contains sensitive technical details
+   */
+  technicalInfo: ['SWD', 'admin', 'developers'],
+  
+  /**
+   * API Documentation section
+   * Links to Swagger API docs and JSDoc documentation
+   * Provides access to technical API references
+   */
+  apiDocumentation: ['SWD', 'admin', 'developers'],
+  
+  // ========================================
+  // FUTURE SECTIONS (ADD AS NEEDED)
+  // ========================================
+  
+  /**
+   * Admin Panel (if implemented)
+   * Full administrative controls
+   */
+  // adminPanel: ['admin'],
+  
+  /**
+   * Analytics Dashboard (if implemented)
+   * Usage statistics and analytics
+   */
+  // analytics: ['SWD', 'admin', 'managers'],
+  
+  /**
+   * Audit Logs (if implemented)
+   * System audit trail and logs
+   */
+  // auditLogs: ['admin', 'security-team'],
+};
+
+/**
+ * Get a human-readable list of groups that can access restricted features
+ * @returns {string[]} Array of unique group names (excluding '*')
+ */
+export function getRequiredGroupsForRestrictedAccess() {
+  const allGroups = new Set();
+  
+  Object.entries(DASHBOARD_ACCESS_CONFIG).forEach(([section, groups]) => {
+    // Only include restricted sections (not '*')
+    if (!groups.includes('*')) {
+      groups.forEach(group => allGroups.add(group));
+    }
+  });
+  
+  return Array.from(allGroups);
+}
+
+/**
+ * Check if a section is restricted (not open to all users)
+ * @param {string} section - Section name from DASHBOARD_ACCESS_CONFIG
+ * @returns {boolean} True if section is restricted
+ */
+export function isSectionRestricted(section) {
+  const config = DASHBOARD_ACCESS_CONFIG[section];
+  return config &amp;&amp; !config.includes('*');
+}
+
+/**
+ * Get all section names that are restricted
+ * @returns {string[]} Array of restricted section names
+ */
+export function getRestrictedSections() {
+  return Object.keys(DASHBOARD_ACCESS_CONFIG).filter(section => 
+    isSectionRestricted(section)
+  );
+}
+
+export default DASHBOARD_ACCESS_CONFIG;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#createClientLogger">createClientLogger</a></li><li><a href="global.html#debug">debug</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getCallerInfo">getCallerInfo</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#isCriticalLog">isCriticalLog</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#logApiCall">logApiCall</a></li><li><a href="global.html#logAuth">logAuth</a></li><li><a href="global.html#logNavigation">logNavigation</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#warn">warn</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 03 2025 15:32:30 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

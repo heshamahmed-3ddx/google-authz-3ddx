@@ -46,8 +46,10 @@
     "no": "No",
     "notProvided": "Not provided",
     "unknown": "Unknown",
+  "none": "Not assigned yet",
     "userDetailsOrganization": "User Details & Organization",
     "fullName": "Full Name",
+    "email": "Email",
     "organizationUnit": "Organization Unit",
     "department": "Department",
     "groupsRoles": "Groups and Roles",
@@ -69,6 +71,7 @@
     "tfaDisabled": "2FA Disabled",
     "accountStatus": "Account Status",
     "active": "Active",
+    "suspended": "Suspended",
     "sessionInformation": "Session Information",
     "apiDocumentation": "API Documentation",
     "swaggerDocs": "Swagger Documentation",
@@ -180,5 +183,8 @@
     "currentGroups": "Current Groups",
     "availableGroups": "Available Groups",
     "roles": "Roles"
+  },
+  "language": {
+    "switch": "Switch"
   }
 }

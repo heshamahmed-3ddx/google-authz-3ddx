@@ -1,10 +1,11 @@
 /**
  * @file casbin.js
- * @description Casbin authorization service for policy-based access control
+ * @description Casbin authorization service for policy-based access control with enhanced logging
  * @author 3D Diagnostix Development Team
  * @created 2025-10-07
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
  */
+
 
 import { newEnforcer } from 'casbin';
 import path from 'path';
@@ -12,8 +13,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import fs from 'fs';
-import { createLogger, logAuthz } from './logging.js';
-// Use Node.js globals for __dirname and __filename (Jest/Babel compatible)
+import { createContextLogger, logSystemInit, logExternalService, logSecurityEvent } from './logger.js';
+
+const logger = createContextLogger(__filename, 'CasbinService');
 
 /**
  * CasbinService
@@ -28,7 +30,6 @@ class CasbinService {
   constructor() {
     this.enforcer = null;
     this.usersData = null;
-    this.logger = createLogger({ service: 'casbin' });
   }
 
   /**
@@ -47,36 +48,64 @@ class CasbinService {
 
       // Verify files exist
       if (!fs.existsSync(modelPath)) {
+        logger.error('Casbin model file not found', { modelPath });
         throw new Error(`Casbin model file not found: ${modelPath}`);
       }
       if (!fs.existsSync(policyPath)) {
+        logger.error('Casbin policy file not found', { policyPath });
         throw new Error(`Casbin policy file not found: ${policyPath}`);
       }
       if (!fs.existsSync(usersPath)) {
+        logger.error('Users data file not found', { usersPath });
         throw new Error(`Users data file not found: ${usersPath}`);
       }
 
+      logger.info('Casbin initialization started', { modelPath, policyPath, usersPath });
+
       // Initialize enforcer
       this.enforcer = await newEnforcer(modelPath, policyPath);
+      
+      // Load and count policies
+      const allPolicies = await this.enforcer.getPolicy();
+      const allGroupings = await this.enforcer.getGroupingPolicy();
+      
+      logger.info('Casbin enforcer initialized successfully', {
+        policiesCount: allPolicies.length,
+        groupingsCount: allGroupings.length
+      });
+
+      // Test authorization functionality
+      const testEmail = 'hesham.ahmed@3ddx.com';
+      const testResource = 'dashboard';
+      const testAction = 'read';
+      const allowed = await this.enforcer.enforce(testEmail, testResource, testAction);
+      
+      logger.info('Casbin authorization test completed', {
+        testSubject: testEmail,
+        testResource,
+        testAction,
+        result: allowed
+      });
       
       // Load users data
       const usersFileContent = fs.readFileSync(usersPath, 'utf8');
       this.usersData = JSON.parse(usersFileContent);
 
-      this.logger.info({
+      // Log system initialization completion
+      logSystemInit('Casbin Enforcer', 'initialized successfully', {
         modelPath,
         policyPath,
         usersPath,
-        policyCount: await this.enforcer.getPolicy().length,
+        policyCount: (await this.enforcer.getPolicy()).length,
         userCount: this.usersData.users.length
-      }, 'Casbin enforcer initialized successfully');
+      });
       
       return true;
     } catch (error) {
-      this.logger.error({
+      logger.error('Failed to initialize Casbin enforcer', {
         error: error.message,
         stack: error.stack
-      }, 'Failed to initialize Casbin enforcer');
+      });
       throw error;
     }
   }
@@ -89,11 +118,19 @@ class CasbinService {
    * const user = casbinService.getUserInfo('john@3ddiagnostix.com');
    * // Returns: { email: 'john@...', fullName: 'John Doe', groups: ['Engineering'], ... }
    */
-  getUserInfo(email) {
+  /**
+   * Get user info from session (Google data) if available, fallback to users.json
+   * @param {string} email - User email address
+   * @param {Object} [sessionUser] - Optional user object from session
+   * @returns {Object|null} User info
+   */
+  getUserInfo(email, sessionUser = null) {
+    if (sessionUser && sessionUser.email === email) {
+      return sessionUser;
+    }
     if (!this.usersData || !this.usersData.users) {
       return null;
     }
-    
     return this.usersData.users.find(user => user.email === email) || null;
   }
 
@@ -111,11 +148,14 @@ class CasbinService {
    */
   async authorize(userEmail, resource, action) {
     if (!this.enforcer) {
+      logger.error('Authorization failed - Casbin enforcer not initialized', { userEmail, resource, action });
       throw new Error('Casbin enforcer not initialized');
     }
 
     try {
       const startTime = Date.now();
+      
+      logger.info('Authorization check started', { userEmail, resource, action });
       
       // Check authorization
       const allowed = await this.enforcer.enforce(userEmail, resource, action);
@@ -133,6 +173,18 @@ class CasbinService {
         return userGroups.includes(subject) && obj === resource && act === action;
       });
 
+      // Log authorization result
+      const logLevel = allowed ? 'info' : 'warn';
+      logger[logLevel](`Authorization ${allowed ? 'granted' : 'denied'}`, {
+        userEmail,
+        resource,
+        action,
+        result: allowed,
+        duration: `${duration}ms`,
+        userGroups,
+        matchingPolicies: matchingPolicies.length
+      });
+
       const result = {
         allowed,
         userEmail,
@@ -145,17 +197,15 @@ class CasbinService {
         requestId: 'unknown' // Will be set by calling function
       };
 
-      // Log authorization decision using structured logging
-      logAuthz(result);
-
       return result;
     } catch (error) {
-      this.logger.error({
+      logger.error('Authorization error', {
         error: error.message,
         userEmail,
         resource,
-        action
-      }, 'Authorization error');
+        action,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -173,74 +223,132 @@ class CasbinService {
    * //   rights: [{ resource: 'patient_data', actions: ['read', 'write'] }]
    * // }
    */
-  async getUserRights(userEmail) {
+  /**
+   * Get all permissions for a user across all resources using live Google data
+   * @param {string} userEmail - User's email address
+   * @param {Object} [sessionUser] - Optional user object from session (Google)
+   * @returns {Promise<Object>} User rights object
+   */
+  async getUserRights(userEmail, sessionUser = null) {
     if (!this.enforcer) {
+      logger.error('Get user rights failed - Casbin enforcer not initialized', { userEmail });
       throw new Error('Casbin enforcer not initialized');
     }
 
-    try {
-      const userInfo = this.getUserInfo(userEmail);
-      if (!userInfo) {
-        return {
-          userEmail,
-          found: false,
-          rights: [],
-          groups: [],
-          roles: []
-        };
-      }
+    logger.info('User rights retrieval started', { 
+      userEmail, 
+      hasSessionUser: !!sessionUser,
+      sessionGroups: sessionUser?.groups?.length || 0
+    });
 
-      const userGroups = userInfo.groups || [];
-      const userRoles = userInfo.roles || [];
-      
-      // Get all policies
-      const allPolicies = await this.enforcer.getPolicy();
-      
-      // Group permissions by resource
-      const resourcePermissions = {};
-      
-      for (const policy of allPolicies) {
-        const [, subject, resource, action] = policy;
-        
-        // Check if user belongs to this policy's subject (group/role)
-        if (userGroups.includes(subject)) {
-          if (!resourcePermissions[resource]) {
-            resourcePermissions[resource] = new Set();
-          }
-          resourcePermissions[resource].add(action);
-        }
-      }
-
-      // Convert to array format
-      const rights = Object.entries(resourcePermissions).map(([resource, actions]) => ({
-        resource,
-        actions: Array.from(actions).sort()
-      }));
-
-      const result = {
+    // Use Google session data if available
+    const userInfo = this.getUserInfo(userEmail, sessionUser);
+    if (!userInfo) {
+      logger.warn('User not found in system', { userEmail });
+      return {
         userEmail,
-        found: true,
-        fullName: userInfo.fullName,
-        groups: userGroups,
-        roles: userRoles,
-        orgUnit: userInfo.orgUnit,
-        department: userInfo.department,
-        twoStepEnabled: userInfo.twoStepEnabled,
-        rights: rights.sort((a, b) => a.resource.localeCompare(b.resource))
+        found: false,
+        rights: [],
+        groups: [],
+        roles: []
       };
-
-      this.logger.info({
-        userEmail,
-        resourceCount: rights.length,
-        groups: userGroups,
-        roles: userRoles
-      }, `Retrieved rights for user: ${userEmail}`);
-      
-      return result;
-    } catch (error) {
-      console.error('❌ Error getting user rights:', error.message);
-      throw error;
     }
+
+    logger.info('User info retrieved successfully', {
+      userEmail,
+      userGroups: userInfo.groups,
+      userRoles: userInfo.roles,
+      orgUnit: userInfo.orgUnit
+    });
+
+    console.log('DEBUG: About to add group memberships for', userEmail, 'groups:', userInfo.groups);
+
+    // Dynamically assign Casbin group memberships for this session
+    if (userInfo.groups && Array.isArray(userInfo.groups)) {
+      for (const group of userInfo.groups) {
+        await this.enforcer.addGroupingPolicy(userEmail, group);
+        logger.info('Added group membership', { userEmail, group });
+      }
+    }
+    if (userInfo.roles && Array.isArray(userInfo.roles)) {
+      for (const role of userInfo.roles) {
+        await this.enforcer.addGroupingPolicy(userEmail, role);
+        logger.info('Added role membership', { userEmail, role });
+      }
+    }
+
+    console.log('DEBUG: About to evaluate policies');
+
+    // Evaluate all policies for this user
+    const allPolicies = await this.enforcer.getPolicy();
+    console.log('DEBUG: Got policies count:', allPolicies.length);
+    console.log('DEBUG: First 10 policies:', allPolicies.slice(0, 10).map(p => `[${p.join(', ')}]`));
+    
+    logger.info('Evaluating policies', { 
+      userEmail, 
+      totalPolicies: allPolicies.length,
+      userGroups: userInfo.groups,
+      userRoles: userInfo.roles
+    });
+    
+    // Get all subjects (groups/roles) the user belongs to
+    const allUserSubjects = [
+      userEmail,
+      ...(userInfo.groups || []),
+      ...(userInfo.roles || [])
+    ];
+    
+    console.log('DEBUG: User subjects:', allUserSubjects);
+    
+    // Filter policies that apply to the user's subjects
+    const relevantPolicies = allPolicies.filter(policy => {
+      const [subject] = policy;  // First element is the subject
+      return allUserSubjects.includes(subject);
+    });
+    
+    console.log('DEBUG: Relevant policies count:', relevantPolicies.length);
+    console.log('DEBUG: All policy subjects:', [...new Set(allPolicies.map(p => p[0]))]);
+    
+    const resourcePermissions = {};
+    let checkedCount = 0;
+    
+    for (const policy of relevantPolicies) {
+      const [subject, resource, action] = policy;  // Correct order
+      checkedCount++;
+      
+      if (!resourcePermissions[resource]) {
+        resourcePermissions[resource] = new Set();
+      }
+      resourcePermissions[resource].add(action);
+      
+      console.log(`DEBUG: Permission ${checkedCount}/${relevantPolicies.length}: ${subject} -> ${resource}.${action}`);
+      logger.info('Permission granted', { userEmail, subject, resource, action });
+    }
+    
+    console.log('DEBUG: Total resources found:', Object.keys(resourcePermissions).length);
+    
+    logger.info('Rights evaluation complete', { 
+      userEmail, 
+      resourceCount: Object.keys(resourcePermissions).length,
+      resources: Object.keys(resourcePermissions)
+    });
+    const rightsArr = Object.entries(resourcePermissions).map(([resource, actions]) => ({
+      resource,
+      actions: Array.from(actions).sort()
+    }));
+
+    return {
+      userEmail,
+      found: true,
+      fullName: userInfo.name || userInfo.fullName,
+      groups: userInfo.groups || [],
+      roles: userInfo.roles || [],
+      orgUnit: userInfo.orgUnit,
+      department: userInfo.department,
+      twoStepEnabled: userInfo.twoStepEnabled,
+      rights: rightsArr.sort((a, b) => a.resource.localeCompare(b.resource)),
+      googleRaw: userInfo.googleRaw || undefined
+    };
   }
 
   /**
@@ -255,14 +363,8 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    try {
-      const added = await this.enforcer.addPolicy(subject, object, action);
-      console.log(`📋 Policy ${added ? 'added' : 'already exists'}: ${subject}, ${object}, ${action}`);
-      return added;
-    } catch (error) {
-      console.error('❌ Error adding policy:', error.message);
-      throw error;
-    }
+    const added = await this.enforcer.addPolicy(subject, object, action);
+    return added;
   }
 
   /**
@@ -277,14 +379,8 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    try {
-      const removed = await this.enforcer.removePolicy(subject, object, action);
-      console.log(`📋 Policy ${removed ? 'removed' : 'not found'}: ${subject}, ${object}, ${action}`);
-      return removed;
-    } catch (error) {
-      console.error('❌ Error removing policy:', error.message);
-      throw error;
-    }
+    const removed = await this.enforcer.removePolicy(subject, object, action);
+    return removed;
   }
 
   /**
@@ -308,13 +404,7 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    try {
-      await this.enforcer.loadPolicy();
-      console.log('🔄 Casbin policies reloaded');
-    } catch (error) {
-      console.error('❌ Error reloading policies:', error.message);
-      throw error;
-    }
+    await this.enforcer.loadPolicy();
   }
 
   /**
@@ -355,17 +445,42 @@ class CasbinService {
    * @param {string} _userEmail - User email (unused, gets all groupings)
    * @returns {Promise<Array>} - User's group assignments
    */
-  async getUserGroups(_userEmail) {
+
+  async getUserGroups(userEmail) {
     if (!this.enforcer) {
       throw new Error('Casbin enforcer not initialized');
     }
+    // In our RBAC model, groups are often represented as roles
+    // Get all grouping policies and filter for this user
+    const allGroupings = await this.enforcer.getGroupingPolicy();
+    const userGroups = allGroupings
+      .filter(grouping => grouping[0] === userEmail)
+      .map(grouping => grouping[1]); // Extract the group/role name
+    return userGroups;
+  }
 
-    try {
-      return await this.enforcer.getGroupingPolicy();
-    } catch (error) {
-      console.error('❌ Error getting user groups:', error.message);
-      throw error;
-    }
+  /**
+   * Get roles for a user (direct and indirect)
+   * @param {string} userEmail
+   * @returns {Promise<Array>} - List of roles
+   */
+  async getUserRoles(userEmail) {
+    if (!this.enforcer) throw new Error('Casbin enforcer not initialized');
+    // Casbin getRolesForUser returns direct and inherited roles
+    return await this.enforcer.getRolesForUser(userEmail);
+  }
+
+  /**
+   * Get permissions for a user (resource/action pairs)
+   * @param {string} userEmail
+   * @returns {Promise<Array<{resource: string, action: string}>>}
+   */
+  async getUserPermissions(userEmail) {
+    if (!this.enforcer) throw new Error('Casbin enforcer not initialized');
+    // Casbin getPermissionsForUser returns [sub, obj, act] arrays
+    const perms = await this.enforcer.getPermissionsForUser(userEmail);
+    // Map to { resource, action }
+    return perms.map(p => ({ resource: p[1], action: p[2] }));
   }
 
   /**
@@ -379,14 +494,8 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    try {
-      const added = await this.enforcer.addGroupingPolicy(userEmail, group);
-      console.log(`👥 User ${added ? 'added to' : 'already in'} group: ${userEmail} -> ${group}`);
-      return added;
-    } catch (error) {
-      console.error('❌ Error adding user to group:', error.message);
-      throw error;
-    }
+    const added = await this.enforcer.addGroupingPolicy(userEmail, group);
+    return added;
   }
 
   /**
@@ -400,12 +509,112 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
+    const removed = await this.enforcer.removeGroupingPolicy(userEmail, group);
+    return removed;
+  }
+
+  /**
+   * Sync user data from Google to Casbin
+   * Updates user groups and roles based on Google Directory information
+   * @param {string} userEmail - User email
+   * @param {Object} googleData - Google user data
+   * @param {string} googleData.fullName - User's full name
+   * @param {Array} googleData.groups - Google groups
+   * @param {Array} googleData.roles - Google roles
+   * @param {string} googleData.orgUnit - Organizational unit
+   * @param {string} googleData.department - Department
+   * @param {Array} googleData.userGroupRoles - Detailed group roles
+   * @returns {Promise<Object>} - Sync result
+   */
+  async syncUserFromGoogle(userEmail, googleData) {
+    if (!this.enforcer) {
+      throw new Error('Casbin enforcer not initialized');
+    }
+
     try {
-      const removed = await this.enforcer.removeGroupingPolicy(userEmail, group);
-      console.log(`👥 User ${removed ? 'removed from' : 'not found in'} group: ${userEmail} -> ${group}`);
-      return removed;
+      logger.info('Starting Google to Casbin sync', { 
+        userEmail, 
+        groups: googleData.groups?.length || 0,
+        roles: googleData.roles?.length || 0
+      });
+
+
+      // Get all current group assignments for this user
+      const allGroupings = await this.enforcer.getGroupingPolicy();
+      // Only consider group assignments for this user
+      const currentGroups = allGroupings
+        .filter(([user, group]) => user === userEmail)
+        .map(([user, group]) => group);
+
+      // Local-only groups that should NOT be removed by Google sync
+      // These are used for development, testing, or manual assignments
+      const localOnlyGroups = ['Finance22', 'Developers22', 'admin', 'engineering', 'developer'];
+
+      // Remove user from groups that are NOT in the new Google group list
+      // BUT preserve local-only groups that were manually added
+      const googleGroups = Array.isArray(googleData.groups) ? googleData.groups : [];
+      for (const group of currentGroups) {
+        // Skip removal if this is a local-only group
+        if (localOnlyGroups.includes(group)) {
+          logger.debug('Preserving local-only group during sync', { userEmail, group });
+          continue;
+        }
+        
+        if (!googleGroups.includes(group)) {
+          await this.removeUserFromGroup(userEmail, group);
+          logger.info('Removed user from group', { userEmail, group });
+        }
+      }
+
+      // Add user to new Google groups
+      if (googleData.groups && Array.isArray(googleData.groups)) {
+        for (const group of googleData.groups) {
+          if (group) {
+            await this.addUserToGroup(userEmail, group);
+            logger.info('Added user to group', { userEmail, group });
+          }
+        }
+      }
+
+      // Update user info in memory (if using users.json)
+      if (this.usersData && this.usersData.users) {
+        const userIndex = this.usersData.users.findIndex(u => u.email === userEmail);
+        const userData = {
+          email: userEmail,
+          name: googleData.fullName,
+          groups: googleData.groups || [],
+          roles: googleData.roles || [],
+          orgUnit: googleData.orgUnit || '',
+          department: googleData.department || ''
+        };
+
+        if (userIndex >= 0) {
+          this.usersData.users[userIndex] = userData;
+        } else {
+          this.usersData.users.push(userData);
+        }
+      }
+
+      logger.info('Google to Casbin sync completed successfully', { 
+        userEmail,
+        syncedGroups: googleData.groups?.length || 0,
+        syncedRoles: googleData.roles?.length || 0
+      });
+
+      return {
+        success: true,
+        userEmail,
+        syncedGroups: googleData.groups || [],
+        syncedRoles: googleData.roles || [],
+        orgUnit: googleData.orgUnit
+      };
+
     } catch (error) {
-      console.error('❌ Error removing user from group:', error.message);
+      logger.error('Google to Casbin sync failed', { 
+        userEmail, 
+        error: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }

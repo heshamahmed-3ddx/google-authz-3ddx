@@ -72,7 +72,7 @@ const supportedLanguages = [
     code: "ar",
     name: "Arabic",
     nativeName: "العربية",
-    flag: "🇸🇦",
+    flag: "🇪🇬",
     dir: "rtl",
   },
 ];
@@ -115,13 +115,6 @@ const changeLanguage = (languageCode) => {
   position: relative;
   display: inline-block;
 }
-
-.language-toggle {
-  min-width: 40px !important;
-  width: 40px;
-  height: 40px;
-}
-
 .flag-emoji {
   font-size: 20px;
   line-height: 1;

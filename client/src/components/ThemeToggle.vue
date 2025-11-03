@@ -43,7 +43,7 @@
 
           <v-divider></v-divider>
 
-          <v-list-item @click="toggleAutoTheme">
+          <!-- <v-list-item @click="toggleAutoTheme">
             <template #prepend>
               <v-icon :color="themeStore.isAutoTheme ? 'primary' : 'grey'">
                 mdi-theme-light-dark
@@ -58,7 +58,7 @@
                 density="compact"
               ></v-switch>
             </template>
-          </v-list-item>
+          </v-list-item> -->
         </v-list>
       </v-card>
     </v-menu>
@@ -88,10 +88,7 @@ const setTheme = (theme) => {
   showMenu.value = false;
 };
 
-const toggleAutoTheme = () => {
-  themeStore.toggleAutoTheme();
-  showMenu.value = false;
-};
+// toggleAutoTheme removed as unused
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 {
   "source": {
-    "include": ["./src/"],
+  "include": ["client/src/services", "client/src/stores", "client/src/components", "client/src/views"],
     "includePattern": "\\.(js|vue)$",
     "exclude": ["node_modules/"]
   },

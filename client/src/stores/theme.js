@@ -67,7 +67,7 @@ export const useThemeStore = defineStore("theme", () => {
       // Apply theme to CSS variables
       applyThemeToCSS(palette.value);
 
-      console.log(`🎨 Theme changed to: ${theme}`);
+      // Theme changed
     }
   };
 
