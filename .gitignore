@@ -156,4 +156,5 @@ cypress/screenshots/
 # Playwright
 test-results/
 playwright-report/
-playwright/.cache/
+playwright/.cache/grafana-12.2.1/
+grafana-enterprise_12.2.1_18655849634_darwin_amd64.tar.gz
