@@ -1,0 +1,481 @@
+# Vue Components Reference
+
+## Overview
+
+This guide documents all major Vue 3 components in the application, including props, events, slots, and usage examples.
+
+## Core Components
+
+### NavigationSidebar.vue
+
+**Location:** `client/src/components/NavigationSidebar.vue`
+
+**Purpose:** Main sidebar navigation with Oracle Fusion-inspired design
+
+**Props:**
+```typescript
+{
+  modelValue: boolean,  // Controls drawer open/close
+  rail: boolean         // Enables compact mode
+}
+```
+
+**Events:**
+- `update:modelValue` - Emits when drawer state changes
+- `update:rail` - Emits when rail mode toggles
+
+**Features:**
+- Hierarchical navigation with expandable groups
+- Permission-based menu filtering
+- User profile display
+- Search functionality
+- Responsive design (mobile/desktop)
+
+**Usage:**
+```vue
+<template>
+  <NavigationSidebar
+    v-model="drawer"
+    :rail="isCompact"
+    @update:rail="handleRailToggle"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import NavigationSidebar from '@/components/NavigationSidebar.vue';
+
+const drawer = ref(true);
+const isCompact = ref(false);
+
+const handleRailToggle = (newState) => {
+  isCompact.value = newState;
+};
+</script>
+```
+
+---
+
+### ThemeToggle.vue
+
+**Location:** `client/src/components/ThemeToggle.vue`
+
+**Purpose:** Light/dark theme switcher with auto mode
+
+**Props:**
+- None (uses `useThemeStore()`)
+
+**Features:**
+- Light, dark, and auto themes
+- Persistent selection (localStorage)
+- Smooth transitions
+- Icon indicators
+
+**Usage:**
+```vue
+<template>
+  <ThemeToggle />
+</template>
+
+<script setup>
+import ThemeToggle from '@/components/ThemeToggle.vue';
+</script>
+```
+
+**Store Integration:**
+```javascript
+import { useThemeStore } from '@/stores/theme';
+
+const themeStore = useThemeStore();
+themeStore.setTheme('dark'); // 'light', 'dark', or 'auto'
+```
+
+---
+
+### LanguageSwitcher.vue
+
+**Location:** `client/src/components/LanguageSwitcher.vue`
+
+**Purpose:** Multi-language UI switcher
+
+**Props:**
+- None (uses Vue I18n)
+
+**Supported Languages:**
+- English (en)
+- Arabic (ar) - RTL support
+- Spanish (es)
+- French (fr)
+
+**Features:**
+- Dropdown language selector
+- Flag icons
+- RTL layout switching
+- Persistent selection
+
+**Usage:**
+```vue
+<template>
+  <LanguageSwitcher />
+</template>
+
+<script setup>
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+</script>
+```
+
+---
+
+### DevToolbar.vue
+
+**Location:** `client/src/components/DevToolbar.vue`
+
+**Purpose:** Development mode controls and debugging tools
+
+**Props:**
+- None (uses `useDevModeStore()`)
+
+**Features:**
+- Admin view toggle
+- Simulated group membership
+- Dev mode indicator
+- Only visible in development
+
+**Usage:**
+```vue
+<template>
+  <DevToolbar v-if="isDevelopment" />
+</template>
+
+<script setup>
+import DevToolbar from '@/components/DevToolbar.vue';
+
+const isDevelopment = import.meta.env.DEV;
+</script>
+```
+
+**Store Integration:**
+```javascript
+import { useDevModeStore } from '@/stores/devMode';
+
+const devMode = useDevModeStore();
+devMode.toggleAdminView();
+devMode.addSimulatedGroup('Finance22');
+```
+
+---
+
+### AdminPanel.vue
+
+**Location:** `client/src/components/AdminPanel.vue`
+
+**Purpose:** Admin dashboard for user and policy management
+
+**Props:**
+```typescript
+{
+  users: Array<User>,
+  userHeaders: Array<TableHeader>,
+  loading: boolean
+}
+```
+
+**Events:**
+- `editUser(user)` - Triggers user edit dialog
+- `deleteUser(user)` - Triggers user deletion
+- `refreshUsers()` - Refreshes user list
+
+**Usage:**
+```vue
+<template>
+  <AdminPanel
+    :users="users"
+    :user-headers="headers"
+    :loading="isLoading"
+    @editUser="handleEditUser"
+    @deleteUser="handleDeleteUser"
+    @refreshUsers="loadUsers"
+  />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import AdminPanel from '@/components/AdminPanel.vue';
+
+const users = ref([]);
+const headers = ref([
+  { title: 'Email', key: 'email' },
+  { title: 'Name', key: 'name' },
+  { title: 'Groups', key: 'groups' }
+]);
+const isLoading = ref(false);
+
+const handleEditUser = (user) => {
+  console.log('Edit user:', user);
+};
+
+const handleDeleteUser = (user) => {
+  console.log('Delete user:', user);
+};
+
+const loadUsers = async () => {
+  isLoading.value = true;
+  // Load users...
+  isLoading.value = false;
+};
+</script>
+```
+
+---
+
+## View Components
+
+### DashboardView.vue
+
+**Location:** `client/src/views/DashboardView.vue`
+
+**Purpose:** Main dashboard with user info and access controls
+
+**Features:**
+- User profile display
+- Groups and permissions
+- Technical information (dev mode)
+- API documentation links
+- Access control indicators
+
+**Route:**
+```javascript
+{
+  path: '/dashboard',
+  name: 'Dashboard',
+  component: () => import('@/views/DashboardView.vue'),
+  meta: { requiresAuth: true }
+}
+```
+
+---
+
+### SurgicalGuideReportView.vue
+
+**Location:** `client/src/views/Reports/SurgicalGuideReportView.vue`
+
+**Purpose:** Financial report for surgical guide cases
+
+**Features:**
+- Date range filtering
+- Search functionality
+- Pagination (server-side)
+- CSV export
+- Order type filtering
+- Expandable row details
+- Access control (Finance22 or admin only)
+
+**Route:**
+```javascript
+{
+  path: '/reports/surgical-guide',
+  name: 'SurgicalGuideReport',
+  component: () => import('@/views/Reports/SurgicalGuideReportView.vue'),
+  meta: { 
+    requiresAuth: true,
+    requiredGroups: ['Finance22', 'admin']
+  }
+}
+```
+
+**Usage Example:**
+```vue
+<template>
+  <SurgicalGuideReportView />
+</template>
+```
+
+---
+
+### PlaceholderView.vue
+
+**Location:** `client/src/views/PlaceholderView.vue`
+
+**Purpose:** Generic placeholder for new routes
+
+**Features:**
+- Beautiful placeholder UI
+- Permission indicator
+- Quick navigation
+- Development helper
+
+**Usage:**
+Copy this file to create new views quickly:
+```bash
+cp client/src/views/PlaceholderView.vue client/src/views/MyNewView.vue
+```
+
+---
+
+## Composition API Patterns
+
+### Using Stores
+
+```vue
+<script setup>
+import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
+import { useDevModeStore } from '@/stores/devMode';
+
+const authStore = useAuthStore();
+const themeStore = useThemeStore();
+const devModeStore = useDevModeStore();
+
+// Access state
+const user = authStore.user;
+const isAuthenticated = authStore.isAuthenticated;
+
+// Call actions
+const login = () => authStore.login();
+const logout = () => authStore.logout();
+</script>
+```
+
+### API Calls
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import api from '@/services/api';
+
+const data = ref(null);
+const loading = ref(false);
+const error = ref(null);
+
+const fetchData = async () => {
+  try {
+    loading.value = true;
+    const response = await api.get('/api/endpoint');
+    data.value = response.data;
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
+};
+</script>
+```
+
+### Route Navigation
+
+```vue
+<script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const goToPage = () => {
+  router.push('/path');
+};
+
+const goBack = () => {
+  router.back();
+};
+</script>
+```
+
+---
+
+## Component Best Practices
+
+### 1. Use Composition API
+
+```vue
+<script setup>
+// Preferred: Composition API with script setup
+import { ref, computed, onMounted } from 'vue';
+
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
+
+onMounted(() => {
+  console.log('Component mounted');
+});
+</script>
+```
+
+### 2. Props with Types
+
+```vue
+<script setup>
+defineProps({
+  title: {
+    type: String,
+    required: true
+  },
+  items: {
+    type: Array,
+    default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
+</script>
+```
+
+### 3. Events with Type Safety
+
+```vue
+<script setup>
+const emit = defineEmits(['update', 'delete', 'refresh']);
+
+const handleClick = () => {
+  emit('update', { id: 1, name: 'Item' });
+};
+</script>
+```
+
+### 4. Scoped Styles
+
+```vue
+<style scoped>
+.component {
+  /* Scoped to this component only */
+  color: blue;
+}
+</style>
+```
+
+---
+
+## Testing Components
+
+### Unit Test Example
+
+```javascript
+import { mount } from '@vue/test-utils';
+import { describe, it, expect } from 'vitest';
+import MyComponent from '@/components/MyComponent.vue';
+
+describe('MyComponent', () => {
+  it('renders properly', () => {
+    const wrapper = mount(MyComponent, {
+      props: {
+        title: 'Test'
+      }
+    });
+    expect(wrapper.text()).toContain('Test');
+  });
+
+  it('emits event on click', async () => {
+    const wrapper = mount(MyComponent);
+    await wrapper.find('button').trigger('click');
+    expect(wrapper.emitted()).toHaveProperty('click');
+  });
+});
+```
+
+---
+
+## Next Steps
+
+- [Client API Reference](./api.md)
+- [Architecture Overview](./architecture.md)
+- [Getting Started Guide](./getting-started.md)
