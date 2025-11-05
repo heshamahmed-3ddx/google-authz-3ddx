@@ -477,6 +477,30 @@
   }
 }
 
+/* Sticky Page Headers - Global Style */
+.page-header-sticky {
+  position: sticky;
+  top: 64px; /* Height of app bar */
+  z-index: 10;
+  background-color: rgb(var(--v-theme-surface));
+  padding: 16px 0;
+  margin: -16px 0 16px 0;
+  transition: box-shadow 0.3s ease;
+}
+
+.v-theme--dark .page-header-sticky {
+  background-color: rgb(var(--v-theme-surface));
+}
+
+/* Add subtle shadow when scrolled */
+.page-header-sticky.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.v-theme--dark .page-header-sticky.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 /* Print styles */
 @media print {
   .v-app-bar,
@@ -494,5 +518,10 @@
 
   * {
     transition: none !important;
+  }
+  
+  .page-header-sticky {
+    position: relative !important;
+    top: auto !important;
   }
 }

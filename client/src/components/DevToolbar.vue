@@ -37,13 +37,54 @@
             production.
           </v-alert>
 
+          <!-- Dev Mode Status Info (migrated from DashboardView) -->
+          <div class="dev-mode-content mb-2">
+            <div
+              v-if="devModeStore.adminViewEnabled"
+              class="mb-2 d-flex align-center"
+            >
+              <v-icon color="success" size="18" class="mr-2"
+                >mdi-check-circle</v-icon
+              >
+              <span class="text-body-2">
+                <strong>Admin View Enabled:</strong>
+                <span class="text-medium-emphasis ml-1"
+                  >All dashboard sections are visible</span
+                >
+              </span>
+            </div>
+
+            <div v-if="devModeStore.simulatedGroups.length > 0" class="mb-2">
+              <div class="d-flex align-center mb-1">
+                <v-icon color="info" size="18" class="mr-2"
+                  >mdi-account-group</v-icon
+                >
+                <span class="text-body-2 font-weight-bold"
+                  >Simulated Groups:</span
+                >
+              </div>
+              <div class="ml-6">
+                <v-chip
+                  v-for="group in devModeStore.simulatedGroups"
+                  :key="group"
+                  size="x-small"
+                  color="primary"
+                  variant="flat"
+                  class="mr-2 mb-1"
+                >
+                  {{ group }}
+                </v-chip>
+              </div>
+            </div>
+          </div>
+
           <!-- Admin View Toggle -->
           <v-chip
             :color="devModeStore.adminViewEnabled ? 'success' : 'grey'"
             variant="flat"
             size="small"
             prepend-icon="mdi-shield-crown"
-            class="cursor-pointer"
+            class="cursor-pointer mr-2"
             @click="devModeStore.toggleAdminView"
           >
             <v-icon start size="16">{{
@@ -212,16 +253,28 @@ function toggleGroup(group) {
   transition: transform 0.2s ease;
 }
 
+
+/* Enhanced spacing for dev-mode controls */
 .dev-toolbar .v-chip,
 .dev-toolbar .v-btn {
-  margin-right: 10px;
-  margin-bottom: 6px;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
+  margin-right: 12px;
+  margin-bottom: 10px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  /* Add extra separation for clarity */
 }
 .dev-toolbar .v-chip:last-child,
 .dev-toolbar .v-btn:last-child {
   margin-right: 0;
+}
+
+/* Add vertical spacing between rows if controls wrap */
+.dev-toolbar {
+  row-gap: 8px;
+  column-gap: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
 }
 
 .cursor-pointer {

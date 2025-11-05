@@ -238,11 +238,13 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    logger.info('User rights retrieval started', { 
-      userEmail, 
-      hasSessionUser: !!sessionUser,
-      sessionGroups: sessionUser?.groups?.length || 0
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info('User rights retrieval started', { 
+        userEmail, 
+        hasSessionUser: !!sessionUser,
+        sessionGroups: sessionUser?.groups?.length || 0
+      });
+    }
 
     // Use Google session data if available
     const userInfo = this.getUserInfo(userEmail, sessionUser);
@@ -257,84 +259,43 @@ class CasbinService {
       };
     }
 
-    logger.info('User info retrieved successfully', {
-      userEmail,
-      userGroups: userInfo.groups,
-      userRoles: userInfo.roles,
-      orgUnit: userInfo.orgUnit
-    });
-
-    console.log('DEBUG: About to add group memberships for', userEmail, 'groups:', userInfo.groups);
-
     // Dynamically assign Casbin group memberships for this session
     if (userInfo.groups && Array.isArray(userInfo.groups)) {
       for (const group of userInfo.groups) {
         await this.enforcer.addGroupingPolicy(userEmail, group);
-        logger.info('Added group membership', { userEmail, group });
       }
     }
     if (userInfo.roles && Array.isArray(userInfo.roles)) {
       for (const role of userInfo.roles) {
         await this.enforcer.addGroupingPolicy(userEmail, role);
-        logger.info('Added role membership', { userEmail, role });
       }
     }
 
-    console.log('DEBUG: About to evaluate policies');
-
     // Evaluate all policies for this user
     const allPolicies = await this.enforcer.getPolicy();
-    console.log('DEBUG: Got policies count:', allPolicies.length);
-    console.log('DEBUG: First 10 policies:', allPolicies.slice(0, 10).map(p => `[${p.join(', ')}]`));
-    
-    logger.info('Evaluating policies', { 
-      userEmail, 
-      totalPolicies: allPolicies.length,
-      userGroups: userInfo.groups,
-      userRoles: userInfo.roles
-    });
-    
+
     // Get all subjects (groups/roles) the user belongs to
     const allUserSubjects = [
       userEmail,
       ...(userInfo.groups || []),
       ...(userInfo.roles || [])
     ];
-    
-    console.log('DEBUG: User subjects:', allUserSubjects);
-    
+
     // Filter policies that apply to the user's subjects
     const relevantPolicies = allPolicies.filter(policy => {
       const [subject] = policy;  // First element is the subject
       return allUserSubjects.includes(subject);
     });
-    
-    console.log('DEBUG: Relevant policies count:', relevantPolicies.length);
-    console.log('DEBUG: All policy subjects:', [...new Set(allPolicies.map(p => p[0]))]);
-    
+
     const resourcePermissions = {};
-    let checkedCount = 0;
-    
     for (const policy of relevantPolicies) {
       const [subject, resource, action] = policy;  // Correct order
-      checkedCount++;
-      
       if (!resourcePermissions[resource]) {
         resourcePermissions[resource] = new Set();
       }
       resourcePermissions[resource].add(action);
-      
-      console.log(`DEBUG: Permission ${checkedCount}/${relevantPolicies.length}: ${subject} -> ${resource}.${action}`);
-      logger.info('Permission granted', { userEmail, subject, resource, action });
     }
-    
-    console.log('DEBUG: Total resources found:', Object.keys(resourcePermissions).length);
-    
-    logger.info('Rights evaluation complete', { 
-      userEmail, 
-      resourceCount: Object.keys(resourcePermissions).length,
-      resources: Object.keys(resourcePermissions)
-    });
+
     const rightsArr = Object.entries(resourcePermissions).map(([resource, actions]) => ({
       resource,
       actions: Array.from(actions).sort()

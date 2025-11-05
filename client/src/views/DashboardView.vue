@@ -19,200 +19,13 @@
   <v-container v-else>
     <v-row>
       <v-col cols="12" class="d-flex justify-space-between align-center mb-2">
-        <!-- Dev Mode Controls (Left side) -->
-        <div
-          v-if="devModeStore.isDevelopment"
-          class="d-flex gap-2 align-center flex-wrap"
-        >
-          <!-- Admin View Toggle -->
-          <v-chip
-            :color="devModeStore.adminViewEnabled ? 'success' : 'default'"
-            variant="elevated"
-            prepend-icon="mdi-shield-crown"
-            class="cursor-pointer"
-            size="large"
-            @click="devModeStore.toggleAdminView"
-          >
-            <v-icon start>{{
-              devModeStore.adminViewEnabled ? "mdi-eye" : "mdi-eye-off"
-            }}</v-icon>
-            {{
-              devModeStore.adminViewEnabled
-                ? "Admin View: ON"
-                : "Admin View: OFF"
-            }}
-            <v-tooltip activator="parent" location="bottom">
-              Toggle admin view simulation (Development Only)
-            </v-tooltip>
-          </v-chip>
+        <!-- DevToolbar floating controls are now the only dev mode UI -->
+        <div></div>
 
-          <!-- Group Simulator Dropdown -->
-          <v-menu offset-y :close-on-content-click="false">
-            <template #activator="{ props }">
-              <v-chip
-                v-bind="props"
-                :color="
-                  devModeStore.simulatedGroups.length > 0
-                    ? 'primary'
-                    : 'default'
-                "
-                variant="elevated"
-                prepend-icon="mdi-account-group"
-                class="cursor-pointer"
-                size="large"
-              >
-                <v-icon start>mdi-tune</v-icon>
-                Groups ({{ devModeStore.simulatedGroups.length }})
-                <v-tooltip activator="parent" location="bottom">
-                  Simulate group memberships
-                </v-tooltip>
-              </v-chip>
-            </template>
-            <v-card min-width="320" max-width="400">
-              <v-card-title class="d-flex align-center justify-space-between">
-                <span>Simulate Groups</span>
-                <v-btn
-                  v-if="devModeStore.simulatedGroups.length > 0"
-                  icon="mdi-close-circle"
-                  size="small"
-                  variant="text"
-                  color="error"
-                  @click="devModeStore.clearSimulatedGroups"
-                >
-                  <v-tooltip activator="parent" location="left">
-                    Clear all
-                  </v-tooltip>
-                </v-btn>
-              </v-card-title>
-              <v-divider></v-divider>
-              <v-card-text class="pa-0">
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="group in devModeStore.availableGroups"
-                    :key="group.value"
-                    @click="toggleSimulatedGroup(group.value)"
-                  >
-                    <template #prepend>
-                      <v-checkbox-btn
-                        :model-value="
-                          devModeStore.hasSimulatedGroup(group.value)
-                        "
-                        @click.stop="toggleSimulatedGroup(group.value)"
-                      ></v-checkbox-btn>
-                    </template>
-                    <v-list-item-title>{{ group.label }}</v-list-item-title>
-                    <v-list-item-subtitle class="text-caption">
-                      {{ group.description }}
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                </v-list>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions class="justify-space-between">
-                <v-btn
-                  size="small"
-                  variant="text"
-                  prepend-icon="mdi-refresh"
-                  @click="devModeStore.clearSimulatedGroups"
-                >
-                  Reset
-                </v-btn>
-                <v-chip size="small" color="info">
-                  {{ devModeStore.simulatedGroups.length }} selected
-                </v-chip>
-              </v-card-actions>
-            </v-card>
-          </v-menu>
-        </div>
-        <div v-else></div>
-
-        <!-- Logout Button (Right side) -->
-        <v-btn
-          color="error"
-          variant="outlined"
-          prepend-icon="mdi-logout"
-          @click="doLogout"
-        >
-          Logout
-        </v-btn>
       </v-col>
     </v-row>
 
-    <!-- Dev Admin Mode Banner -->
-    <v-row v-if="devModeStore.isActive">
-      <v-col cols="12">
-        <v-card class="dev-mode-card" elevation="4">
-          <v-card-text class="pa-4">
-            <div class="d-flex align-center mb-3">
-              <v-icon color="warning" size="28" class="mr-3"
-                >mdi-code-tags</v-icon
-              >
-              <div>
-                <div class="text-h6 font-weight-bold text-warning">
-                  Development Mode Active
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  Enhanced testing environment
-                </div>
-              </div>
-            </div>
-
-            <v-divider class="my-3"></v-divider>
-
-            <div class="dev-mode-content">
-              <div
-                v-if="devModeStore.adminViewEnabled"
-                class="mb-3 d-flex align-center"
-              >
-                <v-icon color="success" size="20" class="mr-2"
-                  >mdi-check-circle</v-icon
-                >
-                <span class="text-body-2">
-                  <strong>Admin View Enabled:</strong>
-                  <span class="text-medium-emphasis ml-1"
-                    >All dashboard sections are visible</span
-                  >
-                </span>
-              </div>
-
-              <div v-if="devModeStore.simulatedGroups.length > 0" class="mb-3">
-                <div class="d-flex align-center mb-2">
-                  <v-icon color="info" size="20" class="mr-2"
-                    >mdi-account-group</v-icon
-                  >
-                  <span class="text-body-2 font-weight-bold"
-                    >Simulated Groups:</span
-                  >
-                </div>
-                <div class="ml-7">
-                  <v-chip
-                    v-for="group in devModeStore.simulatedGroups"
-                    :key="group"
-                    size="small"
-                    color="primary"
-                    variant="flat"
-                    class="mr-2 mb-1"
-                  >
-                    {{ group }}
-                  </v-chip>
-                </div>
-              </div>
-
-              <v-alert
-                type="info"
-                variant="tonal"
-                density="compact"
-                class="mt-3"
-                icon="mdi-information-outline"
-              >
-                This development mode is automatically disabled in production
-                environments.
-              </v-alert>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <!-- DevToolbar floating controls are now the only dev mode UI -->
 
     <v-row>
       <v-col cols="12">
@@ -777,51 +590,57 @@
               </p>
             </div>
 
-            <v-expansion-panels v-else variant="accordion" class="mb-4">
-              <v-expansion-panel
+
+            <!-- User Rights as Cards -->
+            <v-row v-else class="mb-4">
+              <v-col
                 v-for="right in userRights.rights"
                 :key="right.resource"
-                :title="right.resource"
+                cols="12" md="6" lg="4"
               >
-                <template #text>
-                  <v-row>
-                    <v-col cols="12">
-                      <h4 class="text-subtitle-1 mb-3">Allowed Actions:</h4>
-                      <v-chip
-                        v-for="action in right.actions"
-                        :key="action"
-                        class="mr-3 mb-2"
-                        :color="getActionColor(action)"
-                        variant="flat"
-                        prepend-icon="mdi-check"
-                        size="small"
-                      >
-                        {{ action }}
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-
-                  <v-divider class="my-4"></v-divider>
-
-                  <v-row>
-                    <v-col cols="12">
-                      <h4 class="text-subtitle-1 mb-3">Test Access:</h4>
-                      <v-btn
-                        v-for="action in right.actions"
-                        :key="`test-${action}`"
-                        class="mr-3 mb-2"
-                        size="small"
-                        variant="outlined"
-                        :loading="testingAuth[`${right.resource}-${action}`]"
-                        @click="testAuthorization(right.resource, action)"
-                      >
-                        Test {{ action }}
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </template>
-              </v-expansion-panel>
-            </v-expansion-panels>
+                <v-card class="mb-4" elevation="2">
+                  <v-card-title class="d-flex align-center">
+                    <v-icon class="mr-2" color="primary">mdi-shield-key</v-icon>
+                    <span class="text-subtitle-1 font-weight-bold">{{ right.resource }}</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <div class="mb-2">
+                      <span class="font-weight-medium">Allowed Actions:</span>
+                      <div class="mt-2">
+                        <v-chip
+                          v-for="action in right.actions"
+                          :key="action"
+                          class="mr-2 mb-2"
+                          :color="getActionColor(action)"
+                          variant="flat"
+                          prepend-icon="mdi-check"
+                          size="small"
+                        >
+                          {{ action }}
+                        </v-chip>
+                      </div>
+                    </div>
+                    <v-divider class="my-3"></v-divider>
+                    <div>
+                      <span class="font-weight-medium">Test Access:</span>
+                      <div class="mt-2">
+                        <v-btn
+                          v-for="action in right.actions"
+                          :key="`test-${action}`"
+                          class="mr-2 mb-2"
+                          size="small"
+                          variant="outlined"
+                          :loading="testingAuth[`${right.resource}-${action}`]"
+                          @click="testAuthorization(right.resource, action)"
+                        >
+                          Test {{ action }}
+                        </v-btn>
+                      </div>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
 
             <div class="text-center">
               <v-btn
