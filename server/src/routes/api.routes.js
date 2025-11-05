@@ -1,6 +1,6 @@
 
 /**
- * @file api.js
+ * @file api.routes.js
  * @description Express router for user data, Google OAuth, Casbin RBAC, and health endpoints with enhanced logging.
  * @author 3D Diagnostix Development Team
  * @created 2025-10-07
@@ -22,7 +22,7 @@ import CONFIG from '../config/config.js'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
-import surgicalGuideReportRoutes from './surgicalGuideReport.routes.js'
+import surgicalGuideOrdersRoutes from './surgicalGuideOrders.routes.js'
 
 // SWD-only page access middleware
 const requireSWD = async (req, res, next) => {
@@ -42,7 +42,7 @@ const requireSWD = async (req, res, next) => {
   }
 };
 
-const __filename = 'api.js'
+const __filename = 'api.routes.js'
 const __dirname = path.dirname(__filename)
 
 const router = Router()
@@ -1821,7 +1821,7 @@ router.get('/dev/casbin-state', requireAuth, async (req, res) => {
 // SURGICAL GUIDE REPORT ROUTES
 // ========================================
 // Mount surgical guide report routes at /api/reports/*
-router.use('/reports', surgicalGuideReportRoutes);
+router.use('/reports', surgicalGuideOrdersRoutes);
 
 export default router
 

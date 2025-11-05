@@ -31,6 +31,10 @@ router.get('/test-session', (req, res) => {
     testValue: req.session.test,
     message: 'Session test completed'
   })
+/**
+ * @file auth.routes.js
+ * @description Authentication and session-related routes
+ */
 })
 
 /**

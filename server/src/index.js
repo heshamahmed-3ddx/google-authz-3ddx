@@ -4,8 +4,8 @@ import session from 'express-session'
 import dotenv from 'dotenv';
 dotenv.config();
 
-import authRoutes from './routes/auth.js'
-import apiRoutes from './routes/api.js'
+import authRoutes from './routes/auth.routes.js'
+import apiRoutes from './routes/api.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import casbinService from './services/casbin.js'
 import databaseService from './services/database.js'

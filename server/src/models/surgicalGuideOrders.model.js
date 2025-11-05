@@ -1,5 +1,5 @@
 /**
- * @file surgicalGuideReport.model.js
+ * @file surgicalGuideOrders.model.js
  * @description Surgical Guide Report data model with queries for PowerBI CP database
  * @author 3D Diagnostix Development Team
  * @created 2025-10-27
@@ -8,7 +8,7 @@
  */
 import databaseService from '../services/database.js';
 
-class SurgicalGuideReportModel {
+class SurgicalGuideOrdersModel {
   async getReportData({ startDate, endDate, page = 1, limit = 50, searchQuery = '', orderTypeFilter = 'all' }) {
     // Default date range: 2014-01-01 to 2015-01-01
     const defaultStartDate = '2014-01-01';
@@ -382,4 +382,4 @@ class SurgicalGuideReportModel {
   }
 }
 
-export default new SurgicalGuideReportModel();
+export default new SurgicalGuideOrdersModel();

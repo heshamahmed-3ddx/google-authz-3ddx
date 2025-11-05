@@ -12,8 +12,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 import fs from 'fs';
 import { createContextLogger, logSystemInit, logExternalService, logSecurityEvent } from './logger.js';
+import { CONFIG } from '../config/config.js';
 
 const logger = createContextLogger(__filename, 'CasbinService');
 
@@ -42,9 +44,9 @@ class CasbinService {
    */
   async initialize() {
     try {
-      const modelPath = path.join(__dirname, '../config/casbin/model.conf');
-      const policyPath = path.join(__dirname, '../config/casbin/policy.csv');
-      const usersPath = path.join(__dirname, '../config/casbin/users.json');
+      const modelPath = CONFIG.casbin.modelPath;
+      const policyPath = CONFIG.casbin.policyPath;
+      const usersPath = CONFIG.casbin.usersPath;
 
       // Verify files exist
       if (!fs.existsSync(modelPath)) {
@@ -64,29 +66,30 @@ class CasbinService {
 
       // Initialize enforcer
       this.enforcer = await newEnforcer(modelPath, policyPath);
-      
+
       // Load and count policies
       const allPolicies = await this.enforcer.getPolicy();
       const allGroupings = await this.enforcer.getGroupingPolicy();
-      
+
       logger.info('Casbin enforcer initialized successfully', {
         policiesCount: allPolicies.length,
         groupingsCount: allGroupings.length
       });
 
-      // Test authorization functionality
-      const testEmail = 'hesham.ahmed@3ddx.com';
-      const testResource = 'dashboard';
-      const testAction = 'read';
-      const allowed = await this.enforcer.enforce(testEmail, testResource, testAction);
-      
-      logger.info('Casbin authorization test completed', {
-        testSubject: testEmail,
-        testResource,
-        testAction,
-        result: allowed
-      });
-      
+      // Test authorization functionality (configurable)
+      if (CONFIG.casbin.test && CONFIG.casbin.test.email && CONFIG.casbin.test.resource && CONFIG.casbin.test.action) {
+        const testEmail = CONFIG.casbin.test.email;
+        const testResource = CONFIG.casbin.test.resource;
+        const testAction = CONFIG.casbin.test.action;
+        const allowed = await this.enforcer.enforce(testEmail, testResource, testAction);
+        logger.info('Casbin authorization test completed', {
+          testSubject: testEmail,
+          testResource,
+          testAction,
+          result: allowed
+        });
+      }
+
       // Load users data
       const usersFileContent = fs.readFileSync(usersPath, 'utf8');
       this.usersData = JSON.parse(usersFileContent);
@@ -99,7 +102,7 @@ class CasbinService {
         policyCount: (await this.enforcer.getPolicy()).length,
         userCount: this.usersData.users.length
       });
-      
+
       return true;
     } catch (error) {
       logger.error('Failed to initialize Casbin enforcer', {

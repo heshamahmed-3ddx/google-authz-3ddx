@@ -1,6 +1,6 @@
 /**
- * @file surgicalGuideReport.routes.js
- * @description Routes for surgical guide report API endpoints with Swagger documentation
+ * @file surgicalGuideOrders.routes.js
+ * @description Routes for surgical guide orders API endpoints with Swagger documentation
  * @author 3D Diagnostix Development Team
  * @created 2025-10-27
  * @version 1.0.0
@@ -8,7 +8,7 @@
  */
 
 import express from 'express';
-import surgicalGuideReportController from '../controllers/surgicalGuideReport.controller.js';
+import surgicalGuideOrdersController from '../controllers/surgicalGuideOrders.controller.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -163,7 +163,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/surgical_guide', requireAuth, surgicalGuideReportController.getReport);
+router.get('/surgical_guide', requireAuth, surgicalGuideOrdersController.getReport);
 
 /**
  * @swagger
@@ -242,7 +242,7 @@ router.get('/surgical_guide', requireAuth, surgicalGuideReportController.getRepo
  *       500:
  *         description: Internal server error
  */
-router.get('/surgical_guide/summary', requireAuth, surgicalGuideReportController.getSummary);
+router.get('/surgical_guide/summary', requireAuth, surgicalGuideOrdersController.getSummary);
 
 /**
  * @swagger
@@ -288,7 +288,7 @@ router.get('/surgical_guide/summary', requireAuth, surgicalGuideReportController
  *       500:
  *         description: Internal server error
  */
-router.get('/surgical_guide/export', requireAuth, surgicalGuideReportController.exportCSV);
+router.get('/surgical_guide/export', requireAuth, surgicalGuideOrdersController.exportCSV);
 
 /**
  * @swagger
@@ -333,7 +333,7 @@ router.get('/surgical_guide/export', requireAuth, surgicalGuideReportController.
  *       500:
  *         description: Internal server error
  */
-router.get('/surgical_guide/access', requireAuth, surgicalGuideReportController.checkAccess);
+router.get('/surgical_guide/access', requireAuth, surgicalGuideOrdersController.checkAccess);
 
 /**
  * @swagger

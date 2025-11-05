@@ -1,5 +1,5 @@
 /**
- * @file surgicalGuideReport.controller.js
+ * @file surgicalGuideOrders.controller.js
  * @description HTTP request handlers for surgical guide report endpoints
  * @author 3D Diagnostix Development Team
  * @created 2025-10-27
@@ -7,18 +7,18 @@
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
  */
 
-import surgicalGuideReportService from '../services/surgicalGuideReport.service.js';
+import surgicalGuideOrdersService from '../services/surgicalGuideOrders.service.js';
 import casbinService from '../services/casbin.js';
 import { createContextLogger } from '../services/logger.js';
 
 // For Jest compatibility, use a static string for filename context
-const logger = createContextLogger('/server/src/controllers/surgicalGuideReport.controller.js', 'SurgicalGuideReportController');
+const logger = createContextLogger('/server/src/controllers/surgicalGuideOrders.controller.js', 'SurgicalGuideOrdersController');
 
 /**
  * Surgical Guide Report Controller
  * Handles HTTP requests for surgical guide reporting
  */
-class SurgicalGuideReportController {
+class SurgicalGuideOrdersController {
   /**
    * Get surgical guide report data
    * GET /api/reports/surgical_guide
@@ -47,7 +47,7 @@ class SurgicalGuideReportController {
       // Check user permissions via Casbin
       const userGroups = await casbinService.getUserGroups(userEmail);
       
-      if (!surgicalGuideReportService.hasReportAccess(userGroups)) {
+  if (!surgicalGuideOrdersService.hasReportAccess(userGroups)) {
         logger.warn('Access denied to surgical guide report', {
           userEmail,
           userGroups
@@ -101,7 +101,7 @@ class SurgicalGuideReportController {
       });
 
       // Fetch report data
-      const result = await surgicalGuideReportService.getReport({
+  const result = await surgicalGuideOrdersService.getReport({
         startDate,
         endDate,
         page: parseInt(page),
@@ -185,7 +185,7 @@ class SurgicalGuideReportController {
       // Check user permissions
       const userGroups = await casbinService.getUserGroups(userEmail);
       
-      if (!surgicalGuideReportService.hasReportAccess(userGroups)) {
+  if (!surgicalGuideOrdersService.hasReportAccess(userGroups)) {
         return res.status(403).json({
           error: {
             code: 'FORBIDDEN',
@@ -209,7 +209,7 @@ class SurgicalGuideReportController {
         });
       }
 
-      const summary = await surgicalGuideReportService.getSummary(startDate, endDate);
+  const summary = await surgicalGuideOrdersService.getSummary(startDate, endDate);
 
       res.json({
         success: true,
@@ -274,7 +274,7 @@ class SurgicalGuideReportController {
       // Check user permissions
       const userGroups = await casbinService.getUserGroups(userEmail);
       
-      if (!surgicalGuideReportService.hasReportAccess(userGroups)) {
+  if (!surgicalGuideOrdersService.hasReportAccess(userGroups)) {
         return res.status(403).json({
           error: {
             code: 'FORBIDDEN',
@@ -298,7 +298,7 @@ class SurgicalGuideReportController {
         });
       }
 
-      const csv = await surgicalGuideReportService.exportToCSV(startDate, endDate);
+  const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate);
 
       // Generate filename in format: OSG_YYYYMMDD.csv
       const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -367,8 +367,8 @@ class SurgicalGuideReportController {
       res.json({
         success: true,
         data: {
-          hasReportAccess: surgicalGuideReportService.hasReportAccess(userGroups),
-          hasSwaggerAccess: surgicalGuideReportService.hasSwaggerAccess(userGroups),
+          hasReportAccess: surgicalGuideOrdersService.hasReportAccess(userGroups),
+          hasSwaggerAccess: surgicalGuideOrdersService.hasSwaggerAccess(userGroups),
           userGroups
         },
         requestId: req.requestId
@@ -392,4 +392,4 @@ class SurgicalGuideReportController {
 }
 
 // Export singleton instance
-export default new SurgicalGuideReportController();
+export default new SurgicalGuideOrdersController();

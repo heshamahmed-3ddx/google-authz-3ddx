@@ -9,9 +9,9 @@
 
 
 import path from 'path';
-// For Jest compatibility, use static strings for __filename and __dirname
-const __filename = '/server/src/config/config.js';
-const __dirname = '/server/src/config';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Application configuration constants
@@ -69,11 +69,20 @@ export const CONFIG = {
 
   // Casbin Configuration
   casbin: {
-  modelPath: path.join(__dirname, 'casbin/model.conf'),
-  policyPath: path.join(__dirname, 'casbin/policy.csv'),
-  usersPath: path.join(__dirname, 'casbin/users.json'),
+    modelPath: path.resolve(__dirname, 'casbin/model.conf'),
+    policyPath: path.resolve(__dirname, 'casbin/policy.csv'),
+    usersPath: path.resolve(__dirname, 'casbin/users.json'),
     autoSave: true,
-    syncInterval: 300000 // 5 minutes
+    syncInterval: 300000, // 5 minutes
+    /**
+     * Test authorization config (used for Casbin service self-test)
+     * DO NOT use real user emails or sensitive data in production
+     */
+    test: {
+      email: process.env.CASBIN_TEST_EMAIL || 'test@localhost',
+      resource: process.env.CASBIN_TEST_RESOURCE || 'dashboard',
+      action: process.env.CASBIN_TEST_ACTION || 'read'
+    }
   },
 
   // Logging Configuration
@@ -81,7 +90,7 @@ export const CONFIG = {
     level: process.env.LOG_LEVEL || 'info',
     maxFiles: 10,
     maxSize: '10m',
-  logDir: path.join(__dirname, '../../logs'),
+    logDir: path.resolve(process.cwd(), 'server/logs'),
     enableConsole: true,
     enableFile: true
   },

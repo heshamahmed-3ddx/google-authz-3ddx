@@ -1,5 +1,5 @@
 /**
- * @file surgicalGuideReport.service.js
+ * @file surgicalGuideOrders.service.js
  * @description Business logic service for surgical guide reports
  * @author 3D Diagnostix Development Team
  * @created 2025-10-27
@@ -7,17 +7,17 @@
  * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
  */
 
-import surgicalGuideReportModel from '../models/surgicalGuideReport.model.js';
+import surgicalGuideOrdersModel from '../models/surgicalGuideOrders.model.js';
 import { createContextLogger } from './logger.js';
 
 // For Jest compatibility, use a static string for filename context
-const logger = createContextLogger('/server/src/services/surgicalGuideReport.service.js', 'SurgicalGuideReportService');
+const logger = createContextLogger('/server/src/services/surgicalGuideOrders.service.js', 'SurgicalGuideOrdersService');
 
 /**
  * Surgical Guide Report Service
  * Handles business logic for surgical guide reporting
  */
-class SurgicalGuideReportService {
+class SurgicalGuideOrdersService {
   /**
    * Get paginated surgical guide report data
    * 
@@ -43,7 +43,7 @@ class SurgicalGuideReportService {
       });
 
       // Validate date range
-      surgicalGuideReportModel.validateDateRange(params.startDate, params.endDate);
+  surgicalGuideOrdersModel.validateDateRange(params.startDate, params.endDate);
 
       // Validate pagination parameters
       const page = Math.max(1, parseInt(params.page) || 1);
@@ -51,7 +51,7 @@ class SurgicalGuideReportService {
 
       // Instrument DB query timing
       const start = process.hrtime();
-      const result = await surgicalGuideReportModel.getReportData({
+  const result = await surgicalGuideOrdersModel.getReportData({
         startDate: params.startDate,
         endDate: params.endDate,
         page,
@@ -99,10 +99,10 @@ class SurgicalGuideReportService {
       logger.info('Processing summary request', { startDate, endDate });
 
       // Validate date range
-      surgicalGuideReportModel.validateDateRange(startDate, endDate);
+  surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
 
       // Fetch summary data
-      const summary = await surgicalGuideReportModel.getSummary(startDate, endDate);
+  const summary = await surgicalGuideOrdersModel.getSummary(startDate, endDate);
 
       logger.info('Summary processed successfully', {
         totalCases: summary.totalCases
@@ -135,7 +135,7 @@ class SurgicalGuideReportService {
       });
 
       // Validate date range
-      surgicalGuideReportModel.validateDateRange(params.startDate, params.endDate);
+  surgicalGuideOrdersModel.validateDateRange(params.startDate, params.endDate);
 
       // Fetch all data in parallel (optimized without doctor breakdown)
       const [reportData, summary] = await Promise.all([
@@ -182,10 +182,10 @@ class SurgicalGuideReportService {
       logger.info('Processing CSV export request', { startDate, endDate });
 
       // Validate date range
-      surgicalGuideReportModel.validateDateRange(startDate, endDate);
+  surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
 
       // Export data
-      const csv = await surgicalGuideReportModel.exportToCSV(startDate, endDate);
+  const csv = await surgicalGuideOrdersModel.exportToCSV(startDate, endDate);
 
       logger.info('CSV export processed successfully');
 
@@ -251,4 +251,4 @@ class SurgicalGuideReportService {
 }
 
 // Export singleton instance
-export default new SurgicalGuideReportService();
+export default new SurgicalGuideOrdersService();
