@@ -404,7 +404,12 @@ authStore.checkAuth().catch(() => {
 [dir="rtl"] .v-alert-title {
   text-align: right;
 }
+
+/* Reserve space for main content to reduce CLS */
+.main-content-stable {
+  min-height: 600px; /* Adjust as needed for your typical dashboard height */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 </style>
-/* Reserve space for main content to reduce CLS */ .main-content-stable {
-min-height: 600px; /* Adjust as needed for your typical dashboard height */
-display: flex; flex-direction: column; justify-content: flex-start; }

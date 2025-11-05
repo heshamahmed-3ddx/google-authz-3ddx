@@ -4,10 +4,10 @@
     <v-row>
       <v-col cols="12">
         <div
-          class="d-flex justify-space-between align-center mb-4 header-container"
+          class="d-flex justify-space-between align-center mb-4 header-container page-header-sticky"
         >
           <div class="header-text">
-            <h1 class="text-h4 mb-2 header-title">
+            <h1 class="text-h4 pt-4 header-title">
               <v-icon class="mr-2" color="primary">mdi-file-chart</v-icon>
               Surgical Guide Report
             </h1>
@@ -224,20 +224,6 @@
               </v-alert>
 
               <!-- Pagination Info -->
-              <v-alert
-                v-if="reportData.length > 0 && pagination.totalPages > 1"
-                type="info"
-                density="compact"
-                variant="tonal"
-                icon="mdi-information"
-                class="mt-2"
-              >
-                <span class="font-weight-medium">Pagination Active:</span>
-                Showing page {{ pagination.page }} of
-                {{ pagination.totalPages }} ({{ pagination.total }} total
-                records). Use the controls at the bottom of the table to
-                navigate between pages.
-              </v-alert>
 
               <!-- Single Page Info -->
               <v-alert
@@ -291,115 +277,108 @@
         </v-col>
       </v-row>
 
-      <!-- Order Statistics -->
-      <v-row v-if="summary && !loading.summary" class="summary-cards">
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="primary"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'all' }"
-            hover
-            @click="filterByOrderType('all')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-cart</v-icon>
-              <div class="text-h4">{{ summary.totalOrders || 0 }}</div>
-              <div class="text-subtitle-2">Orders</div>
+      <!-- Order Statistics - 5 Cards Per Row -->
+      <v-row v-if="summary && !loading.summary" class="summary-cards five-col-row">
+        <!-- Row 1: Total Orders + 4 Payment Status Cards -->
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'all' }" hover @click="filterByOrderType('all')">
+            <div class="card-top-bar" style="background:#1976d2"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#1976d2" class="mb-2">mdi-cart</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#1976d2">{{ formatNumber(summary.totalOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Total Orders</div>
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="success"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'postpaid' }"
-            hover
-            @click="filterByOrderType('postpaid')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-cash-multiple</v-icon>
-              <div class="text-h4">{{ summary.postpaidOrders || 0 }}</div>
-              <div class="text-subtitle-2">Postpaid Orders</div>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'free' }" hover @click="filterByOrderType('free')">
+            <div class="card-top-bar" style="background:#43a047"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#43a047" class="mb-2">mdi-gift</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#43a047">{{ formatNumber(summary.freeOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Free Orders</div>
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="info"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'fullyPrepaid' }"
-            hover
-            @click="filterByOrderType('fullyPrepaid')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-ticket-percent</v-icon>
-              <div class="text-h4">{{ summary.fullyPrepaidOrders || 0 }}</div>
-              <div class="text-subtitle-2">
-                Fully Prepaid Orders<br />(Full Deduction using Voucher)
-              </div>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'fullyPrepaid' }" hover @click="filterByOrderType('fullyPrepaid')">
+            <div class="card-top-bar" style="background:#1565c0"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#1565c0" class="mb-2">mdi-ticket-confirmation</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#1565c0">{{ formatNumber(summary.fullyPrepaidOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Fully Prepaid</div>
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="secondary"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'free' }"
-            hover
-            @click="filterByOrderType('free')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-gift</v-icon>
-              <div class="text-h4">{{ summary.freeOrders || 0 }}</div>
-              <div class="text-subtitle-2">Free Orders</div>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'fullyPostpaid' }" hover @click="filterByOrderType('fullyPostpaid')">
+            <div class="card-top-bar" style="background:#e53935"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#e53935" class="mb-2">mdi-cash-clock</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#e53935">{{ formatNumber(summary.fullyPostpaidOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Fully Postpaid</div>
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="orange"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'fullyPostpaid' }"
-            hover
-            @click="filterByOrderType('fullyPostpaid')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-cash</v-icon>
-              <div class="text-h4">{{ summary.fullyPostpaidOrders || 0 }}</div>
-              <div class="text-subtitle-2">
-                Fully Postpaid Orders<br />(No Voucher deduction)
-              </div>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'partiallyPostpaid' }" hover @click="filterByOrderType('partiallyPostpaid')">
+            <div class="card-top-bar" style="background:#8e24aa"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#8e24aa" class="mb-2">mdi-cash-multiple</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#8e24aa">{{ formatNumber(summary.partiallyPostpaidOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Partially Postpaid</div>
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" md="2" sm="4">
-          <v-card
-            elevation="2"
-            color="warning"
-            dark
-            class="summary-card clickable-card"
-            :class="{ 'active-filter': activeFilter === 'partiallyPostpaid' }"
-            hover
-            @click="filterByOrderType('partiallyPostpaid')"
-          >
-            <v-card-text class="text-center py-4">
-              <v-icon size="48" class="mb-2">mdi-cash-refund</v-icon>
-              <div class="text-h4">
-                {{ summary.partiallyPostpaidOrders || 0 }}
-              </div>
-              <div class="text-subtitle-2">
-                Partially Postpaid Orders<br />(Partial Deduction using Voucher)
-              </div>
+        
+        <!-- Row 2: Vouchers Used + 4 Workflow Status Cards (All Clickable) -->
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'vouchers' }" hover @click="filterByOrderType('vouchers')">
+            <div class="card-top-bar" style="background:#00bcd4"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#00bcd4" class="mb-2">mdi-ticket-percent-outline</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#00bcd4">{{ formatNumber(vouchersUsedCount) }}</div>
+              <div class="text-caption text-medium-emphasis">Vouchers Used</div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'rush' }" hover @click="filterByOrderType('rush')">
+            <div class="card-top-bar" style="background:#e65100"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#e65100" class="mb-2">mdi-fire</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#e65100">{{ formatNumber(summary.rushOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Rush Orders</div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'onHold' }" hover @click="filterByOrderType('onHold')">
+            <div class="card-top-bar" style="background:#f44336"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#f44336" class="mb-2">mdi-pause-circle</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#f44336">{{ formatNumber(summary.onHoldOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">On Hold Orders</div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'confirmed' }" hover @click="filterByOrderType('confirmed')">
+            <div class="card-top-bar" style="background:#616161"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#616161" class="mb-2">mdi-check-circle</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#616161">{{ formatNumber(summary.confirmedOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Confirmed Orders</div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col>
+          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'active' }" hover @click="filterByOrderType('active')">
+            <div class="card-top-bar" style="background:#43a047"></div>
+            <v-card-text class="text-center py-3">
+              <v-icon size="40" color="#43a047" class="mb-2">mdi-play-circle</v-icon>
+              <div class="text-h5 font-weight-bold" style="color:#43a047">{{ formatNumber(summary.activeOrders || 0) }}</div>
+              <div class="text-caption text-medium-emphasis">Active Orders</div>
             </v-card-text>
           </v-card>
         </v-col>
@@ -434,6 +413,53 @@
               </div>
             </v-card-title>
 
+            <!-- Legend -->
+            <div class="payment-legend px-4 py-2">
+              <div class="d-flex align-center flex-wrap" style="gap: 24px;">
+                <!-- Payment Status Legend -->
+                <div class="d-flex align-center flex-wrap" style="gap: 12px;">
+                  <span class="text-caption text-medium-emphasis font-weight-bold">Payment:</span>
+                  <span class="legend-item">
+                    <v-icon size="28" color="#43a047" class="mr-1">mdi-gift</v-icon>
+                    <span class="text-caption">Free</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="28" color="#1565c0" class="mr-1">mdi-ticket-confirmation</v-icon>
+                    <span class="text-caption">Fully Prepaid</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="28" color="#e53935" class="mr-1">mdi-cash-clock</v-icon>
+                    <span class="text-caption">Fully Postpaid</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="28" color="#8e24aa" class="mr-1">mdi-cash-multiple</v-icon>
+                    <span class="text-caption">Partially Postpaid</span>
+                  </span>
+                </div>
+                
+                <!-- Workflow Status Legend -->
+                <div class="d-flex align-center flex-wrap" style="gap: 12px;">
+                  <span class="text-caption text-medium-emphasis font-weight-bold">Workflow:</span>
+                  <span class="legend-item">
+                    <v-icon size="small" color="orange" class="mr-1">mdi-fire</v-icon>
+                    <span class="text-caption">Rush</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="small" color="red" class="mr-1">mdi-pause-circle</v-icon>
+                    <span class="text-caption">On Hold</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="small" color="grey-darken-2" class="mr-1">mdi-check-circle</v-icon>
+                    <span class="text-caption">Confirmed</span>
+                  </span>
+                  <span class="legend-item">
+                    <v-icon size="small" color="green" class="mr-1">mdi-play-circle</v-icon>
+                    <span class="text-caption">Active</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <v-data-table-server
               :headers="tableHeaders"
               :items="filteredReportData"
@@ -442,18 +468,19 @@
               :items-length="pagination.total"
               :items-per-page="50"
               :items-per-page-options="[25, 50, 100]"
-              class="elevation-1 enhanced-table"
+              class="elevation-1 enhanced-table payment-status-table"
               density="compact"
               hover
               fixed-header
-              height="600"
+              height="2200"
               show-current-page
               :mobile-breakpoint="0"
               show-expand
+              v-model:expanded="expanded"
               item-value="orderSGID"
-              :item-class="getRowClass"
               color="orange"
               @update:options="loadItems"
+              @update:expanded="handleExpandedChange"
             >
               <!-- No Data State -->
               <template #no-data>
@@ -523,7 +550,15 @@
                   <v-icon size="small" class="mr-2" color="info"
                     >mdi-hospital-building</v-icon
                   >
-                  <span class="text-body-2">{{ item.scanCenterFullName }}</span>
+                  <a
+                    v-if="item.scanCenterFullName && item.scanCenterFullName !== 'Not Specified'"
+                    href="javascript:void(0)"
+                    class="order-id-link"
+                    @click.prevent="() => {}"
+                  >
+                    {{ item.scanCenterFullName }}
+                  </a>
+                  <span v-else class="text-body-2">{{ item.scanCenterFullName || 'Not Specified' }}</span>
                 </div>
               </template>
 
@@ -533,7 +568,15 @@
                   <v-icon size="small" class="mr-2" color="primary"
                     >mdi-doctor</v-icon
                   >
-                  <span class="text-body-2">{{ item.doctorFullName }}</span>
+                  <a
+                    v-if="item.doctorFullName && item.doctorFullName !== 'Not Specified'"
+                    href="javascript:void(0)"
+                    class="order-id-link"
+                    @click.prevent="() => {}"
+                  >
+                    {{ item.doctorFullName }}
+                  </a>
+                  <span v-else class="text-body-2">{{ item.doctorFullName || 'Not Specified' }}</span>
                 </div>
               </template>
 
@@ -543,15 +586,62 @@
                   <v-icon size="small" class="mr-2" color="purple"
                     >mdi-account</v-icon
                   >
-                  <span class="text-body-2">{{ item.patientName }}</span>
+                  <a
+                    v-if="item.patientName && item.patientName !== 'Not Specified'"
+                    href="javascript:void(0)"
+                    class="order-id-link"
+                    @click.prevent="() => {}"
+                  >
+                    {{ item.patientName }}
+                  </a>
+                  <span v-else class="text-body-2">{{ item.patientName || 'Not Specified' }}</span>
+                </div>
+              </template>
+
+              <!-- Order ID Column - Payment Icon + ID + Workflow Icon -->
+              <template #[`item.orderSGID`]="{ item }">
+                <div class="d-flex align-center" style="gap: 12px;">
+                  <v-tooltip location="top">
+                    <template #activator="{ props }">
+                      <v-icon
+                        v-bind="props"
+                        size="28"
+                        :color="getPaymentStatusColor(item)"
+                        class="payment-status-icon"
+                      >
+                        {{ getPaymentStatusIcon(item) }}
+                      </v-icon>
+                    </template>
+                    <span>{{ getPaymentStatusLabel(item) }}</span>
+                  </v-tooltip>
+                  <a
+                    href="javascript:void(0)"
+                    class="order-id-link"
+                    @click.prevent="() => {}"
+                  >
+                    #{{ item.orderSGID }}
+                  </a>
+                  <v-icon
+                    v-if="getWorkflowIcon(item)"
+                    size="30"
+                    :color="getWorkflowIconColor(item)"
+                    class="workflow-status-icon"
+                  >
+                    {{ getWorkflowIcon(item) }}
+                  </v-icon>
                 </div>
               </template>
 
               <!-- Cost Column with Currency -->
               <template #[`item.cost`]="{ item }">
-                <span class="font-weight-bold text-success">
+                <v-chip
+                  class="font-weight-bold"
+                  :color="formatCurrency(item.cost) === 'Free' ? 'primary' : 'success'"
+                  size="small"
+                  variant="flat"
+                >
                   {{ formatCurrency(item.cost) }}
-                </span>
+                </v-chip>
               </template>
 
               <!-- Type Column with Color Mapping -->
@@ -619,7 +709,13 @@
                                 <v-list-item-subtitle
                                   class="text-body-2 font-weight-bold"
                                 >
-                                  {{ item.orderSGID }}
+                                  <a
+                                    href="javascript:void(0)"
+                                    class="order-id-link"
+                                    @click.prevent="() => {}"
+                                  >
+                                    #{{ item.orderSGID }}
+                                  </a>
                                 </v-list-item-subtitle>
                               </v-list-item>
 
@@ -634,7 +730,15 @@
                                   >Scan Center</v-list-item-title
                                 >
                                 <v-list-item-subtitle class="text-body-2">
-                                  {{ item.scanCenterFullName }}
+                                  <a
+                                    v-if="item.scanCenterFullName && item.scanCenterFullName !== 'Not Specified'"
+                                    href="javascript:void(0)"
+                                    class="order-id-link"
+                                    @click.prevent="() => {}"
+                                  >
+                                    {{ item.scanCenterFullName }}
+                                  </a>
+                                  <span v-else>{{ item.scanCenterFullName || 'Not Specified' }}</span>
                                 </v-list-item-subtitle>
                               </v-list-item>
 
@@ -649,7 +753,15 @@
                                   >Doctor</v-list-item-title
                                 >
                                 <v-list-item-subtitle class="text-body-2">
-                                  {{ item.doctorFullName }}
+                                  <a
+                                    v-if="item.doctorFullName && item.doctorFullName !== 'Not Specified'"
+                                    href="javascript:void(0)"
+                                    class="order-id-link"
+                                    @click.prevent="() => {}"
+                                  >
+                                    {{ item.doctorFullName }}
+                                  </a>
+                                  <span v-else>{{ item.doctorFullName || 'Not Specified' }}</span>
                                 </v-list-item-subtitle>
                               </v-list-item>
 
@@ -664,7 +776,15 @@
                                   >Patient</v-list-item-title
                                 >
                                 <v-list-item-subtitle class="text-body-2">
-                                  {{ item.patientName }}
+                                  <a
+                                    v-if="item.patientName && item.patientName !== 'Not Specified'"
+                                    href="javascript:void(0)"
+                                    class="order-id-link"
+                                    @click.prevent="() => {}"
+                                  >
+                                    {{ item.patientName }}
+                                  </a>
+                                  <span v-else>{{ item.patientName || 'Not Specified' }}</span>
                                 </v-list-item-subtitle>
                               </v-list-item>
 
@@ -1012,7 +1132,14 @@
                                             <v-list-item-title
                                               class="font-weight-bold"
                                             >
-                                              Voucher ID: {{ voucher.id }}
+                                              Voucher ID: 
+                                              <a
+                                                href="javascript:void(0)"
+                                                class="order-id-link"
+                                                @click.prevent="() => {}"
+                                              >
+                                                #{{ voucher.id }}
+                                              </a>
                                             </v-list-item-title>
                                             <v-list-item-subtitle
                                               class="text-success font-weight-bold text-h6"
@@ -1055,6 +1182,58 @@
                             </v-list>
                           </v-col>
                         </v-row>
+
+                        <!-- Workflow Status Section (only show if there's a status) -->
+                        <template v-if="item.isRush === 1 || item.Q11_Val_1 || item.Q11_Val_2 || item.Q11_Val_4">
+                          <v-divider class="my-4"></v-divider>
+                          <v-row>
+                            <v-col cols="12">
+                              <v-list density="compact" class="bg-transparent">
+                                <v-list-subheader
+                                  class="text-orange font-weight-bold"
+                                >
+                                  <v-icon class="mr-2" color="orange"
+                                    >mdi-timeline-clock</v-icon
+                                  >
+                                  Workflow Status
+                                </v-list-subheader>
+
+                              <v-row class="px-4">
+                                <v-col cols="12">
+                                  <v-list-item class="pa-0">
+                                    <template #prepend>
+                                      <v-icon 
+                                        size="40" 
+                                        :color="getWorkflowIconColor(item)"
+                                        class="workflow-status-icon"
+                                      >
+                                        {{ getWorkflowIcon(item) }}
+                                      </v-icon>
+                                    </template>
+                                    <v-list-item-title class="text-h6 font-weight-bold mb-1">
+                                      {{ getWorkflowStatusLabel(item) }}
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle class="text-body-2">
+                                      <template v-if="item.isRush === 1">
+                                        🔥 Priority Rush Order
+                                      </template>
+                                      <template v-else-if="item.Q11_Val_4">
+                                        Status: On Hold
+                                      </template>
+                                      <template v-else-if="item.Q11_Val_2">
+                                        Status: Confirmed
+                                      </template>
+                                      <template v-else-if="item.Q11_Val_1">
+                                        Status: Active
+                                      </template>
+                                    </v-list-item-subtitle>
+                                  </v-list-item>
+                                </v-col>
+                              </v-row>
+                            </v-list>
+                          </v-col>
+                        </v-row>
+                        </template>
                       </v-card-text>
                     </v-card>
                   </td>
@@ -1122,6 +1301,9 @@ const devModeStore = useDevModeStore();
 // STATE
 // =====================================
 
+// Track expanded rows - using array to allow Vuetify to control single expansion
+const expanded = ref([]);
+
 const accessInfo = reactive({
   hasReportAccess: false,
   hasSwaggerAccess: false,
@@ -1186,13 +1368,30 @@ const isDevelopment = computed(() => {
   return import.meta.env.DEV;
 });
 
+// Workflow status counts computed from reportData
+const workflowStatusCounts = computed(() => {
+  const data = filteredReportData.value || [];
+  return {
+    rushOrders: data.filter(item => item.isRush === 1).length,
+    onHoldOrders: data.filter(item => item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null).length,
+    confirmedOrders: data.filter(item => item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null).length,
+    activeOrders: data.filter(item => item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null).length,
+  };
+});
+
+// Computed property for vouchers used (orders with prepayment/partial prepayment)
+const vouchersUsedCount = computed(() => {
+  return (summary.value?.fullyPrepaidOrders || 0) + (summary.value?.partiallyPostpaidOrders || 0);
+});
+
 // =====================================
 // TABLE CONFIGURATION
 // =====================================
 
 // Main table headers (compact view - details in expandable row)
 const tableHeaders = [
-  { title: "ID", key: "orderSGID", sortable: true, width: "90px" },
+  { title: "", key: "data-table-expand", sortable: false, width: "48px" },
+  { title: "ID", key: "orderSGID", sortable: true, width: "140px" },
   {
     title: "Scan Center",
     key: "scanCenterFullName",
@@ -1219,6 +1418,18 @@ const rules = {
 // =====================================
 // METHODS
 // =====================================
+
+/**
+ * Handle expanded row change - ensure only one row is expanded at a time
+ */
+function handleExpandedChange(newExpanded) {
+  // Only keep the last expanded item (most recent)
+  if (newExpanded.length > 1) {
+    expanded.value = [newExpanded[newExpanded.length - 1]];
+  } else {
+    expanded.value = newExpanded;
+  }
+}
 
 /**
  * Navigate to dashboard
@@ -1378,6 +1589,9 @@ async function filterByOrderType(type) {
 
   // Reset to page 1 and fetch filtered data from server
   filters.page = 1;
+  
+  // Note: Backend should handle these new filter types (vouchers, rush, onHold, confirmed, active)
+  // If backend doesn't support them yet, they will default to 'all' and show all records
   await fetchReportData();
 }
 
@@ -1446,10 +1660,23 @@ async function exportToCSV() {
 }
 
 /**
+ * Format large numbers with K suffix
+ */
+function formatNumber(value) {
+  if (!value && value !== 0) return "0";
+  const num = parseFloat(value);
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return num.toString();
+}
+
+/**
  * Format currency values
  */
 function formatCurrency(value) {
   if (!value && value !== 0) return "N/A";
+  if (parseFloat(value) === 0) return "Free";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -1470,25 +1697,59 @@ function getSupportTypeLabel(typeValue) {
 }
 
 /**
- * Get row CSS class based on priority conditions
+ * Get payment status class for bullet indicator
  */
-function getRowClass(item) {
-  // Handle both direct item and wrapped item from v-data-table-server
-  const data = item?.raw || item;
+function getPaymentStatusClass(item) {
+  const cost = parseFloat(item.cost || 0);
+  const amountPaid = parseFloat(item.amountPaid || 0);
+  if (cost === 0) return 'bullet-free-order';
+  if (amountPaid === 0) return 'bullet-fully-postpaid';
+  if (amountPaid >= cost) return 'bullet-fully-prepaid';
+  return 'bullet-partially-postpaid';
+}
 
-  if (data.isRush === 1) {
-    return "row-rush";
-  }
-  if (data.Q11_Val_4 !== 0 && data.Q11_Val_4 != null) {
-    return "row-on-hold";
-  }
-  if (data.Q11_Val_2 !== 0 && data.Q11_Val_2 != null) {
-    return "row-confirmed";
-  }
-  if (data.Q11_Val_1 !== 0 && data.Q11_Val_1 != null) {
-    return "row-active";
-  }
-  return "";
+/**
+ * Get workflow status icon
+ */
+function getWorkflowIcon(item) {
+  if (item.isRush === 1) return 'mdi-fire';
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'mdi-pause-circle';
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'mdi-check-circle';
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'mdi-play-circle';
+  return null;
+}
+
+/**
+ * Get workflow status icon color
+ */
+function getWorkflowIconColor(item) {
+  if (item.isRush === 1) return 'orange';
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'red';
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'grey-darken-2';
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'green';
+  return '';
+}
+
+/**
+ * Get workflow status label for expanded row
+ */
+function getWorkflowStatusLabel(item) {
+  if (item.isRush === 1) return 'Rush Order';
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'On Hold';
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'Confirmed';
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'Active';
+  return 'No Status Set';
+}
+
+/**
+ * Get workflow status chip color for expanded row
+ */
+function getWorkflowStatusChipColor(item) {
+  if (item.isRush === 1) return 'deep-orange';
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'red';
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'grey';
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'green';
+  return 'default';
 }
 
 /**
@@ -1530,10 +1791,11 @@ function getPaymentStatusColor(item) {
   const cost = parseFloat(item.cost || 0);
   const amountPaid = parseFloat(item.amountPaid || 0);
 
-  if (cost === 0) return "success";
-  if (amountPaid === 0) return "orange";
-  if (amountPaid >= cost) return "primary";
-  return "warning";
+  // Distinct colors for payment status
+  if (cost === 0) return "#43a047"; // Free - Green
+  if (amountPaid === 0) return "#e53935"; // Fully Postpaid - Red
+  if (amountPaid >= cost) return "#1565c0"; // Fully Prepaid - Deep Blue
+  return "#8e24aa"; // Partially Postpaid - Purple
 }
 
 /**
@@ -1677,38 +1939,65 @@ onMounted(async () => {
 
 .summary-card {
   height: 100%;
-  min-height: 130px;
+  min-height: 110px;
   contain: layout style paint;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: white !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  width: 100%;
+}
+
+.primary-bar { background: rgb(var(--v-theme-primary)); }
+.success-bar { background: rgb(var(--v-theme-success)); }
+.info-bar { background: rgb(var(--v-theme-info)); }
+.warning-bar { background: #ff9800; }
+.amber-bar { background: #ffa726; }
+.orange-bar { background: #e65100; }
+.error-bar { background: rgb(var(--v-theme-error)); }
+.grey-bar { background: #616161; }
+.success-alt-bar { background: rgb(var(--v-theme-success)); }
+
 .summary-card .v-card-text {
-  min-height: 130px;
+  min-height: 106px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex: 1;
-  padding: 12px 8px !important;
+  padding-top: 16px !important;
 }
 
 .summary-card .v-icon {
-  font-size: 36px !important;
-  margin-bottom: 4px !important;
+  opacity: 0.9;
 }
 
-.summary-card .text-h4 {
-  margin-bottom: 4px;
-}
-
-.summary-card .text-subtitle-2 {
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+.summary-card .text-h5 {
+  font-size: 1.75rem !important;
   line-height: 1.2;
+  margin: 8px 0 4px 0;
+}
+
+.summary-card .text-caption {
+  font-size: 0.75rem !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 /* Optimize table rendering */
@@ -1741,10 +2030,42 @@ onMounted(async () => {
 }
 
 /* Expandable Row Styles */
+/* Expandable Row Styles */
 .expanded-row-card {
   background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
   border-left: 4px solid #ff6b35;
   margin: 8px 0;
+}
+
+/* Dark mode support for expanded row */
+.v-theme--dark .expanded-row-card {
+  background: #181a20 !important;
+  color: #f5f6fa !important;
+}
+
+.v-theme--dark .expanded-row-card .v-list,
+.v-theme--dark .expanded-row-card .v-list.bg-transparent,
+.v-theme--dark .expanded-row-card .v-list-item,
+.v-theme--dark .expanded-row-card .v-list-item__underlay,
+.v-theme--dark .expanded-row-card .v-list-item__content,
+.v-theme--dark .expanded-row-card .v-list-item-title,
+.v-theme--dark .expanded-row-card .v-list-item-subtitle,
+.v-theme--dark .expanded-row-card .v-list-subheader,
+.v-theme--dark .expanded-row-card .v-list-subheader__text {
+  background: #181a20 !important;
+  color: #f5f6fa !important;
+}
+
+@keyframes expanded-row-glow {
+  0% {
+    box-shadow: 0 0 0 0 var(--v-theme-primary, #347cac), 0 0 0 0 rgba(52,124,172,0.0);
+  }
+  60% {
+    box-shadow: 0 0 0 4px var(--v-theme-primary, #347cac), 0 8px 32px 0 rgba(52,124,172,0.18);
+  }
+  100% {
+    box-shadow: 0 0 0 2px var(--v-theme-primary, #347cac), 0 4px 24px 0 rgba(52,124,172,0.15);
+  }
 }
 
 .expanded-row-card .v-list-item {
@@ -1809,6 +2130,33 @@ onMounted(async () => {
     min-width: unset;
   }
 }
+
+/* Workflow icon animation */
+.workflow-status-icon {
+  display: inline-block !important;
+  animation: workflow-icon-pulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes workflow-icon-pulse {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    transform: scale(1.12) rotate(-4deg);
+  }
+  40% {
+    transform: scale(1) rotate(2deg);
+  }
+  60% {
+    transform: scale(1.08) rotate(-2deg);
+  }
+  80% {
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
 </style>
 
 <style scoped>
@@ -1848,61 +2196,68 @@ onMounted(async () => {
   contain: layout style; /* Isolate row rendering */
 }
 
-/* Row Priority Colors - Multiple selectors for compatibility */
-.enhanced-table :deep(.row-rush),
-.enhanced-table :deep(tr.row-rush),
-.enhanced-table :deep(.v-data-table__tr.row-rush) {
-  background-color: #81bef7 !important; /* Blue - Rush order */
-}
-.enhanced-table :deep(.row-on-hold),
-.enhanced-table :deep(tr.row-on-hold),
-.enhanced-table :deep(.v-data-table__tr.row-on-hold) {
-  background-color: #f5a9a9 !important; /* Light Red - On Hold */
-}
-.enhanced-table :deep(.row-confirmed),
-.enhanced-table :deep(tr.row-confirmed),
-.enhanced-table :deep(.v-data-table__tr.row-confirmed) {
-  background-color: #bdbdbd !important; /* Grey - Confirmed by OEM */
-}
-.enhanced-table :deep(.row-active),
-.enhanced-table :deep(tr.row-active),
-.enhanced-table :deep(.v-data-table__tr.row-active) {
-  background-color: #a9f5a9 !important; /* Green - Active */
+/* Workflow status indicated by icons only - no background colors */
+
+/* Payment Status Bullet Indicator - Clean & Professional */
+.payment-status-bullet {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  cursor: help;
+  transition: transform 0.2s ease;
 }
 
-/* Apply color to all child td elements */
-.enhanced-table :deep(.row-rush td),
-.enhanced-table :deep(tr.row-rush td),
-.enhanced-table :deep(.v-data-table__tr.row-rush td) {
-  background-color: #81bef7 !important;
-}
-.enhanced-table :deep(.row-on-hold td),
-.enhanced-table :deep(tr.row-on-hold td),
-.enhanced-table :deep(.v-data-table__tr.row-on-hold td) {
-  background-color: #f5a9a9 !important;
-}
-.enhanced-table :deep(.row-confirmed td),
-.enhanced-table :deep(tr.row-confirmed td),
-.enhanced-table :deep(.v-data-table__tr.row-confirmed td) {
-  background-color: #bdbdbd !important;
-}
-.enhanced-table :deep(.row-active td),
-.enhanced-table :deep(tr.row-active td),
-.enhanced-table :deep(.v-data-table__tr.row-active td) {
-  background-color: #a9f5a9 !important;
+.payment-status-bullet:hover {
+  transform: scale(1.2);
 }
 
-/* Default alternating row colors (for rows without special status) */
-.enhanced-table
-  .v-data-table__tr:nth-child(even):not(.row-rush):not(.row-on-hold):not(
-    .row-confirmed
-  ):not(.row-active) {
-  background: #f0f4f8;
+.bullet-free-order {
+  background-color: #4caf50; /* Green - Free */
 }
-.enhanced-table
-  .v-data-table__tr:nth-child(odd):not(.row-rush):not(.row-on-hold):not(
-    .row-confirmed
-  ):not(.row-active) {
+
+.bullet-fully-prepaid {
+  background-color: #2196f3; /* Blue - Fully Prepaid */
+}
+
+.bullet-fully-postpaid {
+  background-color: #ff9800; /* Orange - Fully Postpaid */
+}
+
+.bullet-partially-postpaid {
+  background-color: #ffc107; /* Amber - Partially Postpaid */
+}
+
+/* Payment Status Legend */
+.payment-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v-theme--dark .payment-legend {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* No row background colors for payment status - using bullets instead for cleaner look */
+
+/* Default alternating row colors - clean and simple */
+.enhanced-table .v-data-table__tr:nth-child(even) {
+  background: #f5f5f5;
+}
+.enhanced-table .v-data-table__tr:nth-child(odd) {
   background: #ffffff;
 }
 
@@ -1939,6 +2294,7 @@ onMounted(async () => {
   }
 }
 
+
 /* Table row hover effect */
 .v-data-table tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.02);
@@ -1948,6 +2304,10 @@ onMounted(async () => {
 .v-theme--dark .v-data-table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
+
+/* No dark mode payment status row colors - using bullets instead for cleaner look */
+
+/* Glow effect for expanded/selected row in table */
 
 /* Summary card clickable styles */
 :deep(.v-card.hover) {
@@ -1962,11 +2322,86 @@ onMounted(async () => {
 
 /* Active filter card styling */
 :deep(.v-card.active-filter) {
+  box-shadow: 0 6px 16px rgba(255, 161, 0, 0.4) !important;
+  transform: translateY(-3px);
   border: 2px solid #ffa100 !important;
-  box-shadow: 0 4px 12px rgba(255, 161, 0, 0.3) !important;
 }
 
-:deep(.v-card.active-filter .v-card-title) {
-  color: #ffa100 !important;
+:deep(.v-card.active-filter .card-top-bar) {
+  height: 6px;
+  background: #ffa100 !important;
+}
+
+.clickable-card {
+  cursor: pointer;
+}
+
+/* Clickable Order ID styling */
+.order-id-link {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.order-id-link:hover {
+  color: #1565c0;
+  text-decoration: none;
+}
+
+.v-theme--dark .order-id-link {
+  color: #64b5f6;
+}
+
+.v-theme--dark .order-id-link:hover {
+  color: #90caf9;
+  text-decoration: none;
+}
+
+/* Force exactly 5 cards per row for statistics cards using a custom flex class */
+@media (min-width: 960px) {
+  .five-col-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -8px;
+    margin-right: -8px;
+  }
+  .five-col-row > .v-col {
+    flex: 0 0 20%;
+    max-width: 20%;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Hide all scrollbars */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Specifically target table and card scrollbars */
+.v-data-table,
+.v-card,
+.v-list,
+.expanded-row-card,
+.enhanced-table {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.v-data-table::-webkit-scrollbar,
+.v-card::-webkit-scrollbar,
+.v-list::-webkit-scrollbar,
+.expanded-row-card::-webkit-scrollbar,
+.enhanced-table::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 </style>

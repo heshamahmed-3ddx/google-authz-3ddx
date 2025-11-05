@@ -63,6 +63,29 @@ class SurgicalGuideOrdersModel {
         // Cost > 0 AND 0 < voucher amount < cost (partial payment)
         orderTypeCondition = 'AND sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) > 0 AND COALESCE(vt.totalVoucherAmount, 0) < sg.Cost';
         break;
+      case 'vouchers':
+        // Orders that used vouchers (fully or partially prepaid)
+        orderTypeCondition = 'AND sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) > 0';
+        break;
+      case 'rush':
+        // Rush orders (isRush = 1) - Rush takes priority over all other workflow statuses
+        orderTypeCondition = 'AND sg.isRush = 1';
+        break;
+      case 'onHold':
+        // On Hold status - Only orders that are NOT Rush but have Q11_Val_4 set
+        // Priority: Rush > On Hold > Confirmed > Active
+        orderTypeCondition = 'AND sg.isRush != 1 AND sg.Q11_Val_4 IS NOT NULL AND sg.Q11_Val_4 != 0';
+        break;
+      case 'confirmed':
+        // Confirmed status - Only orders that are NOT Rush, NOT On Hold, but have Q11_Val_2 set
+        // Priority: Rush > On Hold > Confirmed > Active
+        orderTypeCondition = 'AND sg.isRush != 1 AND (sg.Q11_Val_4 IS NULL OR sg.Q11_Val_4 = 0) AND sg.Q11_Val_2 IS NOT NULL AND sg.Q11_Val_2 != 0';
+        break;
+      case 'active':
+        // Active status - Only orders that are NOT Rush, NOT On Hold, NOT Confirmed, but have Q11_Val_1 set
+        // Priority: Rush > On Hold > Confirmed > Active
+        orderTypeCondition = 'AND sg.isRush != 1 AND (sg.Q11_Val_4 IS NULL OR sg.Q11_Val_4 = 0) AND (sg.Q11_Val_2 IS NULL OR sg.Q11_Val_2 = 0) AND sg.Q11_Val_1 IS NOT NULL AND sg.Q11_Val_1 != 0';
+        break;
       case 'all':
       default:
         orderTypeCondition = '';
@@ -254,7 +277,11 @@ class SurgicalGuideOrdersModel {
           SUM(CASE WHEN sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) >= sg.Cost THEN 1 ELSE 0 END) as fullyPrepaidOrders,
           SUM(CASE WHEN sg.Cost = 0 THEN 1 ELSE 0 END) as freeOrders,
           SUM(CASE WHEN sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) = 0 THEN 1 ELSE 0 END) as fullyPostpaidOrders,
-          SUM(CASE WHEN sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) > 0 AND COALESCE(vt.totalVoucherAmount, 0) < sg.Cost THEN 1 ELSE 0 END) as partiallyPostpaidOrders
+          SUM(CASE WHEN sg.Cost > 0 AND COALESCE(vt.totalVoucherAmount, 0) > 0 AND COALESCE(vt.totalVoucherAmount, 0) < sg.Cost THEN 1 ELSE 0 END) as partiallyPostpaidOrders,
+          SUM(CASE WHEN sg.isRush = 1 THEN 1 ELSE 0 END) as rushOrders,
+          SUM(CASE WHEN sg.isRush != 1 AND sg.Q11_Val_4 IS NOT NULL AND sg.Q11_Val_4 != 0 THEN 1 ELSE 0 END) as onHoldOrders,
+          SUM(CASE WHEN sg.isRush != 1 AND (sg.Q11_Val_4 IS NULL OR sg.Q11_Val_4 = 0) AND sg.Q11_Val_2 IS NOT NULL AND sg.Q11_Val_2 != 0 THEN 1 ELSE 0 END) as confirmedOrders,
+          SUM(CASE WHEN sg.isRush != 1 AND (sg.Q11_Val_4 IS NULL OR sg.Q11_Val_4 = 0) AND (sg.Q11_Val_2 IS NULL OR sg.Q11_Val_2 = 0) AND sg.Q11_Val_1 IS NOT NULL AND sg.Q11_Val_1 != 0 THEN 1 ELSE 0 END) as activeOrders
         FROM OrderSG sg
         LEFT JOIN Orders o ON o.SGID = sg.ID
         LEFT JOIN (
@@ -274,7 +301,11 @@ class SurgicalGuideOrdersModel {
       fullyPrepaidOrders: parseInt(summary.fullyPrepaidOrders) || 0,
       freeOrders: parseInt(summary.freeOrders) || 0,
       fullyPostpaidOrders: parseInt(summary.fullyPostpaidOrders) || 0,
-      partiallyPostpaidOrders: parseInt(summary.partiallyPostpaidOrders) || 0
+      partiallyPostpaidOrders: parseInt(summary.partiallyPostpaidOrders) || 0,
+      rushOrders: parseInt(summary.rushOrders) || 0,
+      onHoldOrders: parseInt(summary.onHoldOrders) || 0,
+      confirmedOrders: parseInt(summary.confirmedOrders) || 0,
+      activeOrders: parseInt(summary.activeOrders) || 0
     };
   }
 

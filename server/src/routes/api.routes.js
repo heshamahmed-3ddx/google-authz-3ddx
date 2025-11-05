@@ -888,7 +888,9 @@ router.get('/user/rights', requireAuth, async (req, res) => {
     // Check cache first (unless force refresh)
     const cacheKey = userEmail;
     const cached = userRightsCache.get(cacheKey);
-    if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    // Increase cache TTL to 30 minutes
+    const CACHE_TTL_OVERRIDE = 30 * 60 * 1000;
+    if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_TTL_OVERRIDE) {
       logger.debug('User rights served from cache', { userEmail });
       return res.json({
         data: {
@@ -942,7 +944,7 @@ router.get('/user/rights', requireAuth, async (req, res) => {
   let userRights = await casbinService.getUserRights(userEmail, googleUser);
     logger.debug('User rights retrieved from Casbin', { userEmail, found: userRights.found });
     if (!userRights.found) {
-      // Auto-add user with defaults
+      // Auto-add user with defaults (async, non-blocking)
       const usersPath = path.join(__dirname, '../config/casbin/users.json');
       let googleRoles = [];
       let googleGroupsWithRoles = [];
@@ -955,33 +957,19 @@ router.get('/user/rights', requireAuth, async (req, res) => {
         twoStepEnabled: false,
         department: 'General'
       };
-      let usersData = { users: [] };
-      try {
-        usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-      } catch (err) {
-        // If file doesn't exist or is invalid, start with empty users array
-        usersData = { users: [] };
-      }
-      usersData.users.push(newUser);
-      fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
-      
-      // Force reload Casbin data
-      await casbinService.initialize();
-      
-      // Re-fetch user rights after reload
-      userRights = await casbinService.getUserRights(userEmail);
-      if (!userRights.found) {
-        logger.error('Failed to get user rights after auto-add', { userEmail });
-        return res.status(500).json({
-          error: {
-            code: 'USER_RIGHTS_FAILED',
-            http: 500,
-            message: 'Failed to evaluate user rights after account creation'
-          },
-          requestId: req.requestId || 'unknown'
-        });
-      }
-      logger.info('Auto-added new user and loaded rights', { userEmail, groups: userRights.groups });
+      (async () => {
+        let usersData = { users: [] };
+        try {
+          usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+        } catch (err) {
+          usersData = { users: [] };
+        }
+        usersData.users.push(newUser);
+        fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+        await casbinService.initialize();
+      })();
+      // Return minimal rights for now, will be correct on next request
+      userRights = { userEmail, found: false, rights: [], groups: [], roles: [] };
     }
     // Log the authorization evaluation for audit
     req.logger?.info({

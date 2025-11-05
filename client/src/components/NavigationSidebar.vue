@@ -898,52 +898,56 @@ watch(
 /* ========================================
    THEME VARIANTS
    ======================================== */
+
+/* Minimal, professional sidebar with brand colors */
 .v-theme--dark .navigation-sidebar {
-  background: linear-gradient(180deg, #121212 0%, #1e1e1e 100%);
+  background: #181e22;
 }
 
 .v-theme--light .navigation-sidebar {
-  background: linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%);
-  color: #000000;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  background: #f8fafc;
+  color: #222;
+  box-shadow: 2px 0 8px rgba(52, 124, 172, 0.07);
 }
 
 .v-theme--light .navigation-item {
-  color: rgba(0, 0, 0, 0.7);
+  color: #222;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .v-theme--light .navigation-item:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #000000;
+  background: #eaf3f9 !important;
+  color: #347cac;
+  border-left: 3px solid #347cac;
 }
 
 .v-theme--light .navigation-item.active-route {
-  background: linear-gradient(
-    90deg,
-    rgba(25, 118, 210, 0.15) 0%,
-    rgba(25, 118, 210, 0.05) 100%
-  ) !important;
-  color: #1976d2;
-  border-left-color: #1976d2;
+  background: #e0f0fa !important;
+  color: #347cac;
+  border-left: 3px solid #f08a4a;
+  font-weight: 600;
 }
 
 .v-theme--light .user-info-section {
-  background: rgba(0, 0, 0, 0.02);
-  border-bottom-color: rgba(0, 0, 0, 0.1);
+  background: #f3f7fa;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .v-theme--light .sidebar-footer {
-  background: rgba(0, 0, 0, 0.02);
-  border-top-color: rgba(0, 0, 0, 0.1);
+  background: #f3f7fa;
+  border-top: 1px solid #e0e0e0;
 }
 
 /* ========================================
    ACCESSIBILITY
    ======================================== */
+
 .navigation-item:focus-visible,
 .footer-item:focus-visible {
-  outline: 2px solid #1976d2;
+  outline: 2px solid #347cac;
   outline-offset: 2px;
+  background: #eaf3f9 !important;
 }
 
 /* Reduced motion */
