@@ -43,7 +43,13 @@ class SurgicalGuideOrdersService {
       });
 
       // Validate date range
-  surgicalGuideOrdersModel.validateDateRange(params.startDate, params.endDate);
+         try {
+           surgicalGuideOrdersModel.validateDateRange(params.startDate, params.endDate);
+         } catch (err) {
+           // Return a validation error object for controller to handle
+           err.isValidationError = true;
+           throw err;
+         }
 
       // Validate pagination parameters
       const page = Math.max(1, parseInt(params.page) || 1);

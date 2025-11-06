@@ -88,8 +88,8 @@ const vuetifyTheme = useTheme();
 const vuetifyLocale = useLocale();
 const router = useRouter();
 
-// Drawer state
-const drawer = ref(true);
+// Drawer state - hidden by default, user can open when needed
+const drawer = ref(false);
 
 // Route loading state
 const isRouteLoading = ref(false);

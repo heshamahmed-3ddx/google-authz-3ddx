@@ -26,7 +26,7 @@ export const CONFIG = {
 
   // Date and Time Formats
   dateFormats: {
-    display: 'DD/MM/YYYY',
+    display: 'DD/MMM/YYYY',
     timestamp: 'DD/MM/YYYY HH:mm:ss',
     iso: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
     log: 'DD/MM/YYYY HH:mm:ss'

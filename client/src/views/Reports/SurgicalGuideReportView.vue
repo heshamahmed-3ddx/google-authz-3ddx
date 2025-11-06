@@ -1,5 +1,27 @@
 <template>
   <v-container fluid class="surgical-guide-report">
+    <!-- Initial Loading Overlay -->
+    <v-overlay
+      v-model="loading.access"
+      class="align-center justify-center"
+      persistent
+      contained
+    >
+      <v-card class="pa-8 text-center loading-overlay-card" elevation="8">
+        <v-progress-circular
+          indeterminate
+          color="orange"
+          size="64"
+          width="5"
+          class="mb-4"
+        ></v-progress-circular>
+        <div class="text-h6 mb-2">Verifying Access</div>
+        <div class="text-caption text-medium-emphasis">
+          Checking your permissions...
+        </div>
+      </v-card>
+    </v-overlay>
+
     <!-- Header Section -->
     <v-row>
       <v-col cols="12">
@@ -141,11 +163,23 @@
                     variant="outlined"
                     density="comfortable"
                     prepend-inner-icon="mdi-magnify"
+                    :append-inner-icon="loading.report && searchQuery ? 'mdi-loading' : ''"
+                    :loading="loading.report && searchQuery"
                     clearable
-                    hint="Press Enter or wait to search"
+                    :hint="loading.report && searchQuery ? 'Searching...' : 'Press Enter or wait to search'"
                     persistent-hint
+                    :disabled="loading.summary"
                     @click:clear="clearSearch"
-                  ></v-text-field>
+                  >
+                    <template #append-inner v-if="loading.report && searchQuery">
+                      <v-progress-circular
+                        indeterminate
+                        color="orange"
+                        size="20"
+                        width="2"
+                      ></v-progress-circular>
+                    </template>
+                  </v-text-field>
                 </v-col>
               </v-row>
 
@@ -188,11 +222,16 @@
                       size="large"
                       prepend-icon="mdi-refresh"
                       :loading="loading.report"
-                      :disabled="!isDateRangeValid"
+                      :disabled="!isDateRangeValid || loading.report || loading.summary"
                       block
                       @click="fetchReport(true)"
                     >
-                      Reload
+                      <template v-if="loading.report">
+                        Loading...
+                      </template>
+                      <template v-else>
+                        Reload
+                      </template>
                     </v-btn>
                     <v-btn
                       color="success"
@@ -200,12 +239,17 @@
                       prepend-icon="mdi-download"
                       variant="outlined"
                       :loading="loading.export"
-                      :disabled="!filteredReportData.length"
+                      :disabled="!filteredReportData.length || loading.report || loading.summary || loading.export"
                       block
                       class="ml-2"
                       @click="exportToCSV"
                     >
-                      Export
+                      <template v-if="loading.export">
+                        Exporting...
+                      </template>
+                      <template v-else>
+                        Export CSV
+                      </template>
                     </v-btn>
                   </div>
                 </v-col>
@@ -246,32 +290,67 @@
         </v-col>
       </v-row>
 
-      <!-- Loading Progress (minimal UI for performance) -->
-      <v-row v-if="loading.report && reportData.length === 0">
+      <!-- Loading Progress with Enhanced UI -->
+      <v-row v-if="loading.report || loading.summary">
         <v-col cols="12">
-          <v-progress-linear
-            indeterminate
-            color="primary"
-            height="3"
-          ></v-progress-linear>
+          <v-card elevation="2" class="loading-card">
+            <v-progress-linear
+              indeterminate
+              color="orange"
+              height="4"
+              class="mb-0"
+            ></v-progress-linear>
+            <v-card-text class="text-center py-6">
+              <v-progress-circular
+                indeterminate
+                color="orange"
+                size="48"
+                width="4"
+                class="mb-4"
+              ></v-progress-circular>
+              <div class="text-h6 text-medium-emphasis mb-2">
+                <template v-if="loading.summary">
+                  Loading Summary Statistics...
+                </template>
+                <template v-else-if="loading.report">
+                  <template v-if="searchQuery">
+                    Searching for "{{ searchQuery }}"...
+                  </template>
+                  <template v-else>
+                    Loading Report Data...
+                  </template>
+                </template>
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Please wait while we fetch your data
+              </div>
+            </v-card-text>
+          </v-card>
         </v-col>
       </v-row>
 
-      <!-- Order Statistics Skeleton Loader -->
-      <v-row v-if="loading.summary" class="summary-cards">
-        <v-col v-for="i in 6" :key="i" cols="12" md="2" sm="4">
-          <v-card elevation="2" class="summary-card">
-            <v-card-text class="text-center py-4">
+      <!-- Order Statistics Skeleton Loader (10 cards for both rows) -->
+      <v-row v-if="loading.summary" class="summary-cards five-col-row">
+        <v-col v-for="i in 10" :key="`skeleton-${i}`">
+          <v-card elevation="1" class="summary-card skeleton-card">
+            <div class="card-top-bar skeleton-shimmer" style="background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+            <v-card-text class="text-center py-3">
               <v-skeleton-loader
                 type="avatar"
                 class="mb-2 mx-auto"
-                width="48"
+                width="40"
+                height="40"
               ></v-skeleton-loader>
               <v-skeleton-loader
                 type="heading"
                 class="mb-2"
+                width="60px"
               ></v-skeleton-loader>
-              <v-skeleton-loader type="text"></v-skeleton-loader>
+              <v-skeleton-loader 
+                type="text" 
+                width="90px"
+                class="mx-auto"
+              ></v-skeleton-loader>
             </v-card-text>
           </v-card>
         </v-col>
@@ -460,19 +539,35 @@
               </div>
             </div>
 
+            <!-- Table Skeleton Loader (when loading with no data) -->
+            <v-card v-if="loading.report && filteredReportData.length === 0" elevation="0" class="table-skeleton-loader">
+              <v-card-text class="pa-0">
+                <v-skeleton-loader
+                  type="table-heading, table-tbody, table-tfoot"
+                  :types="{
+                    'table-heading': 'heading@8',
+                    'table-tbody': 'table-row@5',
+                    'table-row': 'text@8',
+                    'table-tfoot': 'text'
+                  }"
+                ></v-skeleton-loader>
+              </v-card-text>
+            </v-card>
+
+            <!-- Data Table -->
             <v-data-table-server
+              v-if="!loading.report || filteredReportData.length > 0"
               :headers="tableHeaders"
               :items="filteredReportData"
               :loading="loading.report"
-              loading-text="Loading... Please wait"
+              loading-text="🔄 Fetching data..."
               :items-length="pagination.total"
+              v-model:page="pagination.page"
               :items-per-page="50"
               :items-per-page-options="[25, 50, 100]"
-              class="elevation-1 enhanced-table payment-status-table"
+              class="elevation-1 enhanced-table payment-status-table highlighted-expanded-table"
               density="compact"
               hover
-              fixed-header
-              height="2200"
               show-current-page
               :mobile-breakpoint="0"
               show-expand
@@ -482,6 +577,22 @@
               @update:options="loadItems"
               @update:expanded="handleExpandedChange"
             >
+              <!-- Loading Slot with Custom Progress -->
+              <template #loading>
+                <div class="text-center py-8">
+                  <v-progress-circular
+                    indeterminate
+                    color="orange"
+                    size="48"
+                    width="4"
+                    class="mb-3"
+                  ></v-progress-circular>
+                  <div class="text-body-1 text-medium-emphasis">
+                    Loading data...
+                  </div>
+                </div>
+              </template>
+
               <!-- No Data State -->
               <template #no-data>
                 <div class="text-center py-8">
@@ -634,14 +745,9 @@
 
               <!-- Cost Column with Currency -->
               <template #[`item.cost`]="{ item }">
-                <v-chip
-                  class="font-weight-bold"
-                  :color="formatCurrency(item.cost) === 'Free' ? 'primary' : 'success'"
-                  size="small"
-                  variant="flat"
-                >
+                <span class="font-weight-bold">
                   {{ formatCurrency(item.cost) }}
-                </v-chip>
+                </span>
               </template>
 
               <!-- Type Column with Color Mapping -->
@@ -679,563 +785,143 @@
 
               <!-- Expanded Row Content -->
               <template #expanded-row="{ columns, item }">
-                <tr>
-                  <td :colspan="columns.length" class="pa-0">
-                    <v-card flat class="expanded-row-card">
-                      <v-card-text>
-                        <v-row>
-                          <!-- Left Column -->
-                          <v-col cols="12" md="6">
-                            <v-list density="compact" class="bg-transparent">
-                              <v-list-subheader
-                                class="text-orange font-weight-bold"
+                <tr class="expanded-row-minimal">
+                  <td :colspan="columns.length" class="expanded-cell">
+                    <!-- Stacked Tables Layout -->
+                    <div class="minimal-expanded-container">
+                      <!-- Main Details Table -->
+                      <table class="professional-details-table">
+                        <tbody>
+                          <!-- Payment Status -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" :color="getPaymentStatusColor(item)" class="mr-1">{{ getPaymentStatusIcon(item) }}</v-icon>
+                              Payment
+                            </td>
+                            <td class="detail-value" :style="{ color: getPaymentStatusColor(item) }">
+                              {{ getPaymentStatusLabel(item) }}
+                            </td>
+                          </tr>
+                          
+                          <!-- Workflow Status -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon v-if="getWorkflowIcon(item)" size="16" :color="getWorkflowIconColor(item)" class="mr-1">{{ getWorkflowIcon(item) }}</v-icon>
+                              <v-icon v-else size="16" color="#757575" class="mr-1">mdi-cog</v-icon>
+                              Workflow
+                            </td>
+                            <td class="detail-value" :style="{ color: getWorkflowIconColor(item) || '#757575' }">
+                              {{ getWorkflowIcon(item) ? getWorkflowStatusLabel(item) : 'Standard' }}
+                            </td>
+                          </tr>
+                          
+                          <!-- Created -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#2196f3" class="mr-1">mdi-calendar-plus</v-icon>
+                              Created
+                            </td>
+                            <td class="detail-value">{{ item.createdTime }}</td>
+                          </tr>
+                          
+                          <!-- Designed -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#4caf50" class="mr-1">mdi-calendar-check</v-icon>
+                              Designed
+                            </td>
+                            <td class="detail-value">{{ item.designTime }}</td>
+                          </tr>
+                          
+                          <!-- Designer -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#ff9800" class="mr-1">mdi-account-hard-hat</v-icon>
+                              Designer
+                            </td>
+                            <td class="detail-value">
+                              <a
+                                href="javascript:void(0)"
+                                class="detail-link"
+                                @click.prevent="() => {}"
                               >
-                                <v-icon class="mr-2" color="orange"
-                                  >mdi-information</v-icon
-                                >
-                                Case Details
-                              </v-list-subheader>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="primary"
-                                    >mdi-identifier</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Case ID</v-list-item-title
-                                >
-                                <v-list-item-subtitle
-                                  class="text-body-2 font-weight-bold"
-                                >
-                                  <a
-                                    href="javascript:void(0)"
-                                    class="order-id-link"
-                                    @click.prevent="() => {}"
-                                  >
-                                    #{{ item.orderSGID }}
-                                  </a>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="info"
-                                    >mdi-hospital-building</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Scan Center</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  <a
-                                    v-if="item.scanCenterFullName && item.scanCenterFullName !== 'Not Specified'"
-                                    href="javascript:void(0)"
-                                    class="order-id-link"
-                                    @click.prevent="() => {}"
-                                  >
-                                    {{ item.scanCenterFullName }}
-                                  </a>
-                                  <span v-else>{{ item.scanCenterFullName || 'Not Specified' }}</span>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="success"
-                                    >mdi-doctor</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Doctor</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  <a
-                                    v-if="item.doctorFullName && item.doctorFullName !== 'Not Specified'"
-                                    href="javascript:void(0)"
-                                    class="order-id-link"
-                                    @click.prevent="() => {}"
-                                  >
-                                    {{ item.doctorFullName }}
-                                  </a>
-                                  <span v-else>{{ item.doctorFullName || 'Not Specified' }}</span>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="purple"
-                                    >mdi-account</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Patient</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  <a
-                                    v-if="item.patientName && item.patientName !== 'Not Specified'"
-                                    href="javascript:void(0)"
-                                    class="order-id-link"
-                                    @click.prevent="() => {}"
-                                  >
-                                    {{ item.patientName }}
-                                  </a>
-                                  <span v-else>{{ item.patientName || 'Not Specified' }}</span>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="green"
-                                    >mdi-currency-usd</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Cost</v-list-item-title
-                                >
-                                <v-list-item-subtitle
-                                  class="text-h6 text-success font-weight-bold"
-                                >
-                                  {{ formatCurrency(item.cost) }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="orange"
-                                    >mdi-shape</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Type</v-list-item-title
-                                >
-                                <v-list-item-subtitle>
-                                  <v-chip
-                                    :color="getTypeColor(item.typeLabel)"
-                                    :theme="
-                                      shouldUseWhiteText(item.typeLabel)
-                                        ? 'dark'
-                                        : 'light'
-                                    "
-                                    size="small"
-                                    variant="flat"
-                                  >
-                                    {{ item.typeLabel }}
-                                  </v-chip>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-                            </v-list>
-                          </v-col>
-
-                          <!-- Right Column -->
-                          <v-col cols="12" md="6">
-                            <v-list density="compact" class="bg-transparent">
-                              <v-list-subheader
-                                class="text-orange font-weight-bold"
+                                {{ item.designer }}
+                              </a>
+                            </td>
+                          </tr>
+                          
+                          <!-- Support Type -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#9c27b0" class="mr-1">mdi-pillar</v-icon>
+                              Support
+                            </td>
+                            <td class="detail-value">{{ getSupportTypeLabel(item.typeOfSupport) }}</td>
+                          </tr>
+                          
+                          <!-- Cost -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#43a047" class="mr-1">mdi-currency-usd</v-icon>
+                              Cost
+                            </td>
+                            <td class="detail-value font-weight-bold">${{ parseFloat(item.cost || 0).toFixed(2) }}</td>
+                          </tr>
+                          
+                          <!-- Extraction -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#00bcd4" class="mr-1">mdi-tooth</v-icon>
+                              Extraction
+                            </td>
+                            <td class="detail-value">
+                              <span :style="{ color: item.extracted === 'Yes' ? '#4caf50' : '#757575' }">{{ item.extracted }}</span>
+                            </td>
+                          </tr>
+                          
+                          <!-- Bone Reduction -->
+                          <tr>
+                            <td class="detail-label">
+                              <v-icon size="16" color="#795548" class="mr-1">mdi-bone</v-icon>
+                              Bone Reduction
+                            </td>
+                            <td class="detail-value">
+                              <span :style="{ color: item.boneReduction === 'Yes' ? '#4caf50' : '#757575' }">{{ item.boneReduction }}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      
+                      <!-- Voucher Details Table (Below Main Table) -->
+                      <table v-if="item.vouchers && item.vouchers.length > 0" class="voucher-details-table">
+                        <tbody>
+                          <tr v-for="(voucher, index) in item.vouchers" :key="index" class="voucher-row">
+                            <td class="detail-label">
+                              <v-icon size="16" color="#1976d2" class="mr-1">mdi-ticket-confirmation</v-icon>
+                              Voucher 
+                              <a
+                                href="javascript:void(0)"
+                                class="detail-link"
+                                @click.prevent="() => {}"
                               >
-                                <v-icon class="mr-2" color="orange"
-                                  >mdi-clock-outline</v-icon
-                                >
-                                Timeline & Details
-                              </v-list-subheader>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="blue"
-                                    >mdi-calendar-plus</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Created</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  {{ item.createdTime }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="indigo"
-                                    >mdi-pencil-ruler</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Designed</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  {{ item.designTime }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="teal"
-                                    >mdi-cash-check</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Charged</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  {{ item.chargeTime }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="pink"
-                                    >mdi-account-hard-hat</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Designer</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  {{ item.designer }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="red"
-                                    >mdi-tooth</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Extraction</v-list-item-title
-                                >
-                                <v-list-item-subtitle>
-                                  <v-chip
-                                    :color="
-                                      item.extracted === 'Yes'
-                                        ? 'success'
-                                        : 'default'
-                                    "
-                                    size="x-small"
-                                  >
-                                    {{ item.extracted }}
-                                  </v-chip>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="brown"
-                                    >mdi-bone</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Bone Reduction</v-list-item-title
-                                >
-                                <v-list-item-subtitle>
-                                  <v-chip
-                                    :color="
-                                      item.boneReduction === 'Yes'
-                                        ? 'success'
-                                        : 'default'
-                                    "
-                                    size="x-small"
-                                  >
-                                    {{ item.boneReduction }}
-                                  </v-chip>
-                                </v-list-item-subtitle>
-                              </v-list-item>
-
-                              <v-list-item>
-                                <template #prepend>
-                                  <v-icon size="small" color="cyan"
-                                    >mdi-medical-bag</v-icon
-                                  >
-                                </template>
-                                <v-list-item-title
-                                  class="text-caption text-medium-emphasis"
-                                  >Support Type</v-list-item-title
-                                >
-                                <v-list-item-subtitle class="text-body-2">
-                                  {{ getSupportTypeLabel(item.typeOfSupport) }}
-                                </v-list-item-subtitle>
-                              </v-list-item>
-                            </v-list>
-                          </v-col>
-                        </v-row>
-
-                        <!-- Payment & Voucher Details Section -->
-                        <v-divider class="my-4"></v-divider>
-                        <v-row>
-                          <v-col cols="12">
-                            <v-list density="compact" class="bg-transparent">
-                              <v-list-subheader
-                                class="text-orange font-weight-bold"
-                              >
-                                <v-icon class="mr-2" color="orange"
-                                  >mdi-cash-multiple</v-icon
-                                >
-                                Payment Information
-                              </v-list-subheader>
-
-                              <v-row class="px-4">
-                                <v-col cols="12" md="4">
-                                  <v-list-item>
-                                    <template #prepend>
-                                      <v-icon size="small" color="green"
-                                        >mdi-currency-usd</v-icon
-                                      >
-                                    </template>
-                                    <v-list-item-title
-                                      class="text-caption text-medium-emphasis"
-                                      >Total Cost</v-list-item-title
-                                    >
-                                    <v-list-item-subtitle
-                                      class="text-h6 text-success font-weight-bold"
-                                    >
-                                      ${{
-                                        parseFloat(item.cost || 0).toFixed(2)
-                                      }}
-                                    </v-list-item-subtitle>
-                                  </v-list-item>
-                                </v-col>
-
-                                <v-col cols="12" md="4">
-                                  <v-list-item>
-                                    <template #prepend>
-                                      <v-icon size="small" color="blue"
-                                        >mdi-ticket-percent</v-icon
-                                      >
-                                    </template>
-                                    <v-list-item-title
-                                      class="text-caption text-medium-emphasis"
-                                      >Voucher Payment</v-list-item-title
-                                    >
-                                    <v-list-item-subtitle
-                                      class="text-h6 font-weight-bold"
-                                      :class="
-                                        item.amountPaid > 0
-                                          ? 'text-primary'
-                                          : 'text-medium-emphasis'
-                                      "
-                                    >
-                                      ${{
-                                        parseFloat(
-                                          item.amountPaid || 0,
-                                        ).toFixed(2)
-                                      }}
-                                    </v-list-item-subtitle>
-                                  </v-list-item>
-                                </v-col>
-
-                                <v-col cols="12" md="4">
-                                  <v-list-item>
-                                    <template #prepend>
-                                      <v-icon
-                                        size="small"
-                                        :color="getRemainingBalanceColor(item)"
-                                        >mdi-cash-minus</v-icon
-                                      >
-                                    </template>
-                                    <v-list-item-title
-                                      class="text-caption text-medium-emphasis"
-                                      >Remaining Balance</v-list-item-title
-                                    >
-                                    <v-list-item-subtitle
-                                      class="text-h6 font-weight-bold"
-                                      :class="getRemainingBalanceColor(item)"
-                                    >
-                                      ${{ getRemainingBalance(item) }}
-                                    </v-list-item-subtitle>
-                                  </v-list-item>
-                                </v-col>
-                              </v-row>
-
-                              <!-- Payment Status Badge -->
-                              <v-row class="px-4 mt-2">
-                                <v-col cols="12">
-                                  <v-chip
-                                    :color="getPaymentStatusColor(item)"
-                                    :prepend-icon="getPaymentStatusIcon(item)"
-                                    variant="tonal"
-                                    size="small"
-                                  >
-                                    {{ getPaymentStatusLabel(item) }}
-                                  </v-chip>
-                                </v-col>
-                              </v-row>
-
-                              <!-- Voucher Details (if vouchers exist) -->
-                              <v-row
-                                v-if="item.vouchers && item.vouchers.length > 0"
-                                class="px-4 mt-4"
-                              >
-                                <v-col cols="12">
-                                  <v-expansion-panels>
-                                    <v-expansion-panel>
-                                      <v-expansion-panel-title>
-                                        <template #default>
-                                          <v-row no-gutters align="center">
-                                            <v-col cols="auto">
-                                              <v-icon
-                                                class="mr-2"
-                                                color="primary"
-                                                >mdi-ticket-account</v-icon
-                                              >
-                                            </v-col>
-                                            <v-col>
-                                              <span
-                                                class="font-weight-bold text-primary"
-                                              >
-                                                Voucher Details ({{
-                                                  item.vouchers.length
-                                                }}
-                                                {{
-                                                  item.vouchers.length === 1
-                                                    ? "voucher"
-                                                    : "vouchers"
-                                                }})
-                                              </span>
-                                            </v-col>
-                                          </v-row>
-                                        </template>
-                                      </v-expansion-panel-title>
-                                      <v-expansion-panel-text>
-                                        <v-list
-                                          density="compact"
-                                          class="bg-grey-lighten-5 rounded"
-                                        >
-                                          <v-list-item
-                                            v-for="(
-                                              voucher, index
-                                            ) in item.vouchers"
-                                            :key="index"
-                                            class="my-1"
-                                          >
-                                            <template #prepend>
-                                              <v-avatar
-                                                color="primary"
-                                                size="32"
-                                              >
-                                                <v-icon size="small"
-                                                  >mdi-ticket</v-icon
-                                                >
-                                              </v-avatar>
-                                            </template>
-                                            <v-list-item-title
-                                              class="font-weight-bold"
-                                            >
-                                              Voucher ID: 
-                                              <a
-                                                href="javascript:void(0)"
-                                                class="order-id-link"
-                                                @click.prevent="() => {}"
-                                              >
-                                                #{{ voucher.id }}
-                                              </a>
-                                            </v-list-item-title>
-                                            <v-list-item-subtitle
-                                              class="text-success font-weight-bold text-h6"
-                                            >
-                                              ${{ voucher.amount.toFixed(2) }}
-                                            </v-list-item-subtitle>
-                                          </v-list-item>
-
-                                          <!-- Total -->
-                                          <v-divider class="my-2"></v-divider>
-                                          <v-list-item
-                                            class="bg-primary-lighten-5"
-                                          >
-                                            <template #prepend>
-                                              <v-icon color="primary"
-                                                >mdi-sigma</v-icon
-                                              >
-                                            </template>
-                                            <v-list-item-title
-                                              class="font-weight-bold"
-                                            >
-                                              Total Voucher Amount
-                                            </v-list-item-title>
-                                            <v-list-item-subtitle
-                                              class="text-primary font-weight-bold text-h6"
-                                            >
-                                              ${{
-                                                parseFloat(
-                                                  item.amountPaid || 0,
-                                                ).toFixed(2)
-                                              }}
-                                            </v-list-item-subtitle>
-                                          </v-list-item>
-                                        </v-list>
-                                      </v-expansion-panel-text>
-                                    </v-expansion-panel>
-                                  </v-expansion-panels>
-                                </v-col>
-                              </v-row>
-                            </v-list>
-                          </v-col>
-                        </v-row>
-
-                        <!-- Workflow Status Section (only show if there's a status) -->
-                        <template v-if="item.isRush === 1 || item.Q11_Val_1 || item.Q11_Val_2 || item.Q11_Val_4">
-                          <v-divider class="my-4"></v-divider>
-                          <v-row>
-                            <v-col cols="12">
-                              <v-list density="compact" class="bg-transparent">
-                                <v-list-subheader
-                                  class="text-orange font-weight-bold"
-                                >
-                                  <v-icon class="mr-2" color="orange"
-                                    >mdi-timeline-clock</v-icon
-                                  >
-                                  Workflow Status
-                                </v-list-subheader>
-
-                              <v-row class="px-4">
-                                <v-col cols="12">
-                                  <v-list-item class="pa-0">
-                                    <template #prepend>
-                                      <v-icon 
-                                        size="40" 
-                                        :color="getWorkflowIconColor(item)"
-                                        class="workflow-status-icon"
-                                      >
-                                        {{ getWorkflowIcon(item) }}
-                                      </v-icon>
-                                    </template>
-                                    <v-list-item-title class="text-h6 font-weight-bold mb-1">
-                                      {{ getWorkflowStatusLabel(item) }}
-                                    </v-list-item-title>
-                                    <v-list-item-subtitle class="text-body-2">
-                                      <template v-if="item.isRush === 1">
-                                        🔥 Priority Rush Order
-                                      </template>
-                                      <template v-else-if="item.Q11_Val_4">
-                                        Status: On Hold
-                                      </template>
-                                      <template v-else-if="item.Q11_Val_2">
-                                        Status: Confirmed
-                                      </template>
-                                      <template v-else-if="item.Q11_Val_1">
-                                        Status: Active
-                                      </template>
-                                    </v-list-item-subtitle>
-                                  </v-list-item>
-                                </v-col>
-                              </v-row>
-                            </v-list>
-                          </v-col>
-                        </v-row>
-                        </template>
-                      </v-card-text>
-                    </v-card>
+                                #{{ voucher.id }}
+                              </a>
+                            </td>
+                            <td class="detail-value voucher-amount">${{ voucher.amount.toFixed(2) }}</td>
+                            <td class="detail-value voucher-status">
+                              <v-chip size="x-small" color="success" variant="flat" class="sharp-chip">Applied</v-chip>
+                            </td>
+                          </tr>
+                          <tr class="voucher-total-row">
+                            <td class="detail-label">
+                              <v-icon size="16" color="#1976d2" class="mr-1">mdi-ticket-percent</v-icon>
+                              Total Voucher Paid
+                            </td>
+                            <td class="detail-value voucher-total-amount" colspan="2">${{ parseFloat(item.amountPaid || 0).toFixed(2) }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -1660,6 +1346,16 @@ async function exportToCSV() {
 }
 
 /**
+ * Collapse expanded row
+ */
+function collapseRow(item) {
+  const index = expanded.value.findIndex(exp => exp === item.orderSGID);
+  if (index > -1) {
+    expanded.value.splice(index, 1);
+  }
+}
+
+/**
  * Format large numbers with K suffix
  */
 function formatNumber(value) {
@@ -1907,6 +1603,56 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Expanded row styling - minimal padding */
+.expanded-row-card {
+  margin: 2px 0 !important;
+  padding: 8px 8px 4px 8px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  border-radius: 6px;
+  overflow: visible !important;
+}
+
+/* ===================================== */
+/* PREVENT SCROLLBAR FLASH - CRITICAL */
+/* ===================================== */
+
+/* Force no scrollbars on table and all children */
+.enhanced-table,
+.enhanced-table * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow-x: visible !important;
+}
+
+.enhanced-table::-webkit-scrollbar,
+.enhanced-table *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Target Vuetify table internals */
+.enhanced-table :deep(.v-data-table__wrapper),
+.enhanced-table :deep(.v-table__wrapper),
+.enhanced-table :deep(.v-data-table),
+.enhanced-table :deep(.v-table),
+.enhanced-table :deep(table) {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.enhanced-table :deep(.v-data-table__wrapper)::-webkit-scrollbar,
+.enhanced-table :deep(.v-table__wrapper)::-webkit-scrollbar,
+.enhanced-table :deep(.v-data-table)::-webkit-scrollbar,
+.enhanced-table :deep(.v-table)::-webkit-scrollbar,
+.enhanced-table :deep(table)::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 /* Performance Optimizations - Fix CLS & LCP */
 .header-container {
   min-height: 80px; /* Reserve space to prevent layout shift */
@@ -2012,10 +1758,9 @@ onMounted(async () => {
   contain-intrinsic-size: auto 1000px;
 }
 
-/* Optimize icon rendering */
+/* Optimize icon rendering - removed GPU acceleration to prevent freezing */
 .v-icon {
   will-change: auto;
-  transform: translateZ(0); /* GPU acceleration */
 }
 
 /* Reduce paint operations */
@@ -2023,24 +1768,237 @@ onMounted(async () => {
   will-change: auto;
 }
 
-/* Optimize card animations */
+/* Optimize card animations - removed GPU acceleration to prevent freezing */
 .v-card {
   backface-visibility: hidden;
-  transform: translateZ(0);
 }
 
-/* Expandable Row Styles */
-/* Expandable Row Styles */
-.expanded-row-card {
-  background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
-  border-left: 4px solid #ff6b35;
+/* Expandable Row Styles - Enhanced UX */
+
+/* Expanded row wrapper with animation */
+.expanded-row-wrapper {
+  animation: expandRowFade 0.3s ease-out;
+}
+
+@keyframes expandRowFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Container for expanded row with border highlight */
+.expanded-row-container {
+  background: linear-gradient(90deg, #ffa100 0%, #ff8c00 100%);
+  padding: 3px;
+  border-radius: 12px;
   margin: 8px 0;
+  animation: expandRowGlow 0.5s ease-out;
+}
+
+@keyframes expandRowGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 161, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(255, 161, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 4px 16px rgba(255, 161, 0, 0.15);
+  }
+}
+
+/* Highlight Expanded Row */
+.highlighted-expanded-table :deep(tr.v-data-table__tr--clickable[aria-expanded="true"]) {
+  background: #fff3e0 !important;
+  border-left: 4px solid #ff9800 !important;
+}
+
+.highlighted-expanded-table :deep(tr.v-data-table__tr--clickable[aria-expanded="true"]:hover) {
+  background: #ffe0b2 !important;
+}
+
+/* Professional Minimal Expanded Row */
+.expanded-row-minimal {
+  background: #fff3e0 !important;
+  border-left: 4px solid #ff9800 !important;
+}
+
+.expanded-cell {
+  padding: 0 !important;
+  background: #fff3e0 !important;
+}
+
+.minimal-expanded-container {
+  position: relative;
+  padding: 8px 16px;
+  background: #fff9f0;
+  border-top: 1px solid #ff9800;
+}
+
+/* Professional Details Table - Main Table */
+.professional-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.professional-details-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.professional-details-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  padding: 6px 12px;
+  font-weight: 600;
+  color: #616161;
+  background: #fafafa;
+  white-space: nowrap;
+  width: 100px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  padding: 6px 12px;
+  color: #212121;
+  background: white;
+  font-size: 0.8125rem;
+}
+
+/* Clickable Links in Detail Values */
+.detail-link {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.detail-link:hover {
+  color: #1565c0;
+  text-decoration: underline;
+}
+
+/* Voucher Inline Display */
+.voucher-inline {
+  display: inline;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* Voucher Details Table - Below Main Table (Exact Match) */
+.voucher-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+.voucher-details-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.voucher-details-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.voucher-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.voucher-amount {
+  font-weight: 600;
+}
+
+.voucher-status {
+  text-align: center;
+}
+
+.voucher-total-row {
+  border-top: 1px solid #f0f0f0;
+}
+
+.voucher-total-amount {
+  font-weight: 700;
+}
+
+/* Sharp Chip for Voucher Status */
+.sharp-chip {
+  border-radius: 2px !important;
+}
+
+/* No Voucher Placeholder */
+.no-voucher-placeholder {
+  border: 1px dashed #e0e0e0;
+  border-radius: 4px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 24px;
+}
+
+/* Remove any overlay effects */
+.expanded-row-card::before,
+.expanded-row-card::after {
+  display: none !important;
+}
+
+/* Ensure all child elements are fully opaque */
+.expanded-row-card * {
+  opacity: 1 !important;
+}
+
+/* Light mode text - full black for maximum clarity */
+.expanded-row-card .v-list,
+.expanded-row-card .v-list-item,
+.expanded-row-card .v-list-item-title,
+.expanded-row-card .v-list-item-subtitle {
+  background: transparent !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  opacity: 1 !important;
 }
 
 /* Dark mode support for expanded row */
 .v-theme--dark .expanded-row-card {
-  background: #181a20 !important;
-  color: #f5f6fa !important;
+  background: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+.v-theme--dark .expanded-row-header {
+  background: #252525 !important;
+  border-bottom-color: rgba(255, 161, 0, 0.3);
+}
+
+.v-theme--dark .expanded-row-container {
+  box-shadow: 0 4px 20px rgba(255, 161, 0, 0.25);
+}
+
+.v-theme--dark .details-section-card,
+.v-theme--dark .payment-section-card,
+.v-theme--dark .workflow-section-card {
+  background: #252525 !important;
+  border-color: rgba(255, 161, 0, 0.2);
 }
 
 .v-theme--dark .expanded-row-card .v-list,
@@ -2052,55 +2010,99 @@ onMounted(async () => {
 .v-theme--dark .expanded-row-card .v-list-item-subtitle,
 .v-theme--dark .expanded-row-card .v-list-subheader,
 .v-theme--dark .expanded-row-card .v-list-subheader__text {
-  background: #181a20 !important;
-  color: #f5f6fa !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
-@keyframes expanded-row-glow {
-  0% {
-    box-shadow: 0 0 0 0 var(--v-theme-primary, #347cac), 0 0 0 0 rgba(52,124,172,0.0);
-  }
-  60% {
-    box-shadow: 0 0 0 4px var(--v-theme-primary, #347cac), 0 8px 32px 0 rgba(52,124,172,0.18);
-  }
-  100% {
-    box-shadow: 0 0 0 2px var(--v-theme-primary, #347cac), 0 4px 24px 0 rgba(52,124,172,0.15);
-  }
+/* Compact Vouchers Inline Display */
+.compact-vouchers {
+  padding: 6px 0;
+  border-top: 1px solid #e0e0e0;
 }
 
-.expanded-row-card .v-list-item {
-  padding: 4px 8px;
-  min-height: 40px;
+.vouchers-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.expanded-row-card .v-list-item-title {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* Workflow Note - Minimal */
+.workflow-note {
+  padding: 4px 0;
+  border-top: 1px solid #e0e0e0;
+  color: rgba(0, 0, 0, 0.7);
 }
 
-.expanded-row-card .v-list-item-subtitle {
-  margin-top: 2px;
-  font-size: 0.875rem;
+/* Expanded row table cell - no overlay */
+.enhanced-table :deep(tr td.pa-0) {
+  background: transparent !important;
+  opacity: 1 !important;
+  padding: 0 !important;
 }
 
-.expanded-row-card .v-list-subheader {
-  font-size: 0.9rem;
-  padding: 8px 8px;
-  margin-bottom: 4px;
-  border-bottom: 2px solid #ff6b35;
+/* Remove any hover effects on expanded rows */
+.enhanced-table :deep(tr:has(td.pa-0)) {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.enhanced-table :deep(tr:has(td.pa-0):hover) {
+  background: transparent !important;
 }
 
 /* Expand icon color */
 .enhanced-table :deep(.v-data-table__expand-icon) {
-  color: #ff6b35 !important;
+  color: #ffa100 !important;
 }
 
 /* Hover effect on expandable rows */
 .enhanced-table :deep(tr:hover .v-data-table__expand-icon) {
   transform: scale(1.2);
   transition: transform 0.2s ease;
+  color: #ff8c00 !important;
 }
+
+/* Dark mode for compact tables */
+.v-theme--dark .expanded-row-card {
+  background: #1e1e1e !important;
+}
+
+.v-theme--dark .expanded-row-header {
+  background: #252525 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.v-theme--dark .compact-expanded-content {
+  background: #1e1e1e !important;
+}
+
+.v-theme--dark .compact-details-table,
+.v-theme--dark .compact-payment-table {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.v-theme--dark .compact-details-table td,
+.v-theme--dark .compact-payment-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.v-theme--dark .compact-label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.v-theme--dark .compact-value {
+  color: #ffffff !important;
+}
+
+.v-theme--dark .compact-vouchers,
+.v-theme--dark .workflow-note {
+  border-top-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Removed old voucher expansion panel styles - now using inline chips */
 
 .filter-row {
   display: flex;
@@ -2131,39 +2133,20 @@ onMounted(async () => {
   }
 }
 
-/* Workflow icon animation */
+/* Workflow icon - simple static styling */
 .workflow-status-icon {
   display: inline-block !important;
-  animation: workflow-icon-pulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease;
 }
-@keyframes workflow-icon-pulse {
-  0% {
-    transform: scale(1) rotate(0deg);
-  }
-  20% {
-    transform: scale(1.12) rotate(-4deg);
-  }
-  40% {
-    transform: scale(1) rotate(2deg);
-  }
-  60% {
-    transform: scale(1.08) rotate(-2deg);
-  }
-  80% {
-    transform: scale(1) rotate(0deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
+
+.workflow-status-icon:hover {
+  transform: scale(1.1);
 }
 </style>
 
 <style scoped>
 .enhanced-table .v-data-table__wrapper {
   background: #fafbfc;
-  transform: translateZ(0); /* GPU acceleration */
-  will-change: scroll-position;
 }
 /* Table header styling with orange brand color */
 .enhanced-table :deep(.v-data-table__th),
@@ -2312,18 +2295,16 @@ onMounted(async () => {
 /* Summary card clickable styles */
 :deep(.v-card.hover) {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease;
 }
 
 :deep(.v-card.hover:hover) {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Active filter card styling */
 :deep(.v-card.active-filter) {
   box-shadow: 0 6px 16px rgba(255, 161, 0, 0.4) !important;
-  transform: translateY(-3px);
   border: 2px solid #ffa100 !important;
 }
 
@@ -2375,33 +2356,204 @@ onMounted(async () => {
   }
 }
 
-/* Hide all scrollbars */
-* {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+/* ===================================== */
+/* REMOVE SCROLLBAR FLASH */
+/* ===================================== */
+
+/* Hide all scrollbars globally to prevent flash */
+.enhanced-table,
+.enhanced-table *,
+.enhanced-table :deep(*) {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
 }
 
-*::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+.enhanced-table::-webkit-scrollbar,
+.enhanced-table *::-webkit-scrollbar,
+.enhanced-table :deep(*)::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
 }
 
-/* Specifically target table and card scrollbars */
-.v-data-table,
-.v-card,
-.v-list,
-.expanded-row-card,
-.enhanced-table {
+/* Specifically target table wrapper and body */
+.enhanced-table :deep(.v-data-table__wrapper) {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+}
+
+.enhanced-table :deep(.v-data-table__wrapper)::-webkit-scrollbar {
+  display: none !important;
+}
+
+.enhanced-table :deep(.v-table__wrapper) {
+  overflow: visible !important;
+  scrollbar-width: none !important;
+}
+
+.enhanced-table :deep(.v-table__wrapper)::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Hide scrollbars on table body */
+.enhanced-table :deep(tbody) {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
 
-.v-data-table::-webkit-scrollbar,
-.v-card::-webkit-scrollbar,
-.v-list::-webkit-scrollbar,
-.expanded-row-card::-webkit-scrollbar,
-.enhanced-table::-webkit-scrollbar {
+.enhanced-table :deep(tbody)::-webkit-scrollbar {
   display: none !important;
-  width: 0 !important;
-  height: 0 !important;
+}
+
+/* Prevent overflow that causes scrollbar flash */
+.enhanced-table :deep(.v-data-table) {
+  overflow: visible !important;
+}
+
+.enhanced-table :deep(.v-table) {
+  overflow: visible !important;
+}
+
+/* Ensure pagination footer is visible and styled */
+.enhanced-table :deep(.v-data-table-footer) {
+  border-top: 2px solid #ffa100;
+  padding: 12px 16px;
+  overflow: visible !important;
+}
+
+/* ===================================== */
+/* ENHANCED LOADING STATES */
+/* ===================================== */
+
+/* Loading overlay card */
+.loading-overlay-card {
+  background: white !important;
+  border-radius: 16px !important;
+  min-width: 300px;
+  box-shadow: 0 8px 32px rgba(255, 161, 0, 0.2) !important;
+}
+
+.v-theme--dark .loading-overlay-card {
+  background: #1e1e1e !important;
+}
+
+/* Loading card styling */
+.loading-card {
+  background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
+  border-left: 4px solid #ffa100;
+  overflow: hidden;
+}
+
+.v-theme--dark .loading-card {
+  background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+}
+
+/* Shimmer animation for skeleton cards */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+/* Skeleton card styling */
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Table skeleton loader */
+.table-skeleton-loader {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+.v-theme--dark .table-skeleton-loader {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Enhanced skeleton loader colors */
+:deep(.v-skeleton-loader__bone) {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 161, 0, 0.08) 0%,
+    rgba(255, 161, 0, 0.15) 50%,
+    rgba(255, 161, 0, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Loading progress circular pulse */
+.v-progress-circular {
+  animation: progress-pulse 2s ease-in-out infinite;
+}
+
+@keyframes progress-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Smooth fade-in for loaded content */
+.summary-cards:not(.skeleton-card),
+.enhanced-table {
+  animation: fade-in 0.4s ease-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
