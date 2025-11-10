@@ -210,6 +210,62 @@
             </v-tooltip>
           </v-btn>
         </v-card-text>
+
+        <v-divider></v-divider>
+
+        <!-- Documentation Links -->
+        <v-card-actions class="pa-3 d-flex flex-column" style="gap: 8px">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            prepend-icon="mdi-book-open-variant"
+            size="small"
+            href="http://localhost:5173"
+            target="_blank"
+            rel="noopener noreferrer"
+            block
+          >
+            VitePress Docs
+            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
+            <v-tooltip activator="parent" location="top">
+              Open VitePress documentation (localhost:5173)
+            </v-tooltip>
+          </v-btn>
+
+          <v-btn
+            variant="tonal"
+            color="success"
+            prepend-icon="mdi-api"
+            size="small"
+            href="http://localhost:3001/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            block
+          >
+            Swagger API
+            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
+            <v-tooltip activator="parent" location="top">
+              Open Swagger API documentation (localhost:3001/docs)
+            </v-tooltip>
+          </v-btn>
+
+          <v-btn
+            variant="tonal"
+            color="info"
+            prepend-icon="mdi-code-json"
+            size="small"
+            href="/docs/jsdoc/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            block
+          >
+            JSDoc
+            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
+            <v-tooltip activator="parent" location="top">
+              Open JSDoc code documentation (/docs/jsdoc)
+            </v-tooltip>
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-menu>
   </div>
@@ -252,7 +308,6 @@ function toggleGroup(group) {
   transform: scale(1.05);
   transition: transform 0.2s ease;
 }
-
 
 /* Enhanced spacing for dev-mode controls */
 .dev-toolbar .v-chip,

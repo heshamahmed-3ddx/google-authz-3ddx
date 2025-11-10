@@ -1,7 +1,7 @@
 {
-  "name": "google-authz-3ddx",
+  "name": "insighthub",
   "version": "1.0.0",
-  "description": "Full-stack Google OAuth 2.0 authorization demonstration with Node.js + Express backend and Vue 3 + Vuetify frontend",
+  "description": "InsightHub: Full-stack authorization and analytics platform (Node.js + Express backend, Vue 3 + Vuetify frontend)",
   "private": true,
   "workspaces": [
     "server",
@@ -13,9 +13,10 @@
     "install:server": "cd server && npm install",
     "install:client": "cd client && npm install",
     "install:tests": "cd tests && npm install",
-    "dev": "./scripts/dev-start.sh",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\" \"npm run dev:docs\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
+    "dev:docs": "cd docs && npx vitepress dev",
     "build": "./scripts/build-prod.sh",
     "build:client": "cd client && npm run build",
     "test": "./scripts/test-all.sh",

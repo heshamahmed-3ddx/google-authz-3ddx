@@ -101,32 +101,36 @@ export function createContextLogger(filename, functionName = null) {
   };
 
   const getCallerInfo = () => {
+    // Only collect stack info in development or for error-level logs to
+    // avoid the cost of creating and parsing an Error stack on every call.
+    if (process.env.NODE_ENV !== 'development') return '0';
     const error = new Error();
-    const stack = error.stack.split('\n');
-    const callerLine = stack[3]; // Get caller's line (adjusted for wrapper)
+    const stack = (error.stack || '').split('\n');
+    const callerLine = stack[3] || '';
     const lineMatch = callerLine.match(/:(\d+):\d+/);
-    return lineMatch ? lineMatch[1] : 'unknown';
+    return lineMatch ? lineMatch[1] : '0';
   };
 
   return {
     // Critical system events only
     info: (message, meta = {}) => {
       // Only log critical system events, authentication, and business logic
-      if (isCriticalLog(message, 'info')) {
-        logger.info(message, {
-          filename: getFileName(filename),
-          lineNumber: getCallerInfo(),
-          functionName,
-          ...meta
-        });
-      }
+      if (!isCriticalLog(message, 'info')) return;
+      // Use precomputed filename and avoid stack parsing for info-level logs
+      logger.info(message, {
+        filename: getFileName(filename),
+        lineNumber: '0',
+        functionName,
+        ...meta
+      });
     },
     
     // Important warnings and system alerts
     warn: (message, meta = {}) => {
+      // Warnings use a lightweight code path (no stack parsing)
       logger.warn(message, {
         filename: getFileName(filename),
-        lineNumber: getCallerInfo(),
+        lineNumber: '0',
         functionName,
         ...meta
       });
@@ -134,6 +138,7 @@ export function createContextLogger(filename, functionName = null) {
     
     // Always log errors
     error: (message, meta = {}) => {
+      // For errors we capture caller line number (more expensive) to help debugging
       logger.error(message, {
         filename: getFileName(filename),
         lineNumber: getCallerInfo(),
@@ -144,14 +149,14 @@ export function createContextLogger(filename, functionName = null) {
 
     // Debug logs for development only
     debug: (message, meta = {}) => {
-      if (process.env.NODE_ENV === 'development') {
-        logger.debug(message, {
-          filename: path.basename(filename, '.js'),
-          lineNumber: getCallerInfo(),
-          functionName,
-          ...meta
-        });
-      }
+      if (process.env.NODE_ENV !== 'development') return;
+      // Only in development: include caller info (stack parsing allowed)
+      logger.debug(message, {
+        filename: path.basename(filename, '.js'),
+        lineNumber: getCallerInfo(),
+        functionName,
+        ...meta
+      });
     }
   };
 }
@@ -175,12 +180,15 @@ function isCriticalLog(message, level) {
  * Request logging middleware with enhanced details
  */
 export function requestLogger(req, res, next) {
-  const contextLogger = createContextLogger('requestLogger', 'requestLogger');
   const startTime = Date.now();
-  
-  // Only log critical API calls
+
+  // Lightweight logging path: avoid creating a contextLogger per request to
+  // cut down on allocations. We use the base `logger` instance and attach a
+  // minimal filename/line metadata (no stack parsing) for performance.
   if (isCriticalRequest(req.url)) {
-    contextLogger.info('HTTP Request Started', {
+    logger.info('HTTP Request Started', {
+      filename: 'requestLogger',
+      lineNumber: '0',
       method: req.method,
       url: req.url,
       userAgent: req.get('User-Agent'),
@@ -189,11 +197,13 @@ export function requestLogger(req, res, next) {
       userEmail: req.session?.user?.email
     });
   }
-  
+
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     if (isCriticalRequest(req.url) || res.statusCode >= 400) {
-      contextLogger.info('HTTP Request Completed', {
+      logger.info('HTTP Request Completed', {
+        filename: 'requestLogger',
+        lineNumber: '0',
         method: req.method,
         url: req.url,
         statusCode: res.statusCode,
@@ -203,7 +213,7 @@ export function requestLogger(req, res, next) {
       });
     }
   });
-  
+
   next();
 }
 

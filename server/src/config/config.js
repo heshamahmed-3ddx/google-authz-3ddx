@@ -1,10 +1,10 @@
 /**
  * @file config.js
- * @description Application configuration constants and settings
- * @author 3D Diagnostix Development Team
+ * @description InsightHub application configuration constants and settings
+ * @author InsightHub Development Team
  * @created 2025-10-20
  * @version 1.2.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 
@@ -26,7 +26,7 @@ export const CONFIG = {
 
   // Date and Time Formats
   dateFormats: {
-    display: 'DD/MM/YYYY',
+    display: 'DD/MMM/YYYY',
     timestamp: 'DD/MM/YYYY HH:mm:ss',
     iso: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
     log: 'DD/MM/YYYY HH:mm:ss'

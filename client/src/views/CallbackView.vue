@@ -4,21 +4,14 @@
       <v-col cols="12" md="6">
         <v-card elevation="3" class="pa-6 text-center">
           <v-card-title class="text-h4 mb-4">
-            <v-icon size="large" color="primary" class="mr-2"
-              >mdi-loading</v-icon
-            >
+            <v-icon size="large" color="primary" class="mr-2">mdi-sync</v-icon>
             {{ $t("auth.processingAuth") }}
+            <span v-if="loading" class="ms-2 text-caption">{{
+              $t("auth.completingAuth")
+            }}</span>
           </v-card-title>
 
           <v-card-text>
-            <v-progress-circular
-              v-if="loading"
-              indeterminate
-              color="primary"
-              size="64"
-              class="mb-4"
-            ></v-progress-circular>
-
             <p v-if="loading" class="text-h6 mb-4">
               {{ $t("auth.completingAuth") }}
             </p>

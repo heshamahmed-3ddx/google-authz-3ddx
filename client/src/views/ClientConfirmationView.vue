@@ -6,11 +6,7 @@
         <v-alert type="success" class="mb-4"
           >Welcome, Client Confirmation group member!</v-alert
         >
-        <v-card v-if="loading" class="pa-4 text-center">
-          <v-progress-circular indeterminate color="primary" size="32" />
-          <div class="mt-2">Loading group info...</div>
-        </v-card>
-        <v-card v-else class="pa-4">
+        <v-card class="pa-4">
           <h3 class="mb-2">Your Google Group Info</h3>
           <div v-if="groupInfo">
             <div><strong>Email:</strong> {{ groupInfo.email }}</div>

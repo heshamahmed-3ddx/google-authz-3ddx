@@ -4,30 +4,32 @@
       v-model="showMenu"
       :close-on-content-click="true"
       location="bottom end"
-      offset="8"
+      offset="4"
     >
       <template #activator="{ props }">
         <v-btn
           v-bind="props"
-          icon
           variant="text"
-          class="language-toggle"
-          :aria-label="`Current language: ${currentLanguage.nativeName}. Click to change language`"
+          size="small"
+          color="secondary"
+          class="language-btn"
+          :aria-label="`Current language: ${currentLanguage.nativeName}`"
         >
-          <span class="flag-emoji">{{ currentLanguage.flag }}</span>
+          <v-icon size="18" class="lang-icon">mdi-translate</v-icon>
+          <span class="lang-code">{{
+            currentLanguage.code.toUpperCase()
+          }}</span>
         </v-btn>
       </template>
 
-      <v-card min-width="200" elevation="8">
-        <v-list class="language-menu">
-          <v-list-subheader>
-            <v-icon class="mr-2">mdi-translate</v-icon>
+      <v-card min-width="240" elevation="3" class="language-card">
+        <v-list density="compact" class="language-menu">
+          <v-list-subheader class="text-caption font-weight-medium px-4 py-2">
             {{ $t("language.switch") }}
           </v-list-subheader>
 
-          <v-divider></v-divider>
+          <v-divider class="my-1"></v-divider>
 
-          <!-- Language Options -->
           <v-list-item
             v-for="language in supportedLanguages"
             :key="language.code"
@@ -35,15 +37,21 @@
             class="language-option"
             @click="changeLanguage(language.code)"
           >
-            <template #prepend>
-              <span class="flag-emoji mr-3">{{ language.flag }}</span>
-            </template>
+            <v-list-item-title class="text-body-2">
+              {{ language.nativeName }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="text-caption">
+              {{ language.name }}
+            </v-list-item-subtitle>
 
-            <v-list-item-title>{{ language.nativeName }}</v-list-item-title>
-            <v-list-item-subtitle>{{ language.name }}</v-list-item-subtitle>
-
-            <template v-if="currentLocale === language.code" #append>
-              <v-icon color="success" size="small">mdi-check</v-icon>
+            <template #append>
+              <v-icon
+                v-if="currentLocale === language.code"
+                color="secondary"
+                size="18"
+              >
+                mdi-check-circle
+              </v-icon>
             </template>
           </v-list-item>
         </v-list>
@@ -65,14 +73,14 @@ const supportedLanguages = [
     code: "en",
     name: "English",
     nativeName: "English",
-    flag: "🇺🇸",
+    countryCode: "US",
     dir: "ltr",
   },
   {
     code: "ar",
     name: "Arabic",
     nativeName: "العربية",
-    flag: "🇪🇬",
+    countryCode: "EG",
     dir: "rtl",
   },
 ];
@@ -112,39 +120,61 @@ const changeLanguage = (languageCode) => {
 
 <style scoped>
 .language-switcher {
-  position: relative;
-  display: inline-block;
+  display: inline-flex;
 }
-.flag-emoji {
-  font-size: 20px;
+
+.language-btn {
+  min-width: 56px !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.language-btn :deep(.v-btn__content) {
+  gap: 6px;
+}
+
+.lang-icon {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.language-btn:hover .lang-icon {
+  opacity: 1;
+}
+
+.lang-code {
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1;
 }
 
+.language-card {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
 .language-menu {
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .language-option {
+  min-height: 56px !important;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  padding: 8px 16px;
+  border-radius: var(--border-radius-sm) !important;
 }
 
 .language-option:hover {
-  background-color: rgba(var(--v-theme-primary), 0.08);
+  background-color: rgba(var(--v-theme-secondary), 0.05);
 }
 
 .language-option.v-list-item--active {
-  background-color: rgba(var(--v-theme-primary), 0.12);
+  background-color: rgba(var(--v-theme-secondary), 0.08);
 }
 
-/* RTL adjustments */
-[dir="rtl"] .language-option {
-  text-align: right;
-}
-
-[dir="rtl"] .flag-emoji {
-  margin-left: 12px;
-  margin-right: 0;
+/* RTL support */
+[dir="rtl"] .language-btn :deep(.v-btn__content) {
+  flex-direction: row-reverse;
 }
 </style>

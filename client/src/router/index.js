@@ -98,7 +98,11 @@ const routes = [
     path: "/finance/surgical-guide-report",
     name: "SurgicalGuideReport",
     component: () => import("@/views/Reports/SurgicalGuideReportView.vue"),
-    meta: { requiresAuth: true, requiredGroups: ["admin", "Finance22"] },
+    meta: {
+      requiresAuth: true,
+      requiredGroups: ["admin", "Finance22"],
+      breadcrumb: (t) => t("navigation.surgicalGuideReport"),
+    },
   },
   {
     path: "/finance/approvals",

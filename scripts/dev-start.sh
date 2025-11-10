@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start both development servers concurrently
+# Start all development servers concurrently
 
 echo "🚀 Starting Google AuthZ 3DDX development servers..."
 
@@ -11,33 +11,37 @@ cleanup() {
     exit 0
 }
 
-# Set trap to cleanup on script exit
 trap cleanup EXIT INT TERM
 
-# Start server in background
+# Start server in background (with nodemon --quiet)
 echo "📡 Starting backend server on port 3001..."
 cd server
-npm run dev &
+npx nodemon --quiet src/index.js &
 SERVER_PID=$!
 
-# Wait a moment for server to start
 sleep 2
 
 # Start client in background
-echo "🌐 Starting frontend client on port 3000..."
+echo "🌐 Starting frontend client on port 5173..."
 cd ../client
 npm run dev &
 CLIENT_PID=$!
 
-# Wait a moment for client to start
-sleep 3
+sleep 2
 
-echo ""
-echo "🎉 Development servers started!"
-echo "📡 Backend: http://localhost:3001"
-echo "🌐 Frontend: http://localhost:3000"
-echo ""
-echo "Press Ctrl+C to stop both servers"
+# Start docs in background
+echo "📖 Starting VitePress docs on port 8080..."
+cd ../Docusaurus
+npx vitepress dev &
+DOCS_PID=$!
+
+sleep 2
+
+# Print status table
+cd ..
+node scripts/dev-status.js
+
+echo "Press Ctrl+C to stop all servers"
 
 # Wait for background processes
 wait

@@ -5,13 +5,12 @@
  */
 
 import axios from "axios";
-import { logApiCall, createClientLogger } from "./logger.js";
+import { showLoader, hideLoader } from "../plugins/global-loader";
 
 /** @constant {string} BASE_URL - Base URL for API requests */
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-// Create API logger
-const logger = createClientLogger("API");
+// API logger removed to avoid client-side logging overhead
 
 /**
  * Axios instance configured for the application API
@@ -30,10 +29,60 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+// URL patterns that should not trigger the global loader by default.
+const SUPPRESS_LOADER_PATTERNS = [
+  "/auth/me",
+  "/api/session",
+  "/api/session/info",
+  "/api/health",
+  "/api/ping",
+  "/api/status",
+];
 
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
+    // Show global loader for API requests unless explicitly suppressed.
+    try {
+      const suppressHeader =
+        config.headers &&
+        (config.headers["X-Suppress-Loader"] === "1" ||
+          config.headers["x-suppress-loader"] === "1");
+      const suppressExplicit = Boolean(
+        config._suppressLoader || config.suppressLoader || suppressHeader,
+      );
+      // Auto-suppress for quick/background endpoints unless explicitly overridden
+      const url = (config.url || "").toString();
+      const matchesPattern = SUPPRESS_LOADER_PATTERNS.some(
+        (p) => url.startsWith(p) || url.includes(p),
+      );
+      const isStaticAsset = /\.(png|jpg|jpeg|svg|gif|ico|css|js)(\?.*)?$/.test(
+        url,
+      );
+      const forceLoader = Boolean(config.forceLoader || config._forceLoader);
+      const suppress = forceLoader
+        ? false
+        : suppressExplicit || matchesPattern || isStaticAsset;
+
+      if (!suppress) {
+        // Show the global loader for this request. We don't use per-request ids
+        // with the plugin; instead mark that we showed the loader so the
+        // response handler knows to hide it.
+        try {
+          showLoader();
+          // eslint-disable-next-line no-param-reassign
+          config._loaderShown = true;
+        } catch (e) {
+          void e;
+        }
+      } else {
+        // mark explicitly suppressed so response handler doesn't try to hide
+        // eslint-disable-next-line no-param-reassign
+        config._loaderSuppressed = true;
+      }
+    } catch (e) {
+      // ignore loader failures
+    }
     // Disabled API request logging to reduce console noise
     // logApiCall(config.method?.toUpperCase() || 'GET', config.url || '', {
     //   baseURL: config.baseURL,
@@ -43,7 +92,13 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    logger.error("Request interceptor error", { error: error.message });
+    try {
+      if (error.config && error.config._loaderShown) {
+        hideLoader();
+      }
+    } catch (e) {
+      void e;
+    }
     return Promise.reject(error);
   },
 );
@@ -51,45 +106,29 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful responses for critical endpoints
-    if (response.config?.url) {
-      logApiCall(
-        response.config.method?.toUpperCase() || "GET",
-        response.config.url,
-        {
-          status: response.status,
-          statusText: response.statusText,
-        },
-        "success",
-      );
+    // Hide loader on response only if a loader id was attached
+    try {
+      if (response.config && response.config._loaderShown) {
+        hideLoader();
+      }
+      // If suppressed or no marker present, don't touch the loader stack
+    } catch (e) {
+      void e;
     }
+    // Logging disabled - earlier implementation recorded API calls here
 
     return response;
   },
   (error) => {
-    // Don't log 401 errors for authentication checks - they're expected
-    if (error.response?.status === 401) {
-      // Silently handle unauthorized access - this is expected for auth checks
-      // Only log if it's not the /auth/me endpoint
-      if (!error.config?.url?.includes("/auth/me")) {
-        logger.warn("Unauthorized access detected", {
-          url: error.config?.url,
-          method: error.config?.method,
-        });
+    // Hide loader on error only if a loader id was attached
+    try {
+      if (error.config && error.config._loaderShown) {
+        hideLoader();
       }
-    } else {
-      // Log other errors using the new logger
-      logApiCall(
-        error.config?.method?.toUpperCase() || "UNKNOWN",
-        error.config?.url || "unknown",
-        {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        },
-        "error",
-      );
+    } catch (e) {
+      void e;
     }
+    // Logging disabled - errors are still propagated to callers
 
     return Promise.reject(error);
   },
