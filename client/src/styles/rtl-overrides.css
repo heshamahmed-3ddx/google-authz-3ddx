@@ -1,0 +1,14 @@
+/* Logical property overrides for RTL/LTR migration (non-destructive)
+   Reference: migrations/backup-rtl-20251110/ and migrations/rtl-detection-report.md */
+
+/* Use logical properties for margin and alignment */
+.rtl-table .icon-margin {
+  margin-inline-start: 8px !important;
+  margin-inline-end: 0 !important;
+}
+.ltr-table .icon-margin {
+  margin-inline-end: 8px !important;
+  margin-inline-start: 0 !important;
+}
+
+/* Add more logical overrides as needed for migration */
