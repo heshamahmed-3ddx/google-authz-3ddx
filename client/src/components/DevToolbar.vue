@@ -214,7 +214,7 @@
         <v-divider></v-divider>
 
         <!-- Documentation Links -->
-        <v-card-actions class="pa-3 d-flex flex-column" style="gap: 8px;">
+        <v-card-actions class="pa-3 d-flex flex-column" style="gap: 8px">
           <v-btn
             variant="tonal"
             color="primary"
@@ -308,7 +308,6 @@ function toggleGroup(group) {
   transform: scale(1.05);
   transition: transform 0.2s ease;
 }
-
 
 /* Enhanced spacing for dev-mode controls */
 .dev-toolbar .v-chip,

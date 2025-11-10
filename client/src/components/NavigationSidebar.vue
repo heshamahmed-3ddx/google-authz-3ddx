@@ -1,12 +1,16 @@
-/* Force all sidebar items to be flat */ .v-list-item, .v-list-group,
+/* Sidebar elements: prefer rounded corners from theme */
+.v-list-item, .v-list-group,
 .v-list-group__items, .v-list-item__prepend, .v-list-item__append,
 .v-list-item__content, .v-list-item__title, .v-list-item__subtitle {
-border-radius: 0 !important; } /* Remove all border radius from sidebar elements
-*/ .navigation-sidebar, .sidebar-header, .user-info-section, .sidebar-footer,
+  border-radius: var(--border-radius-sm) !important;
+}
+
+.navigation-sidebar, .sidebar-header, .user-info-section, .sidebar-footer,
 .navigation-menu, .navigation-item, .footer-item, .logout-item,
 .navigation-group :deep(.v-list-group__items),
 .navigation-item.active-route::after, .logo-avatar, .user-avatar {
-border-radius: 0 !important; }
+  border-radius: var(--border-radius-sm) !important;
+}
 <template>
   <v-navigation-drawer
     v-model="drawer"
@@ -28,15 +32,15 @@ border-radius: 0 !important; }
           class="logo-avatar"
           :class="{ 'mr-3': !rail }"
         >
-          <v-icon :size="rail ? 22 : 26" color="white">mdi-google</v-icon>
+          <v-icon :size="rail ? 22 : 26" color="white">mdi-domain</v-icon>
         </v-avatar>
         <transition name="fade-slide">
           <div v-show="!rail" class="flex-grow-1 company-info">
             <div class="text-h6 font-weight-bold company-name">
-              3D Diagnostix
+              {{ $t("sidebar.companyName") }}
             </div>
             <div class="text-caption text-medium-emphasis company-subtitle">
-              Authorization System
+              {{ $t("sidebar.companySubtitle") }}
             </div>
           </div>
         </transition>
@@ -49,7 +53,7 @@ border-radius: 0 !important; }
           @click="toggleRail"
         >
           <v-tooltip activator="parent" location="right">
-            {{ rail ? "Expand" : "Collapse" }}
+            {{ rail ? $t("nav.expand") : $t("nav.collapse") }}
           </v-tooltip>
         </v-btn>
       </div>
@@ -135,12 +139,12 @@ border-radius: 0 !important; }
             <v-list-item
               v-bind="activatorProps"
               :prepend-icon="item.icon"
-              :title="rail ? '' : item.title"
+              :title="rail ? '' : $t('navigation.' + item.id)"
               class="navigation-item navigation-parent"
               :class="{ 'group-open': isOpen }"
             >
               <v-tooltip v-if="rail" activator="parent" location="right">
-                {{ item.title }}
+                {{ $t("navigation." + item.id) }}
               </v-tooltip>
               <template v-if="item.badge && !rail" #append>
                 <v-badge
@@ -159,13 +163,13 @@ border-radius: 0 !important; }
             :key="child.id"
             :to="child.route"
             :prepend-icon="child.icon"
-            :title="rail ? '' : child.title"
+            :title="rail ? '' : $t('navigation.' + child.id)"
             class="navigation-item navigation-child-item"
             :class="{ 'active-route': isActiveRoute(child.route) }"
             @click="onItemClick"
           >
             <v-tooltip v-if="rail" activator="parent" location="right">
-              {{ child.title }}
+              {{ $t("navigation." + child.id) }}
             </v-tooltip>
             <template v-if="child.badge && !rail" #append>
               <v-badge
@@ -183,13 +187,13 @@ border-radius: 0 !important; }
           v-else
           :to="item.route"
           :prepend-icon="item.icon"
-          :title="rail ? '' : item.title"
+          :title="rail ? '' : $t('navigation.' + item.id)"
           class="navigation-item"
           :class="{ 'active-route': isActiveRoute(item.route) }"
           @click="onItemClick"
         >
           <v-tooltip v-if="rail" activator="parent" location="right">
-            {{ item.title }}
+            {{ $t("navigation." + item.id) }}
           </v-tooltip>
           <template v-if="item.badge && !rail" #append>
             <v-badge
@@ -220,23 +224,23 @@ border-radius: 0 !important; }
             v-if="isAdmin"
             to="/system/settings"
             prepend-icon="mdi-cog"
-            :title="rail ? '' : 'Settings'"
+            :title="rail ? '' : $t('nav.settings')"
             class="footer-item"
           >
             <v-tooltip v-if="rail" activator="parent" location="right">
-              Settings
+              {{ $t("nav.settings") }}
             </v-tooltip>
           </v-list-item>
 
           <!-- Logout -->
           <v-list-item
             prepend-icon="mdi-logout"
-            :title="rail ? '' : 'Logout'"
+            :title="rail ? '' : $t('nav.logout')"
             class="footer-item logout-item"
             @click="handleLogout"
           >
             <v-tooltip v-if="rail" activator="parent" location="right">
-              Logout
+              {{ $t("nav.logout") }}
             </v-tooltip>
           </v-list-item>
         </v-list>
@@ -418,13 +422,14 @@ watch(
 
 <style scoped>
 /* ========================================
-   SIDEBAR BASE STYLES
+   SIDEBAR BASE STYLES - FLAT DESIGN
    ======================================== */
 .navigation-sidebar {
-  background: linear-gradient(180deg, #1e1e1e 0%, #2d2d2d 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #333333;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  box-shadow: none !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .navigation-sidebar :deep(.v-navigation-drawer__content) {
@@ -450,11 +455,12 @@ watch(
 }
 
 /* ========================================
-   SIDEBAR HEADER
+   SIDEBAR HEADER - FLAT DESIGN
    ======================================== */
 .sidebar-header {
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .sidebar-header.header-rail {
@@ -468,10 +474,11 @@ watch(
 .logo-avatar {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  border-radius: 0 !important;
 }
 
 .logo-avatar:hover {
-  transform: scale(1.05) rotate(5deg);
+  transform: scale(1.05);
 }
 
 .company-info {
@@ -484,16 +491,19 @@ watch(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #333333;
 }
 
 .company-subtitle {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #666666;
 }
 
 .toggle-btn {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 !important;
 }
 
 .toggle-btn:hover {
@@ -501,17 +511,17 @@ watch(
 }
 
 /* ========================================
-   USER INFO SECTION
+   USER INFO SECTION - FLAT DESIGN
    ======================================== */
 .user-info-section {
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f5f5f5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .user-info-section:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: #eeeeee;
 }
 
 .user-info-item {
@@ -527,20 +537,22 @@ watch(
 .user-avatar {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  border-radius: 0 !important;
 }
 
 .user-avatar:hover {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .user-name,
 .user-email {
   transition: all 0.3s ease;
+  color: #333333;
 }
 
 .admin-badge {
   animation: shimmer 2s infinite;
+  border-radius: 0 !important;
 }
 
 @keyframes shimmer {
@@ -554,7 +566,7 @@ watch(
 }
 
 /* ========================================
-   NAVIGATION MENU
+   NAVIGATION MENU - FLAT DESIGN
    ======================================== */
 .navigation-menu {
   flex-grow: 1;
@@ -573,65 +585,38 @@ watch(
 }
 
 .navigation-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 0;
   transition: background 0.3s ease;
 }
 
 .navigation-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* ========================================
-   NAVIGATION ITEMS
+   NAVIGATION ITEMS - FLAT DESIGN
    ======================================== */
 .navigation-item {
   margin: 2px 8px;
-  border-radius: 0;
+  border-radius: 0 !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: rgba(255, 255, 255, 0.7);
+  color: #666666;
   position: relative;
   overflow: hidden;
 }
 
-/* Hover effect with slide animation */
-.navigation-item::before {
-  content: "";
-  position: absolute;
-  left: -100%;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.navigation-item:hover::before {
-  left: 100%;
-}
-
 .navigation-item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff;
+  background: #f5f5f5 !important;
+  color: #333333;
   transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .navigation-item.active-route {
-  background: linear-gradient(
-    90deg,
-    rgba(25, 118, 210, 0.25) 0%,
-    rgba(25, 118, 210, 0.1) 100%
-  ) !important;
-  color: #ffffff;
+  background: #e3f2fd !important;
+  color: #1976d2;
   border-left: 3px solid #1976d2;
   transform: translateX(0);
-  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.3);
 }
 
 .navigation-item.active-route::after {
@@ -672,6 +657,7 @@ watch(
   margin-left: 24px;
   font-size: 0.875rem;
   padding-left: 48px !important;
+  border-radius: 0 !important;
 }
 
 .sidebar-rail .navigation-child-item {
@@ -680,12 +666,13 @@ watch(
 }
 
 /* ========================================
-   NAVIGATION GROUP
+   NAVIGATION GROUP - FLAT DESIGN
    ======================================== */
 .navigation-group :deep(.v-list-group__items) {
-  background: rgba(0, 0, 0, 0.15);
+  background: #f9f9f9;
   animation: slideDown 0.3s ease-out;
   border-radius: 0 !important;
+  border-left: 2px solid #e0e0e0;
 }
 
 @keyframes slideDown {
@@ -707,20 +694,20 @@ watch(
 .navigation-group:hover :deep(.v-list-item__prepend),
 .navigation-item:hover :deep(.v-icon) {
   opacity: 1;
-  color: #64b5f6;
+  color: #1976d2;
   transform: scale(1.1);
 }
 
 .navigation-item.active-route :deep(.v-icon) {
   color: #1976d2;
-  filter: drop-shadow(0 0 4px #1976d2);
 }
 
 /* ========================================
-   BADGES
+   BADGES - FLAT DESIGN
    ======================================== */
 .nav-badge {
   animation: bounce 2s infinite;
+  border-radius: 0 !important;
 }
 
 @keyframes bounce {
@@ -734,12 +721,13 @@ watch(
 }
 
 /* ========================================
-   DIVIDERS
+   DIVIDERS - FLAT DESIGN
    ======================================== */
 .nav-divider {
   opacity: 0.3;
   margin: 8px 16px !important;
   transition: opacity 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 .navigation-menu:hover .nav-divider {
@@ -747,24 +735,24 @@ watch(
 }
 
 /* ========================================
-   SIDEBAR FOOTER
+   SIDEBAR FOOTER - FLAT DESIGN
    ======================================== */
 .sidebar-footer {
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f5f5f5;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .footer-item {
   margin: 4px 8px;
-  border-radius: 0;
-  color: rgba(255, 255, 255, 0.7);
+  border-radius: 0 !important;
+  color: #666666;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footer-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background: #eeeeee;
+  color: #333333;
   transform: translateX(2px);
 }
 
@@ -896,47 +884,82 @@ watch(
 }
 
 /* ========================================
-   THEME VARIANTS
+   THEME VARIANTS - FLAT DESIGN
    ======================================== */
 
-/* Minimal, professional sidebar with brand colors */
+/* Dark theme */
 .v-theme--dark .navigation-sidebar {
-  background: #181e22;
+  background: #1e1e1e;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.v-theme--dark .navigation-item {
+  color: #cccccc;
+}
+
+.v-theme--dark .navigation-item:hover {
+  background: #2d2d2d !important;
+  color: #ffffff;
+}
+
+.v-theme--dark .navigation-item.active-route {
+  background: #1e3a5f !important;
+  color: #64b5f6;
+  border-left: 3px solid #64b5f6;
+}
+
+.v-theme--dark .user-info-section {
+  background: #2d2d2d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .sidebar-footer {
+  background: #2d2d2d;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .user-name,
+.v-theme--dark .user-email {
+  color: #ffffff;
+}
+
+.v-theme--dark .company-name {
+  color: #ffffff;
+}
+
+.v-theme--dark .company-subtitle {
+  color: #cccccc;
+}
+
+/* Light theme - already defined above as default */
 .v-theme--light .navigation-sidebar {
-  background: #f8fafc;
-  color: #222;
-  box-shadow: 2px 0 8px rgba(52, 124, 172, 0.07);
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .v-theme--light .navigation-item {
-  color: #222;
-  border-left: 3px solid transparent;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  color: #666666;
 }
 
 .v-theme--light .navigation-item:hover {
-  background: #eaf3f9 !important;
-  color: #347cac;
-  border-left: 3px solid #347cac;
+  background: #f5f5f5 !important;
+  color: #333333;
 }
 
 .v-theme--light .navigation-item.active-route {
-  background: #e0f0fa !important;
-  color: #347cac;
-  border-left: 3px solid #f08a4a;
-  font-weight: 600;
+  background: #e3f2fd !important;
+  color: #1976d2;
+  border-left: 3px solid #1976d2;
 }
 
 .v-theme--light .user-info-section {
-  background: #f3f7fa;
-  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .v-theme--light .sidebar-footer {
-  background: #f3f7fa;
-  border-top: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* ========================================
@@ -945,9 +968,15 @@ watch(
 
 .navigation-item:focus-visible,
 .footer-item:focus-visible {
-  outline: 2px solid #347cac;
+  outline: 2px solid #1976d2;
   outline-offset: 2px;
-  background: #eaf3f9 !important;
+  background: #f5f5f5 !important;
+}
+
+.v-theme--dark .navigation-item:focus-visible,
+.v-theme--dark .footer-item:focus-visible {
+  outline: 2px solid #64b5f6;
+  background: #2d2d2d !important;
 }
 
 /* Reduced motion */

@@ -10,6 +10,8 @@
   --diagnostix-teal: #00bcd4;
   --diagnostix-green: #2e7d32;
   --diagnostix-grey: #37474f;
+  /* Primary theme variable (fallback) - kept in sync with colors.json */
+  --color-primary: #146c9c;
 
   /* Medical/Healthcare Colors */
   --medical-primary: #0066cc;
@@ -32,10 +34,10 @@
   --spacing-xxl: 48px;
 
   /* Border Radius Scale */
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --border-radius-xl: 16px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 20px;
 
   /* Shadow Definitions */
   --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -198,6 +200,21 @@
   transform: translateY(-2px);
 }
 
+/* NProgress custom styling to use theme secondary color */
+#nprogress .bar {
+  background: var(--medical-secondary) !important; /* fallback brand secondary */
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 8px var(--medical-secondary) !important;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: var(--medical-secondary) !important;
+  border-left-color: var(--medical-secondary) !important;
+}
+
 .v-card--variant-elevated {
   box-shadow: var(--shadow-medium) !important;
 }
@@ -238,7 +255,7 @@
 .v-app-bar {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(var(--v-theme-outline), 0.12);
-  border-radius: 0 !important;
+  border-radius: var(--border-radius-md) !important;
   padding-right: var(--spacing-lg);
 }
 
@@ -309,6 +326,57 @@
   transition: all var(--theme-transition) !important;
 }
 
+/* By default hide the Vuetify circular progress to centralize loading UX through GlobalLoader.
+   If a local spinner is intentionally required, add the `allow-local-spinner` class to it. */
+.v-progress-circular:not(.allow-local-spinner) {
+  display: none !important;
+}
+
+/* Ensure GlobalLoader overlay sits above other UI and NProgress */
+.v-overlay__content,
+.vue-loading-overlay {
+  z-index: 99999 !important;
+}
+
+/* NProgress bar should be below the fullscreen loader */
+#nprogress .bar {
+  z-index: 9998 !important;
+}
+
+/* Global pulse for the loader lamp to ensure animation applies when overlay is mounted outside SFC scope */
+.global-loader-overlay .loader-lamp {
+  width: 140px !important;
+  height: 140px !important;
+  object-fit: contain !important;
+  animation: lamp-pulse-global 1.4s ease-in-out infinite !important;
+}
+
+@keyframes lamp-pulse-global {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Lighten the overlay scrim and center loader content */
+.global-loader-overlay {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.global-loader-overlay .v-overlay__scrim {
+  background: rgba(0,0,0,0.12) !important; /* lighter scrim */
+}
+
+.global-loader-overlay .v-overlay__content {
+  background: transparent !important;
+}
+
+.global-loader-overlay .loader-lamp {
+  width: 220px !important;
+  height: 220px !important;
+}
+
 /* Enhanced tables */
 .v-table {
   border-radius: var(--border-radius-lg) !important;
@@ -328,8 +396,8 @@
 
 /* Enhanced navigation drawer */
 .v-navigation-drawer {
-  /* Remove rounded corners so the drawer and app bar meet flush */
-  border-radius: 0 !important;
+  /* Keep rounded corners for a softer UI */
+  border-radius: var(--border-radius-md) !important;
 }
 
 /* Stronger override to ensure no curved edges on top navigation across themes */
@@ -337,7 +405,7 @@
 .v-application .v-toolbar,
 .v-app-bar,
 .v-toolbar {
-  border-radius: 0 !important;
+  border-radius: var(--border-radius-md) !important;
 }
 
 /* App bar actions: provide consistent spacing and prevent sticking to scrollbar */
@@ -500,6 +568,16 @@
 .v-theme--dark .page-header-sticky.scrolled {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* Compact UI opt-in: reduce paddings, font and icon sizes for dense layouts */
+:root {
+  --compact-font-size: 13px;
+  --compact-icon-size: 18px;
+  --compact-padding-xs: 6px;
+  --compact-padding-sm: 8px;
+}
+
+
 
 /* Print styles */
 @media print {

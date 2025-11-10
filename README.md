@@ -2,14 +2,14 @@
   <img src="./client/public/logo.png" alt="Brand Logo" width="240"/>
 </div>
 
-# Google AuthZ 3DDX - Authentication & Authorization Demo
+# InsightHub - Authorization & Analytics Platform
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-brightgreen.svg)](https://vuejs.org/)
 [![Express](https://img.shields.io/badge/Express-4.x-lightgrey.svg)](https://expressjs.com/)
 [![Google OAuth](https://img.shields.io/badge/Google-OAuth%202.0-blue.svg)](https://developers.google.com/identity/protocols/oauth2)
 
-> **Purpose**: Demonstrate secure authentication using Google Workspace accounts and policy-based authorization using Casbin for 3D Diagnostix, Inc.
+> **Purpose**: InsightHub provides secure authentication, policy-based authorization, and analytics for modern organizations.
 
 ## 🎯 Project Overview
 

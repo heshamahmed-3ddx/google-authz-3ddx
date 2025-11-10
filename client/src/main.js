@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { createVuetify } from "vuetify";
+import ar from "./vuetify-locale-ar";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi";
@@ -9,8 +10,14 @@ import "vuetify/styles";
 
 import App from "./App.vue";
 import router from "./router";
+// NProgress for top-of-page progress indicator
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 import { themeConfig } from "./stores/theme.js";
 import { i18n, isRTL } from "./i18n";
+import { showLoader, hideLoader } from "./plugins/global-loader";
+import globalLoaderPlugin from "./plugins/global-loader";
+import GlobalLoader from "./components/GlobalLoader.vue";
 
 // Import custom theme styles
 import "./styles/theme.css";
@@ -32,6 +39,11 @@ const vuetify = createVuetify({
       fa: true,
       ur: true,
     },
+    messages: {
+      ar,
+    },
+    // Set default locale to match i18n
+    locale: i18n.global.locale.value,
   },
   rtl: isRTL(i18n.global.locale.value),
   theme: {
@@ -73,8 +85,73 @@ const vuetify = createVuetify({
   },
 });
 
+// Network instrumentation: wrap fetch and XMLHttpRequest so all requests
+// (even those triggered during component mount) will start/stop the global loader.
+try {
+  if (typeof window !== "undefined") {
+    // FETCH
+    if (window.fetch) {
+      const _origFetch = window.fetch.bind(window);
+      window.fetch = async (...args) => {
+        const init = args[1] || {};
+        const headers = (init && init.headers) || {};
+        const suppress = Boolean(
+          init.suppressLoader ||
+            headers["X-Suppress-Loader"] === "1" ||
+            headers["x-suppress-loader"] === "1",
+        );
+        const forceLoader = Boolean(init.forceLoader || init._forceLoader);
+        const shouldShow = !(suppress && !forceLoader);
+        if (shouldShow) showLoader();
+        try {
+          const res = await _origFetch(...args);
+          if (shouldShow) hideLoader();
+          return res;
+        } catch (err) {
+          if (shouldShow) hideLoader();
+          throw err;
+        }
+      };
+    }
+
+    // XHR
+    if (window.XMLHttpRequest) {
+      const XHR = window.XMLHttpRequest;
+      const origOpen = XHR.prototype.open;
+      const origSend = XHR.prototype.send;
+      XHR.prototype.open = function (method, url, ...rest) {
+        this.__requestUrl = url;
+        return origOpen.apply(this, [method, url, ...rest]);
+      };
+      XHR.prototype.send = function (_body) {
+        try {
+          const url = this.__requestUrl || "";
+          const isStatic = /\.(png|jpg|jpeg|svg|gif|ico|css|js)(\?.*)?$/.test(
+            url,
+          );
+          const suppress = isStatic; // keep lightweight here - axios handles patterns
+          const shouldShow = !suppress;
+          if (shouldShow) showLoader();
+          this.addEventListener("loadend", () => {
+            if (shouldShow) hideLoader();
+          });
+        } catch (e) {
+          // ignore
+        }
+        return origSend.apply(this, arguments);
+      };
+    }
+  }
+} catch (e) {
+  // ignore instrumentation errors
+}
+
 const app = createApp(App);
 const pinia = createPinia();
+
+// Install global loader plugin and register the minimal component
+app.use(globalLoaderPlugin);
+app.component("GlobalLoader", GlobalLoader);
 
 // Development-only: suppress specific noisy Vue warnings in headless environments
 if (import.meta.env.DEV) {
@@ -106,6 +183,15 @@ window.vuetifyInstance = vuetify;
 
 app.use(router);
 
+// Sync Vuetify locale with i18n locale changes
+import { watch } from "vue";
+watch(
+  () => i18n.global.locale.value,
+  (newLocale) => {
+    vuetify.framework.locale.current.value = newLocale;
+  }
+);
+
 // Mount app
 app.mount("#app");
 
@@ -113,6 +199,27 @@ app.mount("#app");
 setTimeout(() => {
   document.body.classList.add("app-mounted");
 }, 100);
+
+// Wire NProgress to router navigation
+router.beforeEach((to, from, next) => {
+  NProgress.start();
+  next();
+});
+
+router.afterEach(() => {
+  NProgress.done();
+});
+
+// Register service worker in production for basic caching/PWA behavior
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn("Service worker registration failed:", err);
+    });
+  });
+}
+// (fetch/XHR instrumentation is configured earlier in this file)
 
 // Development-only: expose app internals for smoke-tests and debugging
 if (import.meta.env.DEV) {

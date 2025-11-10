@@ -21,7 +21,6 @@
       <v-col cols="12" class="d-flex justify-space-between align-center mb-2">
         <!-- DevToolbar floating controls are now the only dev mode UI -->
         <div></div>
-
       </v-col>
     </v-row>
 
@@ -72,7 +71,7 @@
           </v-card-title>
           <v-card-text>
             <template v-if="loadingDetails">
-              <div class="dots-loader" style="margin: 60px auto"></div>
+              <!-- Global loader will display for API calls; local inline spinner removed -->
             </template>
             <template v-else-if="userDetails">
               <v-row>
@@ -575,7 +574,7 @@
               v-if="loadingRights"
               style="text-align: center; padding: 60px 0"
             >
-              <div class="dots-loader" style="margin: 0 auto"></div>
+              <!-- local spinner removed; rely on global loader -->
             </div>
             <div
               v-else-if="userRights.rights.length === 0"
@@ -590,18 +589,21 @@
               </p>
             </div>
 
-
             <!-- User Rights as Cards -->
             <v-row v-else class="mb-4">
               <v-col
                 v-for="right in userRights.rights"
                 :key="right.resource"
-                cols="12" md="6" lg="4"
+                cols="12"
+                md="6"
+                lg="4"
               >
                 <v-card class="mb-4" elevation="2">
                   <v-card-title class="d-flex align-center">
                     <v-icon class="mr-2" color="primary">mdi-shield-key</v-icon>
-                    <span class="text-subtitle-1 font-weight-bold">{{ right.resource }}</span>
+                    <span class="text-subtitle-1 font-weight-bold">{{
+                      right.resource
+                    }}</span>
                   </v-card-title>
                   <v-card-text>
                     <div class="mb-2">
@@ -657,7 +659,7 @@
           </v-card-text>
           <v-card-text v-else-if="loadingRights">
             <div class="text-center py-8">
-              <span class="dots-loader" aria-label="Loading"></span>
+              <!-- local spinner removed; rely on global loader -->
               <p class="mt-4 text-body-1">
                 {{ $t("dashboard.evaluatingUserPermissions") }}
               </p>

@@ -1,7 +1,7 @@
 {
-  "name": "google-authz-3ddx-server",
+  "name": "insighthub-server",
   "version": "1.2.0",
-  "description": "Node.js Express backend for Google Authorization with Casbin RBAC integration",
+  "description": "InsightHub: Node.js Express backend for authorization and analytics with Casbin RBAC integration",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
