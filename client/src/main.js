@@ -1,7 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { createVuetify } from "vuetify";
-import ar from "./vuetify-locale-ar";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi";
@@ -39,11 +38,6 @@ const vuetify = createVuetify({
       fa: true,
       ur: true,
     },
-    messages: {
-      ar,
-    },
-    // Set default locale to match i18n
-    locale: i18n.global.locale.value,
   },
   rtl: isRTL(i18n.global.locale.value),
   theme: {
@@ -182,15 +176,6 @@ app.use(vuetify);
 window.vuetifyInstance = vuetify;
 
 app.use(router);
-
-// Sync Vuetify locale with i18n locale changes
-import { watch } from "vue";
-watch(
-  () => i18n.global.locale.value,
-  (newLocale) => {
-    vuetify.framework.locale.current.value = newLocale;
-  }
-);
 
 // Mount app
 app.mount("#app");
