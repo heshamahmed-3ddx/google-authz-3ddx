@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page" role="main" ref="pageRef">
+  <div ref="pageRef" class="login-page" role="main">
     <!-- Top-right controls: Theme + Language -->
     <div class="page-controls">
       <LanguageSwitcher class="control-item" />
@@ -8,29 +8,39 @@
 
     <!-- Centered login content -->
     <div class="login-content">
-      <div class="horizontal-layout">
-        <!-- Logo and button section (centered) -->
-        <div class="logo-section content-section">
-          <img
-            :src="logoSrc"
-            alt="Logo"
-            class="login-logo"
-            @error="onLogoError"
-          />
-
-          <v-btn
-            class="sign-in-btn"
-            color="orange darken-2"
-            depressed
-            small
-            aria-label="Sign in with Google"
-            @click="login"
-            :loading="authLoading"
-          >
-            {{ $t('auth.signInGoogle') || 'Sign in with Google' }}
-          </v-btn>
-        </div>
+      <div
+        class="logo-wrapper"
+        ref="logoWrapper"
+        :class="{ 'fade-in': logoAnimated }"
+        :style="
+          logoAnimated
+            ? {}
+            : { opacity: 0, transform: 'translateY(-20px) scale(0.95)' }
+        "
+      >
+        <img
+          :src="logoSrc"
+          alt="Logo"
+          class="login-logo"
+          ref="logoImg"
+          :class="{ 'fade-in-img': logoAnimated }"
+          @error="onLogoError"
+        />
       </div>
+
+      <v-btn
+        class="sign-in-btn"
+        ref="signInBtn"
+        :class="{ 'fade-in': buttonAnimated }"
+        style="background-color: #ef9043 !important; color: white !important"
+        size="default"
+        variant="flat"
+        aria-label="Sign in with Google"
+        :loading="authLoading"
+        @click="login"
+      >
+        {{ $t("auth.signInGoogle") || "Sign in with Google" }}
+      </v-btn>
     </div>
 
     <!-- Footer -->
@@ -45,7 +55,7 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
@@ -56,28 +66,39 @@ const authStore = useAuthStore();
 const router = useRouter();
 const appVersion = pkg.version || "1.0.0";
 
-const logoSrc = ref('/logo.png');
+const logoSrc = ref("/logo.png");
 const authLoading = ref(false);
 const pageRef = ref(null);
+const logoAnimated = ref(false);
+const buttonAnimated = ref(false);
+const logoWrapper = ref(null);
+const logoImg = ref(null);
+const signInBtn = ref(null);
 
-function generateBinaryPatternSVG(width = 800, height = 600, color = '#ff9800') {
-  // Create a simple SVG with repeated random 0/1 characters
-  const fontSize = 14;
-  const cols = Math.ceil(width / fontSize);
-  const rows = Math.ceil(height / fontSize);
+function generateBinaryPatternSVG(
+  width = 800,
+  height = 600,
+  color = "#ef9043",
+  fontSize = 20,
+  spacing = 30,
+) {
+  // Create a simple SVG with spaced random 0/1 characters across full page
+  const cols = Math.ceil(width / spacing);
+  const rows = Math.ceil(height / spacing);
 
-  let text = '';
+  let text = "";
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const bit = Math.random() < 0.5 ? '0' : '1';
-      const x = c * fontSize;
-      const y = (r + 1) * fontSize;
-      // random rotation between -25 and 25 degrees
-      const angle = (Math.random() * 50) - 25;
-      // rotation center (approx center of the character)
-      const cx = x + fontSize * 0.5;
-      const cy = y - fontSize * 0.35;
-      text += `<text x="${x}" y="${y}" transform="rotate(${angle} ${cx} ${cy})" font-family="monospace" font-size="${fontSize}" fill="${color}" opacity="0.12">${bit}</text>`;
+      // Alternate pattern: 1s and 0s opposite to each other (checkerboard-like)
+      // If row + column is even, use "1", if odd, use "0"
+      const bit = (r + c) % 2 === 0 ? "1" : "0";
+      const x = c * spacing + spacing * 0.5;
+      const y = r * spacing + spacing * 0.5;
+      // Small random rotation between -15 and 15 degrees
+      const angle = Math.random() * 30 - 15;
+      const cx = x;
+      const cy = y;
+      text += `<text x="${x}" y="${y}" transform="rotate(${angle} ${cx} ${cy})" font-family="monospace" font-size="${fontSize}" fill="${color}" opacity="0.16" text-anchor="middle" dominant-baseline="middle">${bit}</text>`;
     }
   }
 
@@ -86,9 +107,11 @@ function generateBinaryPatternSVG(width = 800, height = 600, color = '#ff9800') 
 }
 
 function onLogoError() {
-  logoSrc.value = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="120" viewBox="0 0 220 120"><rect width="100%" height="100%" fill="#ffffff"/><circle cx="110" cy="60" r="40" fill="#146c9c"/></svg>`
-  );
+  logoSrc.value =
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="120" viewBox="0 0 220 120"><rect width="100%" height="100%" fill="#ffffff"/><circle cx="110" cy="60" r="40" fill="#146e9c"/></svg>`,
+    );
 }
 
 const login = async () => {
@@ -96,7 +119,7 @@ const login = async () => {
   authLoading.value = true;
   try {
     await authStore.login();
-    router.push('/dashboard');
+    router.push("/dashboard");
   } catch (e) {
     window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/auth/google`;
   } finally {
@@ -111,78 +134,228 @@ let _patternWorker = null;
 let _patternObjectUrl = null;
 let _idleHandle = null;
 
+let _animeModule = null;
+
+async function animateLogo() {
+  if (!_animeModule) {
+    try {
+      const mod = await import('animejs');
+      _animeModule = mod.default || mod;
+    } catch (e) {
+      // animejs not available
+      return;
+    }
+  }
+
+  const anime = _animeModule;
+  try {
+    // Wait for DOM updates so refs are populated
+    await nextTick();
+    const lw = logoWrapper.value;
+    const li = logoImg.value;
+    const btn = signInBtn.value;
+
+    if (!lw && !li) return; // nothing to animate
+
+    // Honor reduced-motion preference
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (lw) {
+        lw.style.opacity = '1';
+        lw.style.transform = 'none';
+      }
+      if (li) li.style.opacity = '1';
+      if (btn) btn.style.opacity = '1';
+      return;
+    }
+
+    // Set initial hidden state then animate to visible
+    if (lw) {
+      lw.style.opacity = '0';
+      lw.style.transform = 'translateY(-20px) scale(0.95)';
+    }
+    if (li) li.style.opacity = '0';
+    if (btn) btn.style.opacity = '0';
+
+    const tl = anime.timeline();
+    let _failSafe = null;
+    _failSafe = setTimeout(() => {
+      try {
+        if (lw) {
+          lw.style.opacity = '';
+          lw.style.transform = '';
+        }
+        if (li) li.style.opacity = '';
+        if (btn) btn.style.opacity = '';
+      } catch (e) {
+        // ignore
+      }
+    }, 1500);
+    tl.add({
+      targets: lw || li,
+      opacity: [0, 1],
+      translateY: lw ? [-20, 0] : undefined,
+      scale: lw ? [0.95, 1] : undefined,
+      duration: 720,
+      easing: 'easeOutCubic',
+    })
+      .add({
+        targets: li,
+        opacity: [0, 1],
+        duration: 360,
+        easing: 'linear',
+      }, '-=420')
+      .add({
+        targets: btn,
+        opacity: [0, 1],
+        translateY: [-10, 0],
+        duration: 640,
+        easing: 'easeOutCubic',
+      }, '+=160');
+
+    // Ensure we clear inline styles after animation so CSS rules take over
+    if (tl.finished && typeof tl.finished.then === 'function') {
+      tl.finished.then(() => {
+        try {
+          if (_failSafe) { clearTimeout(_failSafe); _failSafe = null; }
+          if (lw) {
+            lw.style.opacity = '';
+            lw.style.transform = '';
+          }
+          if (li) li.style.opacity = '';
+          if (btn) btn.style.opacity = '';
+        } catch (e) {
+          // ignore
+        }
+      }).catch(() => {
+        if (_failSafe) { clearTimeout(_failSafe); _failSafe = null; }
+      });
+    }
+  } catch (e) {
+    // On any error, reveal elements so they don't stay hidden
+    try {
+      if (logoWrapper.value) {
+        logoWrapper.value.style.opacity = '1';
+        logoWrapper.value.style.transform = 'none';
+      }
+      if (logoImg.value) logoImg.value.style.opacity = '1';
+      if (signInBtn.value) signInBtn.value.style.opacity = '1';
+    } catch (err) {
+      // ignore
+    }
+  }
+}
+
 onMounted(() => {
-  if (authStore.isAuthenticated) router.push('/dashboard');
-  // Try to use a Web Worker to generate the SVG off the main thread. If a
-  // worker can't be created (e.g., CSP or older browsers), fall back to the
-  // deferred Blob approach using requestIdleCallback.
-  const el = pageRef.value;
-  const tileW = 200;
-  const tileH = 200;
-  const isDark = document.documentElement.classList.contains('v-theme--dark');
-  const color = isDark ? 'rgba(255,255,255,0.08)' : '#ff9800';
+  if (authStore.isAuthenticated) router.push("/dashboard");
+  // Generate pattern for full page size with proper spacing
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  // Use brand orange color for both light and dark modes
+  const color = "#ef9043";
+  // Smaller font size and tighter spacing for more characters
+  const fontSize = 12;
+  const spacing = 18; // Space between characters (reduced for more density)
 
   const applySvgString = (svgString) => {
     if (!pageRef.value) return;
     const targetEl = pageRef.value;
+    // Revoke old pattern URL if it exists before creating new one
+    if (_patternObjectUrl) {
+      URL.revokeObjectURL(_patternObjectUrl);
+      _patternObjectUrl = null;
+    }
     // start from hidden so the transition can run when we flip to visible
-    targetEl.style.setProperty('--login-pattern-visible', '0');
+    targetEl.style.setProperty("--login-pattern-visible", "0");
     try {
-      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const blob = new Blob([svgString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
       _patternObjectUrl = URL.createObjectURL(blob);
-      targetEl.style.setProperty('--login-pattern', `url(${_patternObjectUrl})`);
-      targetEl.style.setProperty('--login-pattern-size', `${tileW}px ${tileH}px`);
-      targetEl.style.setProperty('--login-pattern-repeat', 'repeat');
+      targetEl.style.setProperty(
+        "--login-pattern",
+        `url(${_patternObjectUrl})`,
+      );
+      // Use full page size, no repeat needed as it covers entire page
+      targetEl.style.setProperty("--login-pattern-size", "100% 100%");
+      targetEl.style.setProperty("--login-pattern-repeat", "no-repeat");
       // next frame, reveal with fade-in
-      requestAnimationFrame(() => targetEl.style.setProperty('--login-pattern-visible', '1'));
+      requestAnimationFrame(() =>
+        targetEl.style.setProperty("--login-pattern-visible", "1"),
+      );
     } catch (err) {
       const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`;
-      targetEl.style.setProperty('--login-pattern', `url(${dataUri})`);
-      requestAnimationFrame(() => targetEl.style.setProperty('--login-pattern-visible', '1'));
+      targetEl.style.setProperty("--login-pattern", `url(${dataUri})`);
+      targetEl.style.setProperty("--login-pattern-size", "100% 100%");
+      targetEl.style.setProperty("--login-pattern-repeat", "no-repeat");
+      requestAnimationFrame(() =>
+        targetEl.style.setProperty("--login-pattern-visible", "1"),
+      );
     }
   };
 
-  try {
-    // create worker using a module script path; bundlers like Vite will handle this source file
-    _patternWorker = new Worker(new URL('@/workers/binaryPatternWorker.js', import.meta.url), { type: 'module' });
-    _patternWorker.addEventListener('message', (ev) => {
-      if (ev.data && ev.data.svg) {
-        applySvgString(ev.data.svg);
-      } else if (ev.data && ev.data.error) {
-        // fall back to main-thread generation
-        const svgString = generateBinaryPatternSVG(tileW, tileH, color);
-        applySvgString(svgString);
-      }
-    });
-    _patternWorker.postMessage({ tileW, tileH, color });
-  } catch (e) {
-    // worker failed to instantiate; defer generation on main thread instead
-    const run = () => {
-      const svgString = generateBinaryPatternSVG(tileW, tileH, color);
-      applySvgString(svgString);
-    };
-    if ('requestIdleCallback' in window) {
-      _idleHandle = window.requestIdleCallback(run, { timeout: 500 });
-    } else {
-      _idleHandle = window.setTimeout(run, 50);
-    }
+  // Generate pattern directly for full page (no worker needed for simplicity)
+  const run = () => {
+    const svgString = generateBinaryPatternSVG(viewportWidth, viewportHeight, color, fontSize, spacing);
+    applySvgString(svgString);
+  };
+  if ("requestIdleCallback" in window) {
+    _idleHandle = window.requestIdleCallback(run, { timeout: 500 });
+  } else {
+    _idleHandle = window.setTimeout(run, 50);
   }
 
   // hide page scrollbars while login view is visible to avoid layout shifts
   _prevHtmlOverflow = document.documentElement.style.overflow;
   _prevBodyOverflow = document.body.style.overflow;
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+
+  // Trigger animations after DOM is ready
+  nextTick(() => {
+    // Start logo animation immediately
+    setTimeout(() => {
+      logoAnimated.value = true;
+      console.log("Logo animation triggered:", logoAnimated.value);
+
+      // trigger Anime.js animation (if available)
+      animateLogo().catch(() => {
+        /* ignore - fallback CSS handles visibility */
+      });
+
+      // Wait for Vue to update DOM, then check and force class
+      nextTick(() => {
+        const logoEl = document.querySelector(".logo-wrapper");
+        if (logoEl) {
+          console.log("Logo element found, class before:", logoEl.className);
+          // Force add the class directly if Vue didn't apply it
+          if (!logoEl.classList.contains("fade-in")) {
+            logoEl.classList.add("fade-in");
+            console.log("Manually added fade-in class");
+          }
+          logoEl.offsetHeight; // Force reflow
+          console.log("Logo element found, class after:", logoEl.className);
+        }
+      });
+    }, 100);
+
+    // Start button animation after logo
+    setTimeout(() => {
+      buttonAnimated.value = true;
+    }, 800);
+  });
 });
 
 onUnmounted(() => {
   // restore previous overflow values
-  if (_prevHtmlOverflow !== null) document.documentElement.style.overflow = _prevHtmlOverflow;
-  if (_prevBodyOverflow !== null) document.body.style.overflow = _prevBodyOverflow;
+  if (_prevHtmlOverflow !== null)
+    document.documentElement.style.overflow = _prevHtmlOverflow;
+  if (_prevBodyOverflow !== null)
+    document.body.style.overflow = _prevBodyOverflow;
   // cleanup any scheduled idle callback and revoke object URL
   try {
-    if (typeof _idleHandle === 'number') window.clearTimeout(_idleHandle);
-    else if (typeof _idleHandle === 'object' && 'cancel' in _idleHandle) _idleHandle.cancel();
+    if (typeof _idleHandle === "number") window.clearTimeout(_idleHandle);
+    else if (typeof _idleHandle === "object" && "cancel" in _idleHandle)
+      _idleHandle.cancel();
   } catch (e) {
     // ignore
   }
@@ -208,8 +381,8 @@ onUnmounted(() => {
   /* color tokens (can be overridden by theme classes) */
   --login-bg: #ffffff;
   --login-foreground: #111827;
-  --login-accent: #f57c00; /* default orange */
-  --login-control: var(--v-theme-primary, #1976d2);
+  --login-accent: #ef9043; /* brand orange */
+  --login-control: #146e9c; /* brand blue */
   --login-accent-contrast: #ffffff;
   --login-footer: rgba(0, 0, 0, 0.45);
   /* no logo drop shadow by default */
@@ -223,7 +396,9 @@ onUnmounted(() => {
   overflow: hidden;
   background-color: var(--login-bg);
   color: var(--login-foreground);
-  transition: background 0.25s ease, color 0.25s ease;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
   z-index: 0;
 }
 
@@ -239,10 +414,33 @@ onUnmounted(() => {
   /* make the base background white again */
   background-color: #ffffff;
   opacity: 1;
+  /* Ensure pattern is visible */
+  --login-pattern-visible: 1;
   /* use generated SVG pattern when available; JS will set --login-pattern to a URL and
     --login-pattern-repeat / --login-pattern-size when using a small tile. Fall back to
     decorative gradients for browsers without JS or failure modes. */
-  background-image: var(--login-pattern, radial-gradient(circle, transparent 20%, #e5e5f7 20%, #e5e5f7 80%, transparent 80%, transparent), radial-gradient(circle, transparent 20%, #e5e5f7 20%, #e5e5f7 80%, transparent 80%, transparent) 25px 25px, linear-gradient(#444cf7 2px, transparent 2px) 0 -1px, linear-gradient(90deg, #444cf7 2px, #e5e5f7 2px) -1px 0);
+  background-image: var(
+    --login-pattern,
+    radial-gradient(
+      circle,
+      transparent 20%,
+      #e5e5f7 20%,
+      #e5e5f7 80%,
+      transparent 80%,
+      transparent
+    ),
+    radial-gradient(
+        circle,
+        transparent 20%,
+        #e5e5f7 20%,
+        #e5e5f7 80%,
+        transparent 80%,
+        transparent
+      )
+      25px 25px,
+    linear-gradient(#444cf7 2px, transparent 2px) 0 -1px,
+    linear-gradient(90deg, #444cf7 2px, #e5e5f7 2px) -1px 0
+  );
   background-repeat: var(--login-pattern-repeat, no-repeat);
   background-position: center center;
   background-size: var(--login-pattern-size, cover);
@@ -250,14 +448,22 @@ onUnmounted(() => {
      JS will toggle this value briefly to produce a fade-in when replacing the background. */
   --login-pattern-visible: 1;
   opacity: var(--login-pattern-visible);
-  transition: opacity 320ms ease, background-image 250ms ease;
+  transition:
+    opacity 320ms ease,
+    background-image 250ms ease;
 }
 
 /* subtle parallax movement for the pattern */
 @keyframes loginPatternDrift {
-  0% { transform: translateY(-6%); }
-  50% { transform: translateY(6%); }
-  100% { transform: translateY(-6%); }
+  0% {
+    transform: translateY(-6%);
+  }
+  50% {
+    transform: translateY(6%);
+  }
+  100% {
+    transform: translateY(-6%);
+  }
 }
 
 .login-page::before {
@@ -303,73 +509,99 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  max-width: 900px;
-  width: 90%;
-  padding: 32px 16px;
-  text-align: center;
-}
-
-/* Horizontal layout container */
-.horizontal-layout {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  justify-content: center;
-}
-
-/* Content section */
-.content-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Logo section */
-.logo-section {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.logo-section .sign-in-btn {
-  margin-top: -18px;
-  z-index: 5;
+  gap: 0px;
   position: relative;
-  padding: 6px 10px;
-  font-size: 13px;
-  min-width: 160px;
-  height: 36px;
-  /* use the accent tokens so the button follows the active theme */
-  background-color: var(--login-accent) !important;
-  color: var(--login-accent-contrast) !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  width: 100%;
+  height: 100%;
+  margin-left: -30px; /* Shift slightly left */
+  margin-top: -150px; /* Shift up more */
+}
+
+.logo-wrapper {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  transition:
+    opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.logo-wrapper.fade-in {
+  /* Use a keyframe animation for a smoother, more reliable entrance across
+     browsers and to avoid cases where inline styles or class toggles don't
+     trigger the transition. The `forwards` fill mode keeps the final state. */
+  animation: fadeInUp 820ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* Fallback in case keyframes/animation are prevented by other styles or
+     user agent limitations. This ensures the logo becomes visible. */
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Image-level fallback animation: animates the <img> directly for robustness */
+.fade-in-img {
+  animation: fadeInImage 600ms ease-out forwards;
+}
+
+@keyframes fadeInImage {
+  from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .logo-wrapper {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .sign-in-btn {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }
 
 .login-logo {
-  max-width: 320px;
-  max-height: 30vh;
+  max-width: 600px;
+  max-height: 300px;
   width: auto;
   height: auto;
   display: block;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  transform: translateX(-0.5rem);
   filter: var(--login-logo-filter);
 }
 
-.login-logo:hover,
-.login-logo:focus {
-  transform: translateX(-0.5rem) scale(1.02);
-  outline: none;
+.sign-in-btn {
+  text-transform: none !important;
+  border-radius: 8px !important;
+  margin-left: 60px; /* Adjust this value to align with "Insight" in logo */
+  margin-top: -90px; /* Negative gap to overlap with logo */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sign-in-btn.fade-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Accessibility: visible focus for keyboard users */
 .sign-in-btn:focus-visible {
-  outline: 3px solid rgba(66,153,225,0.5);
+  outline: 3px solid rgba(66, 153, 225, 0.5);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -389,7 +621,16 @@ onUnmounted(() => {
   z-index: 1;
 }
 
-.footer-version,
+.footer-version {
+  font-weight: 400;
+  color: #ef9043 !important; /* Brand orange for light mode */
+  transition: color 0.2s;
+}
+
+.v-theme--dark .footer-version {
+  color: #ef9043 !important; /* Brand orange for dark mode */
+}
+
 .footer-powered {
   font-weight: 400;
 }
@@ -405,20 +646,21 @@ onUnmounted(() => {
 .v-theme--dark .login-page {
   --login-bg: #0f1720; /* very dark slate */
   --login-foreground: #e6eef8;
-  --login-accent: #ff9800; /* slightly brighter orange for dark bg */
+  --login-accent: #ef9043; /* brand orange for dark bg */
   --login-accent-contrast: #111827;
-  --login-footer: rgba(255,255,255,0.55);
+  --login-footer: rgba(255, 255, 255, 0.55);
   --login-logo-filter: none;
   /* prefer accent color in dark mode (use accent so icons can be orange) */
-  --login-control: var(--login-accent, #ff9800);
+  --login-control: #ef9043; /* brand orange */
 }
 
-/* hide decorative pattern in dark theme */
+/* Ensure pattern is visible in dark theme */
 .v-theme--dark .login-page::before {
-  /* keep pattern visible in dark mode but we will generate a light-colored SVG for contrast */
-  /* use the dark background token so the pseudo-element matches the dark page bg */
+  /* keep pattern visible in dark mode with brand orange pattern */
   background-color: var(--login-bg) !important;
   opacity: 1 !important;
+  /* Ensure pattern is visible */
+  --login-pattern-visible: 1 !important;
 }
 
 /* Ensure the top-right activator buttons and icons inherit the control token
@@ -453,20 +695,31 @@ onUnmounted(() => {
 </style>
 
 <style scoped>
-@media (max-width: 500px) {
+@media (max-width: 768px) {
   .login-logo {
-    transform: translateX(-0.25rem);
-    max-width: 240px;
-    max-height: 28vh;
+    max-width: 400px;
+    max-height: 200px;
   }
-  .logo-section .sign-in-btn {
-    margin-top: -8px;
-    padding: 6px 8px;
-    font-size: 12px;
-    min-width: 140px;
-    height: 34px;
+
+  .sign-in-btn {
+    margin-left: 40px; /* Adjusted for smaller logo */
+    margin-top: -75px; /* Negative gap for tablet */
+  }
+}
+
+@media (max-width: 500px) {
+  .login-content {
+    gap: 0px;
+  }
+
+  .login-logo {
+    max-width: 300px;
+    max-height: 150px;
+  }
+
+  .sign-in-btn {
+    margin-left: 30px; /* Adjusted for mobile logo */
+    margin-top: -65px; /* Negative gap for mobile */
   }
 }
 </style>
-
-

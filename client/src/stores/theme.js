@@ -49,7 +49,11 @@ function applyThemeToCSS(colors) {
 }
 
 export const useThemeStore = defineStore("theme", () => {
-  const currentTheme = ref("light");
+  // Initialize from localStorage or default to "light"
+  const savedTheme = typeof window !== "undefined" 
+    ? localStorage.getItem("theme") 
+    : null;
+  const currentTheme = ref(savedTheme && themeConfig[savedTheme] ? savedTheme : "light");
 
   const isDark = computed(() => currentTheme.value === "dark");
   const isLight = computed(() => currentTheme.value === "light");
@@ -58,6 +62,12 @@ export const useThemeStore = defineStore("theme", () => {
   const palette = computed(() => {
     return themeConfig[currentTheme.value]?.colors || colorsDefault;
   });
+
+  // Initialize theme on store creation
+  if (typeof window !== "undefined") {
+    // Apply saved theme to CSS variables on initialization
+    applyThemeToCSS(palette.value);
+  }
 
   const setTheme = (theme) => {
     if (themeConfig[theme]) {
@@ -84,13 +94,6 @@ export const useThemeStore = defineStore("theme", () => {
     toggleTheme,
   };
 });
-
-export async function initializeThemeStore(store) {
-  const saved = localStorage.getItem("theme");
-  if (saved) {
-    store.currentTheme = saved;
-  }
-}
 
 // Export theme configuration for external use
 export { themeConfig };

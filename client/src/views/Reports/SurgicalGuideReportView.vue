@@ -1,20 +1,20 @@
 <template>
   <v-container fluid class="surgical-guide-report">
-
-
     <!-- Header Section -->
     <v-row>
       <v-col cols="12">
         <div
-          class="d-flex justify-space-between align-center mb-4 header-container page-header-sticky"
+          class="d-flex justify-space-between  mb-2 header-container  compact-header"
         >
-          <div class="header-text">
-            <h1 class="text-h4 pt-4 header-title">
-              <v-icon style="margin-inline-end:8px;" color="primary">mdi-file-chart</v-icon>
-              {{ t('reports.surgicalGuide.title') }}
+          <div class="">
+            <h1 class="text-h6 pt-2  compact-header-title">
+              <v-icon size="small" style="margin-inline-end: 6px" color="primary"
+                >mdi-file-chart-outline</v-icon
+              >
+              {{ t("reports.surgicalGuide.title") }}
             </h1>
-            <p class="text-subtitle-1 text-medium-emphasis header-subtitle">
-              {{ t('reports.surgicalGuide.subtitle') }}
+            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
+              {{ t("reports.surgicalGuide.subtitle") }}
             </p>
           </div>
 
@@ -23,13 +23,14 @@
             v-if="accessInfo.hasSwaggerAccess"
             color="secondary"
             variant="outlined"
-            prepend-icon="mdi-api"
+            size="small"
+            prepend-icon="mdi-api-outline"
             :href="swaggerUrl"
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ t('reports.surgicalGuide.apiDocs') }}
-            <v-icon style="margin-inline-start:8px;">mdi-open-in-new</v-icon>
+            {{ t("reports.surgicalGuide.apiDocs") }}
+            <v-icon size="small" style="margin-inline-start: 4px">mdi-open-in-new-outline</v-icon>
           </v-btn>
         </div>
       </v-col>
@@ -43,28 +44,36 @@
           prominent
           variant="tonal"
           border="start"
-          icon="mdi-lock"
+          icon="mdi-lock-outline"
         >
           <!-- Project Documentation Button (Dev only) -->
           <v-btn
             v-if="isDevelopment"
             color="primary"
             variant="outlined"
-            prepend-icon="mdi-file-document"
-            style="margin-inline-start:8px;"
+            prepend-icon="mdi-file-document-outline"
+            style="margin-inline-start: 8px"
             @click="openProjectDoc"
           >
-            {{ t('reports.surgicalGuide.reportFeatureDoc') }}
-            <v-icon style="margin-inline-start:8px;">mdi-open-in-new</v-icon>
+            {{ t("reports.surgicalGuide.reportFeatureDoc") }}
+            <v-icon style="margin-inline-start: 8px">mdi-open-in-new-outline</v-icon>
           </v-btn>
-          <v-alert-title class="text-h6">{{ t('reports.surgicalGuide.accessDenied') }}</v-alert-title>
+          <v-alert-title class="text-h6">{{
+            t("reports.surgicalGuide.accessDenied")
+          }}</v-alert-title>
           <p class="mb-2">
-            {{ t('reports.surgicalGuide.noPermission') }}
+            {{ t("reports.surgicalGuide.noPermission") }}
           </p>
-          <p class="text-body-2" v-html="t('reports.surgicalGuide.requiredGroups')"></p>
+          <p
+            class="text-body-2"
+            v-html="t('reports.surgicalGuide.requiredGroups')"
+          ></p>
           <p class="text-caption text-medium-emphasis mt-2">
-            {{ t('reports.surgicalGuide.currentGroups') }}
-            {{ accessInfo.userGroups.join(', ') || t('reports.surgicalGuide.none') }}
+            {{ t("reports.surgicalGuide.currentGroups") }}
+            {{
+              accessInfo.userGroups.join(", ") ||
+              t("reports.surgicalGuide.none")
+            }}
           </p>
         </v-alert>
 
@@ -75,42 +84,46 @@
           prominent
           variant="tonal"
           border="start"
-          icon="mdi-information"
+          icon="mdi-information-outline"
           class="mt-4"
         >
           <v-alert-title class="text-h6">
-            <v-icon style="margin-inline-end:8px;">mdi-developer-board</v-icon>
-            {{ t('reports.surgicalGuide.devModeTip') }}
+            <v-icon style="margin-inline-end: 8px">mdi-developer-board-outline</v-icon>
+            {{ t("reports.surgicalGuide.devModeTip") }}
           </v-alert-title>
           <p class="mb-3">
-            {{ t('reports.surgicalGuide.devModeInstructions') }}
+            {{ t("reports.surgicalGuide.devModeInstructions") }}
           </p>
           <ol class="mb-3">
             <li class="mb-2">
-              <strong>{{ t('reports.surgicalGuide.devStepDashboard') }}</strong>
+              <strong>{{ t("reports.surgicalGuide.devStepDashboard") }}</strong>
             </li>
             <li class="mb-2">
-              <strong v-html="t('reports.surgicalGuide.devStepGroupsChip')"></strong>
+              <strong
+                v-html="t('reports.surgicalGuide.devStepGroupsChip')"
+              ></strong>
             </li>
             <li class="mb-2">
-              <strong v-html="t('reports.surgicalGuide.devStepFinance22')"></strong>
+              <strong
+                v-html="t('reports.surgicalGuide.devStepFinance22')"
+              ></strong>
             </li>
             <li class="mb-2">
-              <strong>{{ t('reports.surgicalGuide.devStepReturn') }}</strong>
+              <strong>{{ t("reports.surgicalGuide.devStepReturn") }}</strong>
             </li>
           </ol>
           <p class="text-caption text-medium-emphasis">
-            {{ t('reports.surgicalGuide.devStepAdminView') }}
+            {{ t("reports.surgicalGuide.devStepAdminView") }}
           </p>
           <div class="mt-4">
             <v-btn
               color="primary"
               variant="elevated"
-              prepend-icon="mdi-view-dashboard"
+              prepend-icon="mdi-view-dashboard-outline"
               size="large"
               @click="navigateToDashboard"
             >
-              {{ t('reports.surgicalGuide.goToDashboard') }}
+              {{ t("reports.surgicalGuide.goToDashboard") }}
             </v-btn>
           </div>
         </v-alert>
@@ -119,120 +132,124 @@
 
     <!-- Main Report Interface (Finance22 only) -->
     <template v-if="accessInfo.hasReportAccess">
-      <!-- Date Range Filters -->
-      <v-row>
-        <v-col cols="4">
-          <v-card elevation="2">
-            <v-card-title>
-              <v-icon style="margin-inline-end:8px;">mdi-filter</v-icon>
-              {{ t('reports.surgicalGuide.filters') }}
-            </v-card-title>
-            <v-card-text>
-              <!-- Search Row -->
-              <v-row class="mb-4">
-                <v-col cols="12">
+      <!-- Filters and Table Side by Side -->
+      <v-row no-gutters>
+        <!-- Filters Section - 3 columns -->
+        <v-col cols="12" md="3" class="compact-filters-col">
+          <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
+            <v-card-text class="compact-filters-content pa-3">
+              <!-- Search -->
                   <v-text-field
                     v-model="searchQuery"
                     :label="t('reports.surgicalGuide.searchCases')"
-                    :placeholder="t('reports.surgicalGuide.searchPlaceholder')"
                     variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="mdi-magnify"
-                    :append-inner-icon="loading.report && searchQuery ? 'mdi-loading' : ''"
-                    :loading="loading.report && searchQuery"
+                density="compact"
+                prepend-inner-icon="mdi-magnify-outline"
                     clearable
-                    :hint="loading.report && searchQuery ? t('reports.surgicalGuide.searching') : t('reports.surgicalGuide.searchHint')"
-                    persistent-hint
-                    :disabled="loading.summary"
+                hide-details
+                class="mb-3"
                     @click:clear="clearSearch"
-                  >
-                    <template #append-inner v-if="loading.report && searchQuery">
-                      <v-progress-circular
-                        indeterminate
-                        color="orange"
-                        size="20"
-                        width="2"
-                      ></v-progress-circular>
+              ></v-text-field>
+
+              <!-- Date Range -->
+              <v-row dense class="mb-3">
+                <v-col cols="6">
+                  <v-menu location="bottom" :close-on-content-click="false">
+                    <template #activator="{ props }">
+                      <v-text-field
+                        v-model="filters.startDate"
+                        label="Start Date"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        prepend-inner-icon="mdi-calendar-outline"
+                        readonly
+                        v-bind="props"
+                      ></v-text-field>
                     </template>
-                  </v-text-field>
-                </v-col>
-              </v-row>
-
-              <!-- Date Range Row -->
-              <v-row class="filter-row">
-                <v-col cols="12" md="6" class="d-flex align-start">
-                  <v-text-field
-                    v-model="filters.startDate"
-                    :label="t('reports.surgicalGuide.startDate')"
-                    type="date"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="mdi-calendar-start"
-                    :min="'2005-01-01'"
-                    :max="'2025-12-31'"
-                    :rules="[rules.required]"
-                    :hint="t('reports.surgicalGuide.dateFormat')"
-                    class="full-width-input"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="6" class="d-flex align-start">
-                  <v-text-field
-                    v-model="filters.endDate"
-                    :label="t('reports.surgicalGuide.endDate')"
-                    type="date"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="mdi-calendar-end"
-                    :min="'2005-01-01'"
-                    :max="'2025-12-31'"
-                    :rules="[rules.required]"
-                    :hint="t('reports.surgicalGuide.dateFormat')"
-                    class="full-width-input"
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-              <row class="filter-row">
-                <v-col cols="12" md="6">
-                    <v-btn
+                    <v-date-picker
+                      v-model="filters.startDate"
+                      :max="filters.endDate"
                       color="primary"
-                      size="large"
-                      prepend-icon="mdi-refresh"
-                      :loading="loading.report"
-                      :disabled="!isDateRangeValid || loading.report || loading.summary"
-                      block
-                      @click="fetchReport(true)"
-                    >
-                      <template v-if="loading.report">
-                        {{ t('reports.surgicalGuide.loading') || 'Loading...' }}
-                      </template>
-                      <template v-else>
-                        {{ t('reports.surgicalGuide.reload') }}
-                      </template>
-                    </v-btn>
+                      show-expand
+                    ></v-date-picker>
+                  </v-menu>
                 </v-col>
-                <v-col cols="12" md="6">
+                <v-col cols="6">
+                  <v-menu location="bottom" :close-on-content-click="false">
+                    <template #activator="{ props }">
+                      <v-text-field
+                        v-model="filters.endDate"
+                        label="End Date"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        prepend-inner-icon="mdi-calendar-outline"
+                        readonly
+                        v-bind="props"
+                      ></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="filters.endDate"
+                      :min="filters.startDate"
+                      color="primary"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+              </v-row>
+                
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 mb-3">
                 <v-btn
-                      color="success"
-                      size="large"
-                      prepend-icon="mdi-download"
-                      variant="outlined"
-                      :loading="loading.export"
-                      :disabled="!filteredReportData.length || loading.report || loading.summary || loading.export"
-                      block
-                      style="margin-inline-start:8px;"
-                      @click="exportToCSV"
-                    >
-                      <template v-if="loading.export">
-                        {{ t('reports.surgicalGuide.exporting') || 'Exporting...' }}
-                      </template>
-                      <template v-else>
-                        {{ t('reports.surgicalGuide.exportCSV') }}
-                      </template>
-                    </v-btn>
-                  </v-col>
-              </row>
+                  color="primary"
+                  size="default"
+                  prepend-icon="mdi-refresh-outline"
+                  :disabled="!isDateRangeValid"
+                  variant="elevated"
+                  class="flex-1"
+                  @click="fetchReport"
+                >
+                  {{ t("reports.surgicalGuide.reload") }}
+                </v-btn>
+                <v-btn
+                  color="success"
+                  size="default"
+                  prepend-icon="mdi-download-outline"
+                  variant="outlined"
+                  :disabled="!filteredReportData.length"
+                  class="flex-1"
+                  @click="exportToCSV"
+                >
+                  Export
+                </v-btn>
+              </div>
 
-              <!-- Date Range Validation Message -->
+              <!-- Enhanced Statistics Cards -->
+              <div v-if="summary" class="enhanced-stats-section">
+                <div class="stats-section-title">
+                  <v-icon size="16" class="mr-1">mdi-chart-box-outline</v-icon>
+                  <span class="text-caption font-weight-medium">{{ t("reports.surgicalGuide.summary") || "Summary" }}</span>
+                </div>
+                <div class="enhanced-stats-grid">
+                  <div
+                    v-for="stat in compactStats"
+                    :key="stat.key"
+                    class="enhanced-stat-card"
+                    :class="{ 'stat-card-active': activeFilter === stat.key }"
+                    @click="filterByOrderType(stat.key)"
+                  >
+                    <div class="stat-card-icon" :class="`stat-icon-${stat.color}`">
+                      <v-icon size="18">{{ stat.icon }}</v-icon>
+              </div>
+                    <div class="stat-card-content">
+                      <div class="stat-card-label">{{ stat.label }}</div>
+                      <div class="stat-card-value">{{ stat.value }}</div>
+              </div>
+              </div>
+              </div>
+              </div>
+
+              <!-- Date Range Validation -->
               <v-alert
                 v-if="!isDateRangeValid && filters.startDate && filters.endDate"
                 type="warning"
@@ -240,363 +257,215 @@
                 variant="tonal"
                 class="mt-2"
               >
-                {{ t('reports.surgicalGuide.invalidDateRange') }}
-              </v-alert>
-
-              <!-- Pagination Info -->
-
-              <!-- Single Page Info -->
-              <v-alert
-                v-if="reportData.length > 0 && pagination.totalPages === 1"
-                type="success"
-                density="compact"
-                variant="tonal"
-                icon="mdi-check-circle"
-                class="mt-2"
-              >
-                <span class="font-weight-medium">{{ t('reports.surgicalGuide.allDataLoaded') }}</span>
-                {{ t('reports.surgicalGuide.showingAllRecords', { total: pagination.total }) }}
-                <span v-if="pagination.total >= filters.limit" style="margin-inline-start:8px;">
-                  {{ t('reports.surgicalGuide.paginationTip') }}
-                </span>
+                {{ t("reports.surgicalGuide.invalidDateRange") }}
               </v-alert>
             </v-card-text>
           </v-card>
         </v-col>
-      </v-row>
 
-      <!-- Loading Progress with Enhanced UI -->
-      <v-row v-if="loading.report || loading.summary">
-        <v-col cols="12">
-          <v-card elevation="2" class="loading-card">
-            <v-progress-linear
-              indeterminate
-              color="orange"
-              height="4"
-              class="mb-0"
-            ></v-progress-linear>
-            <v-card-text class="text-center py-6">
-              <v-progress-circular
-                indeterminate
-                color="orange"
-                size="48"
-                width="4"
-                class="mb-4"
-              ></v-progress-circular>
-              <div class="text-h6 text-medium-emphasis mb-2">
-                <template v-if="loading.summary">
-                  {{ t('reports.surgicalGuide.loadingSummary') }}
-                </template>
-                <template v-else-if="loading.report">
-                  <template v-if="searchQuery">
-                    {{ t('reports.surgicalGuide.searchingFor', { query: searchQuery }) }}
-                  </template>
-                  <template v-else>
-                    {{ t('reports.surgicalGuide.loadingReportData') }}
-                  </template>
-                </template>
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ t('reports.surgicalGuide.pleaseWait') }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Order Statistics Skeleton Loader (10 cards for both rows) -->
-      <v-row v-if="loading.summary" class="summary-cards five-col-row">
-        <v-col v-for="i in 10" :key="`skeleton-${i}`">
-          <v-card elevation="1" class="summary-card skeleton-card">
-            <div class="card-top-bar skeleton-shimmer" style="background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
-            <v-card-text class="text-center py-3">
-              <v-skeleton-loader
-                type="avatar"
-                class="mb-2 mx-auto"
-                width="40"
-                height="40"
-              ></v-skeleton-loader>
-              <v-skeleton-loader
-                type="heading"
-                class="mb-2"
-                width="60px"
-              ></v-skeleton-loader>
-              <v-skeleton-loader 
-                type="text" 
-                width="90px"
-                class="mx-auto"
-              ></v-skeleton-loader>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Order Statistics - 5 Cards Per Row -->
-      <v-row v-if="summary && !loading.summary" class="summary-cards five-col-row">
-        <!-- Row 1: Total Orders + 4 Payment Status Cards -->
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'all' }" hover @click="filterByOrderType('all')">
-            <div class="card-top-bar" style="background:#1976d2"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#1976d2" class="mb-2">mdi-cart</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#1976d2">{{ formatNumber(summary.totalOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">{{ t('reports.surgicalGuide.totalOrders') }}</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'free' }" hover @click="filterByOrderType('free')">
-            <div class="card-top-bar" style="background:#43a047"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#43a047" class="mb-2">mdi-gift</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#43a047">{{ formatNumber(summary.freeOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">{{ t('reports.surgicalGuide.freeOrders') }}</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'fullyPrepaid' }" hover @click="filterByOrderType('fullyPrepaid')">
-            <div class="card-top-bar" style="background:#1565c0"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#1565c0" class="mb-2">mdi-ticket-confirmation</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#1565c0">{{ formatNumber(summary.fullyPrepaidOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">{{ t('reports.surgicalGuide.fullyPrepaid') }}</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'fullyPostpaid' }" hover @click="filterByOrderType('fullyPostpaid')">
-            <div class="card-top-bar" style="background:#e53935"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#e53935" class="mb-2">mdi-cash-clock</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#e53935">{{ formatNumber(summary.fullyPostpaidOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">{{ t('reports.surgicalGuide.fullyPostpaid') }}</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'partiallyPostpaid' }" hover @click="filterByOrderType('partiallyPostpaid')">
-            <div class="card-top-bar" style="background:#8e24aa"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#8e24aa" class="mb-2">mdi-cash-multiple</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#8e24aa">{{ formatNumber(summary.partiallyPostpaidOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">Partially Postpaid</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        
-        <!-- Row 2: Vouchers Used + 4 Workflow Status Cards (All Clickable) -->
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'vouchers' }" hover @click="filterByOrderType('vouchers')">
-            <div class="card-top-bar" style="background:#00bcd4"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#00bcd4" class="mb-2">mdi-ticket-percent-outline</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#00bcd4">{{ formatNumber(vouchersUsedCount) }}</div>
-              <div class="text-caption text-medium-emphasis">Vouchers Used</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'rush' }" hover @click="filterByOrderType('rush')">
-            <div class="card-top-bar" style="background:#e65100"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#e65100" class="mb-2">mdi-fire</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#e65100">{{ formatNumber(summary.rushOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">Rush Orders</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'onHold' }" hover @click="filterByOrderType('onHold')">
-            <div class="card-top-bar" style="background:#f44336"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#f44336" class="mb-2">mdi-pause-circle</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#f44336">{{ formatNumber(summary.onHoldOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">On Hold Orders</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'confirmed' }" hover @click="filterByOrderType('confirmed')">
-            <div class="card-top-bar" style="background:#616161"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#616161" class="mb-2">mdi-check-circle</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#616161">{{ formatNumber(summary.confirmedOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">Confirmed Orders</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card elevation="1" class="summary-card clickable-card" :class="{ 'active-filter': activeFilter === 'active' }" hover @click="filterByOrderType('active')">
-            <div class="card-top-bar" style="background:#43a047"></div>
-            <v-card-text class="text-center py-3">
-              <v-icon size="40" color="#43a047" class="mb-2">mdi-play-circle</v-icon>
-              <div class="text-h5 font-weight-bold" style="color:#43a047">{{ formatNumber(summary.activeOrders || 0) }}</div>
-              <div class="text-caption text-medium-emphasis">Active Orders</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Data Table -->
-      <v-row>
-        <v-col cols="12">
-          <v-card elevation="2">
-            <v-card-title class="d-flex justify-space-between align-center">
-              <div>
-                <v-icon style="margin-inline-end:8px;">mdi-table</v-icon>
-                {{ t('reports.surgicalGuide.reportData') }}
+        <!-- Table Section - 9 columns -->
+        <v-col cols="12" md="9" class="table-col pl-2">
+          <v-card elevation="1" class="table-card">
+            <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
+              <div class="d-flex align-center">
+                <v-icon size="small" style="margin-inline-end: 6px">mdi-table</v-icon>
+                <span class="text-subtitle-2 font-weight-medium">{{ t("reports.surgicalGuide.reportData") }}</span>
                 <v-chip
-                  v-if="searchQuery"
+                  v-if="filterNotificationText"
                   color="orange"
-                  size="small"
-                  style="margin-inline-start:8px;"
+                  size="x-small"
+                  style="margin-inline-start: 6px"
                 >
-                  {{ t('reports.surgicalGuide.searchLabel') }} "{{ searchQuery }}"
+                  {{ filterNotificationText }}
                 </v-chip>
               </div>
-              <div class="d-flex align-center gap-2">
+              <div class="d-flex align-center">
                 <v-chip
                   v-if="pagination.total"
-                  color="primary"
-                  variant="outlined"
+                  :color="isDarkMode ? 'white' : 'grey'"
+                  variant="text"
+                  size="small"
                 >
                   {{ pagination.total }}
-                  {{ searchQuery ? t('reports.surgicalGuide.matching') : t('reports.surgicalGuide.total') }}
+                  {{
+                    hasActiveFilters
+                      ? t("reports.surgicalGuide.matching")
+                      : t("reports.surgicalGuide.total")
+                  }}
                 </v-chip>
               </div>
             </v-card-title>
 
-            <!-- Legend -->
-            <div class="payment-legend px-4 py-2">
-              <div class="d-flex align-center flex-wrap" style="gap: 24px;">
+            <!-- Legend - Compact -->
+            <div class="payment-legend compact-legend px-3 py-2">
+              <div class="d-flex align-center flex-wrap" style="gap: 24px">
                 <!-- Payment Status Legend -->
-                <div class="d-flex align-center flex-wrap" style="gap: 12px;">
-                  <span class="text-caption text-medium-emphasis font-weight-bold">{{ t('reports.surgicalGuide.payment') }}:</span>
+                <div class="d-flex align-center flex-wrap" style="gap: 12px">
+                  <span
+                    class="text-caption text-medium-emphasis font-weight-bold"
+                    >{{ t("reports.surgicalGuide.payment") }}:</span
+                  >
                   <span class="legend-item">
-                    <v-icon size="28" color="#43a047" style="margin-inline-end:4px;">mdi-gift</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.free') }}</span>
+                    <v-icon
+                      size="18"
+                      color="#43A047"
+                      style="margin-inline-end: 3px"
+                      >mdi-gift-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.free")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="28" color="#1565c0" style="margin-inline-end:4px;">mdi-ticket-confirmation</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.fullyPrepaid') }}</span>
+                    <v-icon
+                      size="18"
+                      color="#1565C0"
+                      style="margin-inline-end: 3px"
+                      >mdi-ticket-confirmation-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.fullyPrepaid")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="28" color="#e53935" style="margin-inline-end:4px;">mdi-cash-clock</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.fullyPostpaid') }}</span>
+                    <v-icon
+                      size="18"
+                      color="#E53935"
+                      style="margin-inline-end: 3px"
+                      >mdi-clock-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.fullyPostpaid")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="28" color="#8e24aa" style="margin-inline-end:4px;">mdi-cash-multiple</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.partiallyPostpaid') }}</span>
+                    <v-icon
+                      size="18"
+                      color="#8E24AA"
+                      style="margin-inline-end: 3px"
+                      >mdi-cash-multiple</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.partiallyPostpaid")
+                    }}</span>
                   </span>
                 </div>
-                
+
                 <!-- Workflow Status Legend -->
-                <div class="d-flex align-center flex-wrap" style="gap: 12px;">
-                  <span class="text-caption text-medium-emphasis font-weight-bold">{{ t('reports.surgicalGuide.workflow') }}:</span>
+                <div class="d-flex align-center flex-wrap" style="gap: 10px">
+                  <span
+                    class="text-caption text-medium-emphasis font-weight-bold"
+                    style="font-size: 0.7rem"
+                    >{{ t("reports.surgicalGuide.workflow") }}:</span
+                  >
                   <span class="legend-item">
-                    <v-icon size="small" color="orange" style="margin-inline-end:4px;">mdi-fire</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.rushOrders') }}</span>
+                    <v-icon
+                      size="16"
+                      color="#E65100"
+                      style="margin-inline-end: 3px"
+                      >mdi-fire</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.rushOrders")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="small" color="red" style="margin-inline-end:4px;">mdi-pause-circle</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.onHold') }}</span>
+                    <v-icon
+                      size="16"
+                      color="#F44336"
+                      style="margin-inline-end: 3px"
+                      >mdi-pause-circle-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.onHold")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="small" color="grey-darken-2" style="margin-inline-end:4px;">mdi-check-circle</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.confirmed') }}</span>
+                    <v-icon
+                      size="16"
+                      color="#616161"
+                      style="margin-inline-end: 3px"
+                      >mdi-check-circle-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.confirmed")
+                    }}</span>
                   </span>
                   <span class="legend-item">
-                    <v-icon size="small" color="green" style="margin-inline-end:4px;">mdi-play-circle</v-icon>
-                    <span class="text-caption">{{ t('reports.surgicalGuide.active') }}</span>
+                    <v-icon
+                      size="16"
+                      color="#43A047"
+                      style="margin-inline-end: 3px"
+                      >mdi-play-circle-outline</v-icon
+                    >
+                    <span class="text-caption" style="font-size: 0.7rem">{{
+                      t("reports.surgicalGuide.active")
+                    }}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <!-- Table Skeleton Loader (when loading with no data) -->
-            <v-card v-if="loading.report && filteredReportData.length === 0" elevation="0" class="table-skeleton-loader">
-              <v-card-text class="pa-0">
-                <v-skeleton-loader
-                  type="table-heading, table-tbody, table-tfoot"
-                  :types="{
-                    'table-heading': 'heading@8',
-                    'table-tbody': 'table-row@5',
-                    'table-row': 'text@8',
-                    'table-tfoot': 'text'
-                  }"
-                ></v-skeleton-loader>
-              </v-card-text>
-            </v-card>
-
             <!-- Data Table -->
             <v-data-table-server
-              v-if="!loading.report || filteredReportData.length > 0"
               :headers="computedTableHeaders"
               :items="filteredReportData"
-              :loading="loading.report"
-              loading-text="🔄 Fetching data..."
+              v-model:expanded="expanded"
               :items-length="pagination.total"
-              v-model:page="pagination.page"
-              :items-per-page="50"
-              :items-per-page-options="[25, 50, 100]"
-              :class="['elevation-1', 'enhanced-table', 'payment-status-table', 'highlighted-expanded-table', isCurrentlyRTL ? 'rtl-table' : 'ltr-table']"
+              :items-per-page="10"
+              :items-per-page-options="[10, 25, 50]"
+              :class="[
+                'elevation-1',
+
+                'ultra-compact-table',
+                isCurrentlyRTL ? 'rtl-table' : 'ltr-table',
+              ]"
               density="compact"
               hover
+              fixed-header
+              fixed-footer
+              height="450"
               show-current-page
               :mobile-breakpoint="0"
               show-expand
-              v-model:expanded="expanded"
               item-value="orderSGID"
               color="orange"
               @update:options="loadItems"
               @update:expanded="handleExpandedChange"
             >
-              <!-- Loading Slot with Custom Progress -->
-              <template #loading>
-                <div class="text-center py-8">
-                  <v-progress-circular
-                    indeterminate
-                    color="orange"
-                    size="48"
-                    width="4"
-                    class="mb-3"
-                  ></v-progress-circular>
-                    <div class="text-body-1 text-medium-emphasis">
-                    {{ t('reports.surgicalGuide.loadingMessage') }}
-                  </div>
-                </div>
-              </template> 
               <!-- No Data State -->
               <template #no-data>
                 <div class="text-center py-8">
-  
                   <template v-if="searchQuery">
-                    <v-icon size="64" color="orange">mdi-magnify-close</v-icon>
-                    <p class="text-h6 mt-4">{{ t('reports.surgicalGuide.noResultsFound') }}</p>
+                    <v-icon size="64" color="orange">mdi-magnify-close-outline</v-icon>
+                    <p class="text-h6 mt-4">
+                      {{ t("reports.surgicalGuide.table.noResultsFound") }}
+                    </p>
                     <p class="text-body-2 text-medium-emphasis mb-2">
-                      {{ t('reports.surgicalGuide.noResultsMessage') }}
+                      {{ t("reports.surgicalGuide.table.noResultsMessage") }}
                       <strong>"{{ searchQuery }}"</strong>
                     </p>
                     <p class="text-caption text-medium-emphasis mb-4">
-                      Try a different search term or adjust the date range.
+                      {{ t("reports.surgicalGuide.table.tryDifferent") }}
                     </p>
                     <v-btn
                       color="primary"
                       variant="outlined"
-                      prepend-icon="mdi-close"
+                      prepend-icon="mdi-close-outline"
                       @click="clearSearch"
                     >
-                      {{ t('reports.surgicalGuide.clearSearch') }}
+                      {{ t("reports.surgicalGuide.clearSearch") }}
                     </v-btn>
                   </template>
 
                   <!-- No data loaded at all -->
                   <template v-else>
-                    <v-icon size="64" color="grey">mdi-file-search</v-icon>
-                    <p class="text-h6 mt-4">{{ t('reports.surgicalGuide.noDataAvailable') }}</p>
+                    <v-icon size="64" color="grey">mdi-file-search-outline</v-icon>
+                    <p class="text-h6 mt-4">
+                      {{ t("reports.surgicalGuide.table.noDataAvailable") }}
+                    </p>
                     <p class="text-body-2 text-medium-emphasis">
-                      {{ t('reports.surgicalGuide.selectDateAndReload') }}
+                      {{ t("reports.surgicalGuide.table.selectDateAndReload") }}
                     </p>
                   </template>
                 </div>
@@ -606,7 +475,7 @@
               <template
                 v-for="header in computedTableHeaders"
                 :key="header.value"
-                #[`header.${header.value}`]="slotProps"
+                #[`header.${header.value}`]="{}"
               >
                 <div
                   style="
@@ -617,7 +486,11 @@
                 >
                   <!-- Use the `header` loop variable for stable access during initial renders. slotProps.header may be undefined briefly -->
                   <v-tooltip
-                    v-if="header && (header.value === 'designer' || header.value === 'hasExtraction')"
+                    v-if="
+                      header &&
+                      (header.value === 'designer' ||
+                        header.value === 'hasExtraction')
+                    "
                     :text="getHeaderTooltip(header.value)"
                   >
                     <template #activator="{ props }">
@@ -630,60 +503,86 @@
               <!-- Scan Center Column with Icon -->
               <template #[`item.scanCenterFullName`]="{ item }">
                 <div class="d-flex align-center">
-                  <v-icon size="small" style="margin-inline-end:8px;" color="info"
-                    >mdi-hospital-building</v-icon
+                  <v-icon
+                    size="small"
+                    style="margin-inline-end: 8px"
+                    color="info"
+                    >mdi-hospital-box-outline</v-icon
                   >
                   <a
-                    v-if="item.scanCenterFullName && item.scanCenterFullName !== 'Not Specified'"
+                    v-if="
+                      item.scanCenterFullName &&
+                      item.scanCenterFullName !== 'Not Specified'
+                    "
                     href="javascript:void(0)"
                     class="order-id-link"
                     @click.prevent="() => {}"
                   >
                     {{ item.scanCenterFullName }}
                   </a>
-                  <span v-else class="text-body-2">{{ item.scanCenterFullName || 'Not Specified' }}</span>
+                  <span v-else class="text-body-2">{{
+                    item.scanCenterFullName || "Not Specified"
+                  }}</span>
                 </div>
               </template>
 
               <!-- Doctor Column with Icon -->
               <template #[`item.doctorFullName`]="{ item }">
                 <div class="d-flex align-center">
-                  <v-icon size="small" style="margin-inline-end:8px;" color="primary"
-                    >mdi-doctor</v-icon
+                  <v-icon
+                    size="small"
+                    style="margin-inline-end: 8px"
+                    color="primary"
+                    >mdi-account-circle-outline</v-icon
                   >
                   <a
-                    v-if="item.doctorFullName && item.doctorFullName !== 'Not Specified'"
+                    v-if="
+                      item.doctorFullName &&
+                      item.doctorFullName !== 'Not Specified'
+                    "
                     href="javascript:void(0)"
                     class="order-id-link"
                     @click.prevent="() => {}"
                   >
                     {{ item.doctorFullName }}
                   </a>
-                  <span v-else class="text-body-2">{{ item.doctorFullName || 'Not Specified' }}</span>
+                  <span v-else class="text-body-2">{{
+                    item.doctorFullName || "Not Specified"
+                  }}</span>
                 </div>
               </template>
 
               <!-- Patient Column -->
               <template #[`item.patientName`]="{ item }">
                 <div class="d-flex align-center">
-                  <v-icon size="small" style="margin-inline-end:8px;" color="purple"
-                    >mdi-account</v-icon
+                  <v-icon
+                    size="small"
+                    style="margin-inline-end: 8px"
+                    color="purple"
+                    >mdi-account-outline</v-icon
                   >
                   <a
-                    v-if="item.patientName && item.patientName !== 'Not Specified'"
+                    v-if="
+                      item.patientName && item.patientName !== 'Not Specified'
+                    "
                     href="javascript:void(0)"
                     class="order-id-link"
                     @click.prevent="() => {}"
                   >
                     {{ item.patientName }}
                   </a>
-                  <span v-else class="text-body-2">{{ item.patientName || 'Not Specified' }}</span>
+                  <span v-else class="text-body-2">{{
+                    item.patientName || "Not Specified"
+                  }}</span>
                 </div>
               </template>
 
               <!-- Order ID Column - Payment Icon + ID + Workflow Icon -->
               <template #[`item.orderSGID`]="{ item }">
-                <div class="d-flex align-center order-id-cell" style="gap: 12px;">
+                <div
+                  class="d-flex align-center order-id-cell"
+                  style="gap: 12px"
+                >
                   <v-tooltip class="payment-status-wrapper" location="top">
                     <template #activator="{ props }">
                       <v-icon
@@ -740,7 +639,7 @@
               <template #[`item.createdTime`]="{ item }">
                 <div class="d-flex align-center">
                   <v-icon size="x-small" class="mr-1" color="grey"
-                    >mdi-calendar</v-icon
+                    >mdi-calendar-outline</v-icon
                   >
                   <span class="text-body-2">{{ item.createdTime }}</span>
                 </div>
@@ -769,49 +668,84 @@
                           <!-- Payment Status -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" :color="getPaymentStatusColor(item)" class="mr-1">{{ getPaymentStatusIcon(item) }}</v-icon>
-                              {{ t('reports.surgicalGuide.payment') }}
+                              <v-icon
+                                size="14"
+                                :color="getPaymentStatusColor(item)"
+                                class="mr-1"
+                                >{{ getPaymentStatusIcon(item) }}</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.payment") }}
                             </td>
-                            <td class="detail-value" :style="{ color: getPaymentStatusColor(item) }">
+                            <td
+                              class="detail-value"
+                              :style="{ color: getPaymentStatusColor(item) }"
+                            >
                               {{ getPaymentStatusLabel(item) }}
                             </td>
                           </tr>
-                          
+
                           <!-- Workflow Status -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon v-if="getWorkflowIcon(item)" size="16" :color="getWorkflowIconColor(item)" class="mr-1">{{ getWorkflowIcon(item) }}</v-icon>
-                              <v-icon v-else size="16" color="#757575" class="mr-1">mdi-cog</v-icon>
-                              {{ t('reports.surgicalGuide.workflow') }}
+                              <v-icon
+                                v-if="getWorkflowIcon(item)"
+                                size="14"
+                                :color="getWorkflowIconColor(item)"
+                                class="mr-1"
+                                >{{ getWorkflowIcon(item) }}</v-icon
+                              >
+                              <v-icon
+                                v-else
+                                size="14"
+                                color="#757575"
+                                class="mr-1"
+                                >mdi-cog-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.workflow") }}
                             </td>
-                            <td class="detail-value" :style="{ color: getWorkflowIconColor(item) || '#757575' }">
-                              {{ getWorkflowIcon(item) ? getWorkflowStatusLabel(item) : t('reports.surgicalGuide.standard') }}
+                            <td
+                              class="detail-value"
+                              :style="{
+                                color: getWorkflowIconColor(item) || '#757575',
+                              }"
+                            >
+                              {{
+                                getWorkflowIcon(item)
+                                  ? getWorkflowStatusLabel(item)
+                                  : t("reports.surgicalGuide.standard")
+                              }}
                             </td>
                           </tr>
-                          
+
                           <!-- Created -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#2196f3" class="mr-1">mdi-calendar-plus</v-icon>
-                              {{ t('reports.surgicalGuide.created') }}
+                              <v-icon size="16" color="#2196F3" class="mr-1"
+                                >mdi-calendar-plus-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.created") }}
                             </td>
                             <td class="detail-value">{{ item.createdTime }}</td>
                           </tr>
-                          
+
                           <!-- Designed -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#4caf50" class="mr-1">mdi-calendar-check</v-icon>
-                              {{ t('reports.surgicalGuide.designed') }}
+                              <v-icon size="16" color="#4CAF50" class="mr-1"
+                                >mdi-calendar-check-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.designed") }}
                             </td>
                             <td class="detail-value">{{ item.designTime }}</td>
                           </tr>
-                          
+
                           <!-- Designer -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#ff9800" class="mr-1">mdi-account-hard-hat</v-icon>
-                              {{ t('reports.surgicalGuide.designer') }}
+                              <v-icon size="16" color="#ff9800" class="mr-1"
+                                >mdi-account-wrench-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.designer") }}
                             </td>
                             <td class="detail-value">
                               <a
@@ -823,56 +757,93 @@
                               </a>
                             </td>
                           </tr>
-                          
+
                           <!-- Support Type -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#9c27b0" class="mr-1">mdi-pillar</v-icon>
-                              {{ t('reports.surgicalGuide.support') }}
+                              <v-icon size="16" color="#9c27b0" class="mr-1"
+                                >mdi-view-column-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.support") }}
                             </td>
-                            <td class="detail-value">{{ getSupportTypeLabel(item.typeOfSupport) }}</td>
+                            <td class="detail-value">
+                              {{ getSupportTypeLabel(item.typeOfSupport) }}
+                            </td>
                           </tr>
-                          
+
                           <!-- Cost -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#43a047" class="mr-1">mdi-currency-usd</v-icon>
-                              {{ t('reports.surgicalGuide.cost') }}
+                              <v-icon size="16" color="#43A047" class="mr-1"
+                                >mdi-currency-usd</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.cost") }}
                             </td>
-                            <td class="detail-value font-weight-bold">${{ parseFloat(item.cost || 0).toFixed(2) }}</td>
+                            <td class="detail-value font-weight-bold">
+                              ${{ parseFloat(item.cost || 0).toFixed(2) }}
+                            </td>
                           </tr>
-                          
+
                           <!-- Extraction -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#00bcd4" class="mr-1">mdi-tooth</v-icon>
-                              {{ t('reports.surgicalGuide.extraction') }}
+                              <v-icon size="16" color="#00bcd4" class="mr-1"
+                                >mdi-tooth-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.extraction") }}
                             </td>
                             <td class="detail-value">
-                              <span :style="{ color: item.extracted === 'Yes' ? '#4caf50' : '#757575' }">{{ item.extracted }}</span>
+                              <span
+                                :style="{
+                                  color:
+                                    item.extracted === 'Yes'
+                                      ? '#4caf50'
+                                      : '#757575',
+                                }"
+                                >{{ item.extracted }}</span
+                              >
                             </td>
                           </tr>
-                          
+
                           <!-- Bone Reduction -->
                           <tr>
                             <td class="detail-label">
-                              <v-icon size="16" color="#795548" class="mr-1">mdi-bone</v-icon>
-                              {{ t('reports.surgicalGuide.boneReduction') }}
+                              <v-icon size="16" color="#795548" class="mr-1"
+                                >mdi-bone</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.boneReduction") }}
                             </td>
                             <td class="detail-value">
-                              <span :style="{ color: item.boneReduction === 'Yes' ? '#4caf50' : '#757575' }">{{ item.boneReduction }}</span>
+                              <span
+                                :style="{
+                                  color:
+                                    item.boneReduction === 'Yes'
+                                      ? '#4caf50'
+                                      : '#757575',
+                                }"
+                                >{{ item.boneReduction }}</span
+                              >
                             </td>
                           </tr>
                         </tbody>
                       </table>
-                      
+
                       <!-- Voucher Details Table (Below Main Table) -->
-                      <table v-if="item.vouchers && item.vouchers.length > 0" class="voucher-details-table">
+                      <table
+                        v-if="item.vouchers && item.vouchers.length > 0"
+                        class="voucher-details-table"
+                      >
                         <tbody>
-                          <tr v-for="(voucher, index) in item.vouchers" :key="index" class="voucher-row">
+                          <tr
+                            v-for="(voucher, index) in item.vouchers"
+                            :key="index"
+                            class="voucher-row"
+                          >
                             <td class="detail-label">
-                              <v-icon size="16" color="#1976d2" class="mr-1">mdi-ticket-confirmation</v-icon>
-                              {{ t('reports.surgicalGuide.vouchers') }} 
+                              <v-icon size="16" color="#1976D2" class="mr-1"
+                                >mdi-ticket-confirmation-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.vouchers") }}
                               <a
                                 href="javascript:void(0)"
                                 class="detail-link"
@@ -881,17 +852,34 @@
                                 #{{ voucher.id }}
                               </a>
                             </td>
-                            <td class="detail-value voucher-amount">${{ voucher.amount.toFixed(2) }}</td>
+                            <td class="detail-value voucher-amount">
+                              ${{ voucher.amount.toFixed(2) }}
+                            </td>
                             <td class="detail-value voucher-status">
-                              <v-chip size="x-small" color="success" variant="flat" class="sharp-chip">{{ t('reports.surgicalGuide.applied') }}</v-chip>
+                              <v-chip
+                                size="x-small"
+                                color="success"
+                                variant="flat"
+                                class="sharp-chip"
+                                >{{
+                                  t("reports.surgicalGuide.applied")
+                                }}</v-chip
+                              >
                             </td>
                           </tr>
                           <tr class="voucher-total-row">
                             <td class="detail-label">
-                              <v-icon size="16" color="#1976d2" class="mr-1">mdi-ticket-percent</v-icon>
-                              {{ t('reports.surgicalGuide.totalVoucherPaid') }}
+                              <v-icon size="16" color="#1976D2" class="mr-1"
+                                >mdi-ticket-percent-outline</v-icon
+                              >
+                              {{ t("reports.surgicalGuide.totalVoucherPaid") }}
                             </td>
-                            <td class="detail-value voucher-total-amount" colspan="2">${{ parseFloat(item.amountPaid || 0).toFixed(2) }}</td>
+                            <td
+                              class="detail-value voucher-total-amount"
+                              colspan="2"
+                            >
+                              ${{ parseFloat(item.amountPaid || 0).toFixed(2) }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -906,16 +894,17 @@
       </v-row>
     </template>
 
-    <!-- Footer with Version -->
+    <!-- Footer with Version - Compact -->
     <v-row>
       <v-col cols="12">
-        <v-footer class="text-center py-3" elevation="0">
+        <v-footer class="text-center py-1 compact-footer" elevation="0">
           <v-chip
-            size="small"
+            size="x-small"
             variant="outlined"
-            prepend-icon="mdi-information"
+            prepend-icon="mdi-information-outline"
+            style="font-size: 0.7rem"
           >
-            Surgical Guide Report v1.0.0
+            Surgical Guide Report v1.1.0
           </v-chip>
         </v-footer>
       </v-col>
@@ -941,21 +930,21 @@
 function getHeaderTooltip(key) {
   switch (key) {
     case "designer":
-      return t('reports.surgicalGuide.tooltips.designer');
+      return t("reports.surgicalGuide.tooltips.designer");
     case "hasExtraction":
-      return t('reports.surgicalGuide.tooltips.hasExtraction');
+      return t("reports.surgicalGuide.tooltips.hasExtraction");
     case "extComp_BoneReduction_selected":
-      return t('reports.surgicalGuide.tooltips.boneReduction');
+      return t("reports.surgicalGuide.tooltips.boneReduction");
     default:
       return "";
   }
 }
-import { ref, reactive, computed, onMounted, watch } from "vue";
+import { ref, reactive, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useDevModeStore } from "@/stores/devMode";
 import api from "@/services/api";
-import { useI18n } from 'vue-i18n';
-import { isRTL } from '@/i18n';
+import { useI18n } from "vue-i18n";
+import { isRTL } from "@/i18n";
 
 const router = useRouter();
 const devModeStore = useDevModeStore();
@@ -998,6 +987,12 @@ const filteredReportData = ref([]);
 const summary = ref(null);
 const activeFilter = ref("all"); // Track active filter type
 
+// Guard to prevent multiple simultaneous API calls
+let isFetching = false;
+let isInitialLoad = true; // Track if this is the first load
+let tableOptionsDisabled = false; // Flag to disable table auto-updates
+let searchTimeout = null; // Timeout for search debounce
+
 const pagination = reactive({
   page: 1,
   limit: 50,
@@ -1007,11 +1002,9 @@ const pagination = reactive({
   hasPrevPage: false,
 });
 
+// Simplified loading state - only for access check (before global loader is available)
 const loading = reactive({
   access: true,
-  report: false,
-  summary: false,
-  export: false,
 });
 
 const snackbar = reactive({
@@ -1041,23 +1034,139 @@ const isDevelopment = computed(() => {
   return import.meta.env.DEV;
 });
 
-// Document direction for debugging/sync checks
-const docDir = computed(() => (typeof document !== 'undefined' ? document.documentElement.dir || 'ltr' : 'unknown'));
-
-// Workflow status counts computed from reportData
-const workflowStatusCounts = computed(() => {
-  const data = filteredReportData.value || [];
-  return {
-    rushOrders: data.filter(item => item.isRush === 1).length,
-    onHoldOrders: data.filter(item => item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null).length,
-    confirmedOrders: data.filter(item => item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null).length,
-    activeOrders: data.filter(item => item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null).length,
-  };
+// Computed property to get active filter label
+const activeFilterLabel = computed(() => {
+  if (activeFilter.value === "all") return null;
+  const stat = compactStats.value.find((s) => s.key === activeFilter.value);
+  return stat ? stat.label : null;
 });
+
+// Computed property to check if any filters are active
+const hasActiveFilters = computed(() => {
+  return (
+    searchQuery.value ||
+    activeFilter.value !== "all" ||
+    filters.startDate !== "2014-01-01" ||
+    filters.endDate !== "2020-12-31"
+  );
+});
+
+// Computed property to generate filter notification text
+const filterNotificationText = computed(() => {
+  const parts = [];
+
+  if (searchQuery.value) {
+    parts.push(
+      t("reports.surgicalGuide.searchLabel") + ` "${searchQuery.value}"`,
+    );
+  }
+
+  if (activeFilter.value !== "all" && activeFilterLabel.value) {
+    parts.push(
+      t("reports.surgicalGuide.filterLabel") + `: ${activeFilterLabel.value}`,
+    );
+  }
+
+  if (
+    filters.startDate !== "2014-01-01" ||
+    filters.endDate !== "2020-12-31"
+  ) {
+    const startFormatted = new Date(filters.startDate).toLocaleDateString();
+    const endFormatted = new Date(filters.endDate).toLocaleDateString();
+    parts.push(
+      t("reports.surgicalGuide.dateRangeLabel") +
+        `: ${startFormatted} - ${endFormatted}`,
+    );
+  }
+
+  return parts.length > 0 ? parts.join(" • ") : null;
+});
+
 
 // Computed property for vouchers used (orders with prepayment/partial prepayment)
 const vouchersUsedCount = computed(() => {
-  return (summary.value?.fullyPrepaidOrders || 0) + (summary.value?.partiallyPostpaidOrders || 0);
+  return (
+    (summary.value?.fullyPrepaidOrders || 0) +
+    (summary.value?.partiallyPostpaidOrders || 0)
+  );
+});
+
+// Computed property for compact statistics chips
+const compactStats = computed(() => {
+  if (!summary.value) return [];
+  
+  return [
+    {
+      key: 'all',
+      label: 'Total',
+      value: formatNumber(summary.value.totalOrders || 0),
+      icon: 'mdi-cart-outline',
+      color: 'primary'
+    },
+    {
+      key: 'free',
+      label: 'Free',
+      value: formatNumber(summary.value.freeOrders || 0),
+      icon: 'mdi-gift-outline',
+      color: 'success'
+    },
+    {
+      key: 'fullyPrepaid',
+      label: 'Prepaid',
+      value: formatNumber(summary.value.fullyPrepaidOrders || 0),
+      icon: 'mdi-ticket-confirmation-outline',
+      color: 'info'
+    },
+    {
+      key: 'fullyPostpaid',
+      label: 'Postpaid',
+      value: formatNumber(summary.value.fullyPostpaidOrders || 0),
+      icon: 'mdi-clock-outline',
+      color: 'error'
+    },
+    {
+      key: 'partiallyPostpaid',
+      label: 'Partial',
+      value: formatNumber(summary.value.partiallyPostpaidOrders || 0),
+      icon: 'mdi-cash-multiple',
+      color: 'purple'
+    },
+    {
+      key: 'vouchers',
+      label: 'Vouchers',
+      value: formatNumber(vouchersUsedCount.value),
+      icon: 'mdi-ticket-percent-outline',
+      color: 'cyan'
+    },
+    {
+      key: 'rush',
+      label: 'Rush',
+      value: formatNumber(summary.value.rushOrders || 0),
+      icon: 'mdi-fire',
+      color: 'orange'
+    },
+    {
+      key: 'onHold',
+      label: 'On Hold',
+      value: formatNumber(summary.value.onHoldOrders || 0),
+      icon: 'mdi-pause-circle-outline',
+      color: 'error'
+    },
+    {
+      key: 'confirmed',
+      label: 'Confirmed',
+      value: formatNumber(summary.value.confirmedOrders || 0),
+      icon: 'mdi-check-circle-outline',
+      color: 'grey'
+    },
+    {
+      key: 'active',
+      label: 'Active',
+      value: formatNumber(summary.value.activeOrders || 0),
+      icon: 'mdi-play-circle-outline',
+      color: 'success'
+    }
+  ];
 });
 
 // =====================================
@@ -1066,17 +1175,41 @@ const vouchersUsedCount = computed(() => {
 
 // Main table headers (compact view - details in expandable row)
 const tableHeaders = [
-  { title: "", key: "data-table-expand", value: "data-table-expand", sortable: false, width: "48px" },
-  { title: "ID", key: "orderSGID", value: "orderSGID", sortable: true, width: "140px" },
+  {
+    title: "",
+    key: "data-table-expand",
+    value: "data-table-expand",
+    sortable: false,
+    width: "48px",
+  },
+  {
+    title: "ID",
+    key: "orderSGID",
+    value: "orderSGID",
+    sortable: true,
+    width: "140px",
+  },
   {
     title: "Scan Center",
     key: "scanCenterFullName",
     value: "scanCenterFullName",
     sortable: true,
+    width: "240px",
+  },
+  {
+    title: "Doctor",
+    key: "doctorFullName",
+    value: "doctorFullName",
+    sortable: true,
+    width: "240px",
+  },
+  {
+    title: "Patient",
+    key: "patientName",
+    value: "patientName",
+    sortable: true,
     width: "180px",
   },
-  { title: "Doctor", key: "doctorFullName", value: "doctorFullName", sortable: true, width: "180px" },
-  { title: "Patient", key: "patientName", value: "patientName", sortable: true, width: "180px" },
   {
     title: "Cost",
     key: "cost",
@@ -1085,8 +1218,20 @@ const tableHeaders = [
     align: "center",
     width: "110px",
   },
-  { title: "Type", key: "typeLabel", value: "typeLabel", sortable: true, width: "140px" },
-  { title: "Created", key: "createdTime", value: "createdTime", sortable: true, width: "130px" },
+  {
+    title: "Type",
+    key: "typeLabel",
+    value: "typeLabel",
+    sortable: true,
+    width: "100px",
+  },
+  {
+    title: "Created",
+    key: "createdTime",
+    value: "createdTime",
+    sortable: true,
+    width: "130px",
+  },
 ];
 
 // Computed headers - rely on CSS direction (RTL) instead of reversing headers in JS
@@ -1094,13 +1239,14 @@ const tableHeaders = [
 // so we keep a stable header order and use CSS to present RTL correctly.
 const computedTableHeaders = computed(() => tableHeaders);
 
-const rules = {
-  required: (value) => !!value || "Required field",
-};
 
 // Track last options received from v-data-table-server to avoid duplicate fetch loops
 // initialize to null so the first incoming options always trigger a load
-const lastTableOptions = reactive({ page: null, itemsPerPage: null, sortKey: null });
+const lastTableOptions = reactive({
+  page: null,
+  itemsPerPage: null,
+  sortKey: null,
+});
 
 // (native Vuetify pagination will be used)
 
@@ -1167,7 +1313,11 @@ async function checkAccess() {
       }
     }
   } catch (error) {
-    showSnackbar(t('reports.surgicalGuide.verifyAccessFailed') || "Failed to verify access permissions", "error");
+    showSnackbar(
+      t("reports.surgicalGuide.verifyAccessFailed") ||
+        "Failed to verify access permissions",
+      "error",
+    );
   } finally {
     loading.access = false;
   }
@@ -1182,11 +1332,18 @@ async function fetchReport() {
 
 /**
  * Internal function to fetch report data
+ * Uses global loader instead of local loading states
+ * Has guard to prevent multiple simultaneous calls
  */
 async function fetchReportData() {
+  // Prevent multiple simultaneous calls
+  if (isFetching) {
+    return;
+  }
+
   try {
-    loading.report = true;
-    loading.summary = true;
+    isFetching = true;
+    // Show global loader
 
     const params = {
       startDate: filters.startDate || "1900-01-01",
@@ -1199,59 +1356,103 @@ async function fetchReportData() {
       orderTypeFilter: activeFilter.value || "all", // Add order type filter
     };
 
+    // Fetch report and summary in parallel for better performance
+    const promises = [
     // Fetch report data (always paginated) with timeout
-    const reportResponse = await Promise.race([
+      Promise.race([
       api.get("/api/reports/surgical_guide", { params }),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Request timeout")), 15000),
       ),
-    ]);
-
-    if (reportResponse.data.success) {
-      // Use data directly from backend (already formatted and filtered by search)
-      reportData.value = reportResponse.data.data;
-      filteredReportData.value = reportResponse.data.data; // Server-side search, no client filtering needed
-
-      // Update pagination from server response
-      const serverPagination = reportResponse.data.pagination;
-      pagination.page = serverPagination.page;
-      pagination.limit = serverPagination.limit;
-      pagination.total = serverPagination.total;
-      pagination.totalPages = serverPagination.totalPages;
-      pagination.hasNextPage = serverPagination.hasNextPage;
-      pagination.hasPrevPage = serverPagination.hasPrevPage;
-    }
+      ]),
+    ];
 
     // Only fetch summary on first page or manual reload
     if (filters.page === 1) {
-      const summaryResponse = await api.get(
-        "/api/reports/surgical_guide/summary",
-        {
+      promises.push(
+        api.get("/api/reports/surgical_guide/summary", {
           params: { startDate: filters.startDate, endDate: filters.endDate },
-        },
+        }),
       );
+    }
 
+    // Execute all API calls in parallel
+    const responses = await Promise.all(promises);
+    const reportResponse = responses[0];
+
+    if (reportResponse.data.success) {
+      // Use data directly from backend (already formatted and filtered by search)
+      // Update data in a way that doesn't trigger excessive reactivity
+      const newData = reportResponse.data.data || [];
+      reportData.value = newData;
+      filteredReportData.value = newData; // Server-side search, no client filtering needed
+
+      // Disable table options to prevent it from re-triggering during our updates
+      tableOptionsDisabled = true;
+
+      // Update pagination from server response
+      // Use Object.assign to update pagination without triggering reactivity loops
+      const serverPagination = reportResponse.data.pagination;
+      
+      // Only update if values actually changed to prevent loops
+      if (
+        pagination.page !== serverPagination.page ||
+        pagination.limit !== serverPagination.limit ||
+        pagination.total !== serverPagination.total
+      ) {
+        Object.assign(pagination, {
+          page: serverPagination.page,
+          limit: serverPagination.limit,
+          total: serverPagination.total,
+          totalPages: serverPagination.totalPages,
+          hasNextPage: serverPagination.hasNextPage,
+          hasPrevPage: serverPagination.hasPrevPage,
+        });
+      }
+      
+      // Update lastTableOptions to prevent infinite loop when pagination updates
+      // This ensures loadItems() won't trigger again when table detects pagination change
+      lastTableOptions.page = serverPagination.page;
+      lastTableOptions.itemsPerPage = serverPagination.limit;
+      const currentSortKey = filters.sortBy && filters.sortOrder
+        ? `${filters.sortBy}:${filters.sortOrder}`
+        : "";
+      lastTableOptions.sortKey = currentSortKey;
+      
+      // Mark initial load as complete
+      isInitialLoad = false;
+      
+      // Re-enable table options after Vue finishes all reactive updates
+      // Use nextTick + small delay to ensure Vuetify has also finished updating
+      await nextTick();
+      setTimeout(() => {
+        tableOptionsDisabled = false;
+      }, 50);
+    }
+
+    // Handle summary response if fetched
+    if (filters.page === 1 && responses.length > 1) {
+      const summaryResponse = responses[1];
       if (summaryResponse.data.success) {
         summary.value = summaryResponse.data.data;
       }
     }
 
-    // Only show success message on manual reload, not on pagination
-    if (filters.page === 1) {
-      showSnackbar(t('reports.surgicalGuide.loadedRecords', { count: reportData.value.length }) || `Loaded ${reportData.value.length} records`, "success");
-    }
   } catch (error) {
     const message =
       error.response?.data?.error?.message || "Failed to load report data";
     showSnackbar(message, "error");
+    // Ensure flag is reset on error
+    tableOptionsDisabled = false;
   } finally {
-    loading.report = false;
-    loading.summary = false;
+    // Hide global loader
+    isFetching = false;
   }
 }
 
 /**
  * Apply search filter to report data (now triggers server-side search)
+ * Called by watch() on searchQuery - no need for additional debouncing here
  */
 async function applySearchFilter() {
   // Reset to page 1 when searching
@@ -1264,6 +1465,11 @@ async function applySearchFilter() {
  * Clear search and reset filter
  */
 async function clearSearch() {
+  // Clear any pending search timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+    searchTimeout = null;
+  }
   searchQuery.value = "";
   filters.page = 1;
   await fetchReportData();
@@ -1278,7 +1484,7 @@ async function filterByOrderType(type) {
 
   // Reset to page 1 and fetch filtered data from server
   filters.page = 1;
-  
+
   // Note: Backend should handle these new filter types (vouchers, rush, onHold, confirmed, active)
   // If backend doesn't support them yet, they will default to 'all' and show all records
   await fetchReportData();
@@ -1286,12 +1492,26 @@ async function filterByOrderType(type) {
 
 /**
  * Load items based on table options (Vuetify server-side pagination pattern)
+ * Has multiple guards to prevent infinite loops
  */
 async function loadItems({ page, itemsPerPage, sortBy }) {
-  // Normalize incoming options
-  const incomingSortKey = sortBy && sortBy.length > 0 ? `${sortBy[0].key}:${sortBy[0].order || 'asc'}` : '';
+  // Guard: Prevent if table options are disabled (during programmatic updates)
+  if (tableOptionsDisabled) {
+    return;
+  }
 
-  // If options didn't change, ignore to prevent fetch loops
+  // Guard: Prevent if already fetching
+  if (isFetching) {
+    return;
+  }
+
+  // Normalize incoming options
+  const incomingSortKey =
+    sortBy && sortBy.length > 0
+      ? `${sortBy[0].key}:${sortBy[0].order || "asc"}`
+      : "";
+
+  // Guard: If options didn't change, ignore to prevent fetch loops
   if (
     lastTableOptions.page === page &&
     lastTableOptions.itemsPerPage === itemsPerPage &&
@@ -1300,7 +1520,16 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
     return;
   }
 
-  // Update last seen options
+  // Guard: Prevent initial load from triggering multiple times
+  if (isInitialLoad && page === 1 && itemsPerPage === 50 && !incomingSortKey) {
+    // This is likely the initial mount trigger, let it through once
+    isInitialLoad = false;
+  } else if (isInitialLoad) {
+    // Skip other initial triggers
+    return;
+  }
+
+  // Update last seen options BEFORE updating filters to prevent loops
   lastTableOptions.page = page;
   lastTableOptions.itemsPerPage = itemsPerPage;
   lastTableOptions.sortKey = incomingSortKey;
@@ -1321,10 +1550,11 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
 
 /**
  * Export report to CSV
+ * Uses global loader instead of local loading state
  */
 async function exportToCSV() {
   try {
-    loading.export = true;
+    // Show global loader
 
     const params = new URLSearchParams({
       startDate: filters.startDate,
@@ -1340,7 +1570,9 @@ async function exportToCSV() {
     );
 
     if (!response.ok) {
-      throw new Error(t('reports.surgicalGuide.exportFailed') || "Export failed");
+      throw new Error(
+        t("reports.surgicalGuide.exportFailed") || "Export failed",
+      );
     }
 
     const blob = await response.blob();
@@ -1357,23 +1589,21 @@ async function exportToCSV() {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 
-    showSnackbar(t('reports.surgicalGuide.reportExported') || "Report exported successfully", "success");
+    showSnackbar(
+      t("reports.surgicalGuide.reportExported") ||
+        "Report exported successfully",
+      "success",
+    );
   } catch (error) {
-    showSnackbar(t('reports.surgicalGuide.exportFailed') || "Failed to export report", "error");
+    showSnackbar(
+      t("reports.surgicalGuide.exportFailed") || "Failed to export report",
+      "error",
+    );
   } finally {
-    loading.export = false;
+    // Hide global loader
   }
 }
 
-/**
- * Collapse expanded row
- */
-function collapseRow(item) {
-  const index = expanded.value.findIndex(exp => exp === item.orderSGID);
-  if (index > -1) {
-    expanded.value.splice(index, 1);
-  }
-}
 
 /**
  * Format large numbers with K suffix
@@ -1382,7 +1612,7 @@ function formatNumber(value) {
   if (!value && value !== 0) return "0";
   const num = parseFloat(value);
   if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
   }
   return num.toString();
 }
@@ -1391,8 +1621,10 @@ function formatNumber(value) {
  * Format currency values
  */
 function formatCurrency(value) {
-  if (!value && value !== 0) return t('reports.surgicalGuide.notSpecified') || "N/A";
-  if (parseFloat(value) === 0) return t('reports.surgicalGuide.freeOrders') || "Free";
+  if (!value && value !== 0)
+    return t("reports.surgicalGuide.notSpecified") || "N/A";
+  if (parseFloat(value) === 0)
+    return t("reports.surgicalGuide.freeOrders") || "Free";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -1405,33 +1637,22 @@ function formatCurrency(value) {
  */
 function getSupportTypeLabel(typeValue) {
   const typeMap = {
-    0: t('reports.surgicalGuide.supportTypes.teeth'),
-    1: t('reports.surgicalGuide.supportTypes.tissue'),
-    2: t('reports.surgicalGuide.supportTypes.bone'),
+    0: t("reports.surgicalGuide.supportTypes.teeth"),
+    1: t("reports.surgicalGuide.supportTypes.tissue"),
+    2: t("reports.surgicalGuide.supportTypes.bone"),
   };
   return typeMap[typeValue] || "N/A";
 }
 
-/**
- * Get payment status class for bullet indicator
- */
-function getPaymentStatusClass(item) {
-  const cost = parseFloat(item.cost || 0);
-  const amountPaid = parseFloat(item.amountPaid || 0);
-  if (cost === 0) return 'bullet-free-order';
-  if (amountPaid === 0) return 'bullet-fully-postpaid';
-  if (amountPaid >= cost) return 'bullet-fully-prepaid';
-  return 'bullet-partially-postpaid';
-}
 
 /**
  * Get workflow status icon
  */
 function getWorkflowIcon(item) {
-  if (item.isRush === 1) return 'mdi-fire';
-  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'mdi-pause-circle';
-  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'mdi-check-circle';
-  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'mdi-play-circle';
+  if (item.isRush === 1) return "mdi-fire";
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return "mdi-pause-circle-outline";
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return "mdi-check-circle-outline";
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return "mdi-play-circle-outline";
   return null;
 }
 
@@ -1439,53 +1660,29 @@ function getWorkflowIcon(item) {
  * Get workflow status icon color
  */
 function getWorkflowIconColor(item) {
-  if (item.isRush === 1) return 'orange';
-  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'red';
-  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'grey-darken-2';
-  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'green';
-  return '';
+  if (item.isRush === 1) return "#E65100"; // Deep Orange
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return "#F44336"; // Red/Error
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return "#616161"; // Grey
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return "#43A047"; // Green/Success
+  return "";
 }
 
 /**
  * Get workflow status label for expanded row
  */
 function getWorkflowStatusLabel(item) {
-  if (item.isRush === 1) return t('reports.surgicalGuide.rushOrders');
-  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return t('reports.surgicalGuide.onHold');
-  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return t('reports.surgicalGuide.confirmed');
-  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return t('reports.surgicalGuide.active');
-  return t('reports.surgicalGuide.noStatusSet');
+  if (item.isRush === 1) return t("reports.surgicalGuide.rushOrders");
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null)
+    return t("reports.surgicalGuide.onHold");
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null)
+    return t("reports.surgicalGuide.confirmed");
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null)
+    return t("reports.surgicalGuide.active");
+  return t("reports.surgicalGuide.noStatusSet");
 }
 
-/**
- * Get workflow status chip color for expanded row
- */
-function getWorkflowStatusChipColor(item) {
-  if (item.isRush === 1) return 'deep-orange';
-  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return 'red';
-  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return 'grey';
-  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return 'green';
-  return 'default';
-}
 
-/**
- * Calculate remaining balance (Cost - Amount Paid)
- */
-function getRemainingBalance(item) {
-  const cost = parseFloat(item.cost || 0);
-  const amountPaid = parseFloat(item.amountPaid || 0);
-  return (cost - amountPaid).toFixed(2);
-}
 
-/**
- * Get color for remaining balance
- */
-function getRemainingBalanceColor(item) {
-  const remaining = parseFloat(getRemainingBalance(item));
-  if (remaining === 0) return "text-success";
-  if (remaining > 0) return "text-warning";
-  return "text-error"; // Overpaid (shouldn't happen but handle it)
-}
 
 /**
  * Get payment status label
@@ -1494,10 +1691,10 @@ function getPaymentStatusLabel(item) {
   const cost = parseFloat(item.cost || 0);
   const amountPaid = parseFloat(item.amountPaid || 0);
 
-  if (cost === 0) return t('reports.surgicalGuide.freeOrders');
-  if (amountPaid === 0) return t('reports.surgicalGuide.fullyPostpaid');
-  if (amountPaid >= cost) return t('reports.surgicalGuide.fullyPrepaid');
-  return t('reports.surgicalGuide.partiallyPostpaid');
+  if (cost === 0) return t("reports.surgicalGuide.freeOrders");
+  if (amountPaid === 0) return t("reports.surgicalGuide.fullyPostpaid");
+  if (amountPaid >= cost) return t("reports.surgicalGuide.fullyPrepaid");
+  return t("reports.surgicalGuide.partiallyPostpaid");
 }
 
 /**
@@ -1508,10 +1705,10 @@ function getPaymentStatusColor(item) {
   const amountPaid = parseFloat(item.amountPaid || 0);
 
   // Distinct colors for payment status
-  if (cost === 0) return "#43a047"; // Free - Green
-  if (amountPaid === 0) return "#e53935"; // Fully Postpaid - Red
-  if (amountPaid >= cost) return "#1565c0"; // Fully Prepaid - Deep Blue
-  return "#8e24aa"; // Partially Postpaid - Purple
+  if (cost === 0) return "#43A047"; // Free - Green
+  if (amountPaid === 0) return "#E53935"; // Fully Postpaid - Red
+  if (amountPaid >= cost) return "#1565C0"; // Fully Prepaid - Deep Blue
+  return "#8E24AA"; // Partially Postpaid - Purple
 }
 
 /**
@@ -1521,9 +1718,9 @@ function getPaymentStatusIcon(item) {
   const cost = parseFloat(item.cost || 0);
   const amountPaid = parseFloat(item.amountPaid || 0);
 
-  if (cost === 0) return "mdi-gift";
-  if (amountPaid === 0) return "mdi-cash-clock";
-  if (amountPaid >= cost) return "mdi-ticket-confirmation";
+  if (cost === 0) return "mdi-gift-outline";
+  if (amountPaid === 0) return "mdi-clock-outline";
+  if (amountPaid >= cost) return "mdi-ticket-confirmation-outline";
   return "mdi-cash-multiple";
 }
 
@@ -1564,13 +1761,17 @@ function shouldUseWhiteText(typeLabel) {
  */
 function getStatusLabel(item) {
   const Q11_max = item.Q11_max;
-  if (item.Q11_Val_5 > Q11_max) return t('reports.surgicalGuide.status.qcShipping');
-  if (item.Q11_Val_2 > Q11_max) return t('reports.surgicalGuide.status.confirmedByOEM');
-  if (item.Q11_Val_4 > Q11_max) return t('reports.surgicalGuide.status.onHold');
-  if (item.Q11_Val_3 > Q11_max) return t('reports.surgicalGuide.status.multiple');
-  if (item.Q11_Val_1 > Q11_max) return t('reports.surgicalGuide.status.active');
-  if (item.Q11_Val_20 > Q11_max) return t('reports.surgicalGuide.status.inProcess');
-  return t('reports.surgicalGuide.status.inactive');
+  if (item.Q11_Val_5 > Q11_max)
+    return t("reports.surgicalGuide.status.qcShipping");
+  if (item.Q11_Val_2 > Q11_max)
+    return t("reports.surgicalGuide.status.confirmedByOEM");
+  if (item.Q11_Val_4 > Q11_max) return t("reports.surgicalGuide.status.onHold");
+  if (item.Q11_Val_3 > Q11_max)
+    return t("reports.surgicalGuide.status.multiple");
+  if (item.Q11_Val_1 > Q11_max) return t("reports.surgicalGuide.status.active");
+  if (item.Q11_Val_20 > Q11_max)
+    return t("reports.surgicalGuide.status.inProcess");
+  return t("reports.surgicalGuide.status.inactive");
 }
 
 /**
@@ -1593,33 +1794,61 @@ function getStatusBgColor(item) {
 
 /**
  * Watch search query with debounce
+ * Automatically triggers search when query changes
  */
-let searchTimeout;
-watch(searchQuery, () => {
+watch(
+  searchQuery,
+  (newVal, oldVal) => {
+    // Skip if value hasn't actually changed (prevents unnecessary calls)
+    if (newVal === oldVal) return;
+    
+    // Clear any pending timeout
   clearTimeout(searchTimeout);
+    
+    // Debounce the search to avoid excessive API calls
   searchTimeout = setTimeout(() => {
+      // Only trigger search if not already fetching
+      if (!isFetching) {
     applySearchFilter();
+      }
   }, 300); // 300ms debounce
-});
+  },
+  { immediate: false } // Don't trigger on initial mount
+);
 
 // =====================================
 // LIFECYCLE
 // =====================================
 
 onMounted(async () => {
+  // Disable table auto-updates during initial mount
+  tableOptionsDisabled = true;
+  
   // Fast initial render - defer non-critical work
   await checkAccess();
 
-  // Use requestIdleCallback to defer heavy operations
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(() => {
-      // The v-data-table will automatically call loadItems when it mounts
-    });
-  }
   // Ensure at least one initial load (some environments don't trigger table options)
-  if (accessInfo.hasReportAccess) {
-    // Use current pagination and no sort to trigger initial fetch
-    loadItems({ page: pagination.page, itemsPerPage: pagination.limit, sortBy: [] }).catch(() => {});
+  // But only if we have access and haven't loaded yet
+  if (accessInfo.hasReportAccess && isInitialLoad) {
+    // Use setTimeout to defer initial load and prevent race conditions
+    setTimeout(() => {
+      if (isInitialLoad && !isFetching) {
+        isInitialLoad = false;
+        // Temporarily enable table options for the initial load
+        tableOptionsDisabled = false;
+    loadItems({
+      page: pagination.page,
+      itemsPerPage: pagination.limit,
+      sortBy: [],
+        }).catch(() => {
+          isInitialLoad = true; // Reset on error
+          tableOptionsDisabled = false; // Ensure flag is reset
+        });
+      }
+    }, 100); // Small delay to ensure component is fully mounted
+  } else {
+    // If no access, re-enable table options
+    tableOptionsDisabled = false;
   }
 });
 </script>
@@ -1658,22 +1887,50 @@ onMounted(async () => {
    Many cells use `d-flex align-center` with an icon using `mr-*`; we override those here. */
 /* .rtl-table .d-flex.align-center {
   flex-direction: row-reverse;
-} */ 
+} */
 
 /* Replace margin-right used for icons with margin-left in RTL, and vice-versa in LTR to keep spacing consistent. */
-.rtl-table .mr-2 { margin-right: 0 !important; margin-left: 8px !important; }
-.rtl-table .mr-1 { margin-right: 0 !important; margin-left: 4px !important; }
-.rtl-table .ml-2 { margin-left: 0 !important; margin-right: 8px !important; }
-.rtl-table .ml-1 { margin-left: 0 !important; margin-right: 4px !important; }
+.rtl-table .mr-2 {
+  margin-right: 0 !important;
+  margin-left: 8px !important;
+}
+.rtl-table .mr-1 {
+  margin-right: 0 !important;
+  margin-left: 4px !important;
+}
+.rtl-table .ml-2 {
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+}
+.rtl-table .ml-1 {
+  margin-left: 0 !important;
+  margin-right: 4px !important;
+}
 
-.ltr-table .mr-2 { margin-right: 8px !important; margin-left: 0 !important; }
-.ltr-table .mr-1 { margin-right: 4px !important; margin-left: 0 !important; }
-.ltr-table .ml-2 { margin-left: 8px !important; margin-right: 0 !important; }
-.ltr-table .ml-1 { margin-left: 4px !important; margin-right: 0 !important; }
+.ltr-table .mr-2 {
+  margin-right: 8px !important;
+  margin-left: 0 !important;
+}
+.ltr-table .mr-1 {
+  margin-right: 4px !important;
+  margin-left: 0 !important;
+}
+.ltr-table .ml-2 {
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
+.ltr-table .ml-1 {
+  margin-left: 4px !important;
+  margin-right: 0 !important;
+}
 
 /* Ensure link order and arrow icons in cells read naturally in RTL */
-.rtl-table .order-id-link { direction: rtl; }
-.ltr-table .order-id-link { direction: ltr; }
+.rtl-table .order-id-link {
+  direction: rtl;
+}
+.ltr-table .order-id-link {
+  direction: ltr;
+}
 
 /* For expanded-row tables inside the expanded cell, inherit table direction explicitly */
 .rtl-table .professional-details-table,
@@ -1689,7 +1946,9 @@ onMounted(async () => {
 }
 
 /* Keep chip/icon visual order consistent in legends */
-.rtl-table .legend-item { flex-direction: row-reverse; }
+.rtl-table .legend-item {
+  flex-direction: row-reverse;
+}
 
 /* Explicit ordering for common inline cell groups so we don't rely solely on row-reverse.
    This keeps spacing/gap predictable and makes the icon/text order deterministic.
@@ -1741,15 +2000,30 @@ onMounted(async () => {
 }
 
 /* LTR ordering (natural DOM matching visual order) */
-.ltr-table .order-id-cell > .payment-status-wrapper { order: 1 !important; }
-.ltr-table .order-id-cell > .order-id-link { order: 2 !important; }
-.ltr-table .order-id-cell > .workflow-status-wrapper { order: 3 !important; }
+.ltr-table .order-id-cell > .payment-status-wrapper {
+  order: 1 !important;
+}
+.ltr-table .order-id-cell > .order-id-link {
+  order: 2 !important;
+}
+.ltr-table .order-id-cell > .workflow-status-wrapper {
+  order: 3 !important;
+}
 
 /* RTL ordering: keep group anchored to the right but rely on order values for sequence */
-.rtl-table .order-id-cell { justify-content: flex-end !important; text-align: right !important; }
-.rtl-table .order-id-cell > .payment-status-wrapper { order: 3 !important; }
-.rtl-table .order-id-cell > .order-id-link { order: 2 !important; }
-.rtl-table .order-id-cell > .workflow-status-wrapper { order: 1 !important; }
+.rtl-table .order-id-cell {
+  justify-content: flex-end !important;
+  text-align: right !important;
+}
+.rtl-table .order-id-cell > .payment-status-wrapper {
+  order: 3 !important;
+}
+.rtl-table .order-id-cell > .order-id-link {
+  order: 2 !important;
+}
+.rtl-table .order-id-cell > .workflow-status-wrapper {
+  order: 1 !important;
+}
 
 /* Stronger target inside Vuetify wrapper to ensure alignment wins */
 .rtl-table :deep(td) .order-id-cell,
@@ -1761,13 +2035,6 @@ onMounted(async () => {
   justify-content: flex-start !important;
 }
 
-.expanded-row-card {
-  margin: 2px 0 !important;
-  padding: 8px 8px 4px 8px !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  border-radius: 6px;
-  overflow: visible !important;
-}
 
 /* ===================================== */
 /* PREVENT SCROLLBAR FLASH - CRITICAL */
@@ -1815,9 +2082,18 @@ onMounted(async () => {
 }
 
 /* Flip left/right margins on icons inside table cells to keep spacing natural */
-.rtl-table :deep(.mr-2) { margin-right: 0 !important; margin-left: 8px !important; }
-.rtl-table :deep(.mr-1) { margin-right: 0 !important; margin-left: 4px !important; }
-.rtl-table :deep(.ml-2) { margin-left: 0 !important; margin-right: 8px !important; }
+.rtl-table :deep(.mr-2) {
+  margin-right: 0 !important;
+  margin-left: 8px !important;
+}
+.rtl-table :deep(.mr-1) {
+  margin-right: 0 !important;
+  margin-left: 4px !important;
+}
+.rtl-table :deep(.ml-2) {
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+}
 
 /* Footer tweaks: ensure items-per-page and pagination are laid out in a natural RTL order */
 
@@ -1842,9 +2118,18 @@ onMounted(async () => {
 }
 
 /* Restore normal icon margins in LTR */
-.ltr-table :deep(.mr-2) { margin-right: 8px !important; margin-left: 0 !important; }
-.ltr-table :deep(.mr-1) { margin-right: 4px !important; margin-left: 0 !important; }
-.ltr-table :deep(.ml-2) { margin-left: 8px !important; margin-right: 0 !important; }
+.ltr-table :deep(.mr-2) {
+  margin-right: 8px !important;
+  margin-left: 0 !important;
+}
+.ltr-table :deep(.mr-1) {
+  margin-right: 4px !important;
+  margin-left: 0 !important;
+}
+.ltr-table :deep(.ml-2) {
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+}
 
 .ltr-table :deep(.v-data-table-footer) {
   display: flex !important;
@@ -1861,56 +2146,53 @@ onMounted(async () => {
   flex-direction: row-reverse !important;
 }
 
+/* Professional pagination styling for RTL */
+.rtl-table.ultra-compact-table :deep(.v-data-table-footer) {
+  flex-direction: row-reverse;
+}
+
+.rtl-table.ultra-compact-table :deep(.v-data-table-footer__items-per-page) {
+  order: 3;
+}
+
+.rtl-table.ultra-compact-table :deep(.v-data-table-footer__pagination) {
+  order: 2;
+}
+
+.rtl-table.ultra-compact-table :deep(.v-data-table-footer__info) {
+  order: 1;
+  margin-left: 0;
+  margin-right: auto;
+}
+
 /* Flip icon buttons (previous/next) horizontally so arrows point correctly */
 .rtl-table :deep(.v-data-table-footer .v-btn--icon) {
   transform: scaleX(-1) !important;
 }
 
-.enhanced-table * {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-  overflow-x: visible !important;
-}
 
-.enhanced-table::-webkit-scrollbar,
-.enhanced-table *::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-}
-
-/* Target Vuetify table internals */
-.enhanced-table :deep(.v-data-table__wrapper),
-.enhanced-table :deep(.v-table__wrapper),
-.enhanced-table :deep(.v-data-table),
-.enhanced-table :deep(.v-table),
-.enhanced-table :deep(table) {
-  overflow: visible !important;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-.enhanced-table :deep(.v-data-table__wrapper)::-webkit-scrollbar,
-.enhanced-table :deep(.v-table__wrapper)::-webkit-scrollbar,
-.enhanced-table :deep(.v-data-table)::-webkit-scrollbar,
-.enhanced-table :deep(.v-table)::-webkit-scrollbar,
-.enhanced-table :deep(table)::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
 
 /* Performance Optimizations - Fix CLS & LCP */
 .header-container {
   min-height: 80px; /* Reserve space to prevent layout shift */
 }
 
+.compact-header {
+  min-height: 50px !important;
+}
+
 .header-title {
   font-size: 2rem;
   line-height: 2.5rem;
   min-height: 2.5rem;
-  will-change: auto; /* Remove expensive will-change */
+ 
+}
+
+.compact-header-title {
+  font-size: 1.25rem !important;
+  line-height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  margin-bottom: 2px !important;
 }
 
 .header-subtitle {
@@ -1921,15 +2203,18 @@ onMounted(async () => {
   font-display: swap; /* Optimize font loading */
 }
 
+.compact-header-subtitle {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  min-height: 1rem !important;
+  margin-top: 0 !important;
+}
+
 /* Prevent layout shifts from cards */
 .v-card {
   contain: layout style paint;
 }
 
-/* Reserve space for summary cards to prevent CLS */
-.summary-cards {
-  min-height: 160px;
-}
 
 .summary-card {
   height: 100%;
@@ -1940,7 +2225,9 @@ onMounted(async () => {
   position: relative;
   overflow: hidden;
   background: white !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .summary-card:hover {
@@ -1957,15 +2244,33 @@ onMounted(async () => {
   width: 100%;
 }
 
-.primary-bar { background: rgb(var(--v-theme-primary)); }
-.success-bar { background: rgb(var(--v-theme-success)); }
-.info-bar { background: rgb(var(--v-theme-info)); }
-.warning-bar { background: #ff9800; }
-.amber-bar { background: #ffa726; }
-.orange-bar { background: #e65100; }
-.error-bar { background: rgb(var(--v-theme-error)); }
-.grey-bar { background: #616161; }
-.success-alt-bar { background: rgb(var(--v-theme-success)); }
+.primary-bar {
+  background: rgb(var(--v-theme-primary));
+}
+.success-bar {
+  background: rgb(var(--v-theme-success));
+}
+.info-bar {
+  background: rgb(var(--v-theme-info));
+}
+.warning-bar {
+  background: #ff9800;
+}
+.amber-bar {
+  background: #ffa726;
+}
+.orange-bar {
+  background: #e65100;
+}
+.error-bar {
+  background: rgb(var(--v-theme-error));
+}
+.grey-bar {
+  background: #616161;
+}
+.success-alt-bar {
+  background: rgb(var(--v-theme-success));
+}
 
 .summary-card .v-card-text {
   min-height: 106px;
@@ -1994,11 +2299,7 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-/* Optimize table rendering */
-.enhanced-table {
-  contain: layout style paint;
-  content-visibility: auto; /* Lazy render off-screen content */
-}
+
 
 /* Optimize initial page load - reduce blocking */
 .surgical-guide-report {
@@ -2023,83 +2324,46 @@ onMounted(async () => {
 
 /* Expandable Row Styles - Enhanced UX */
 
-/* Expanded row wrapper with animation */
-.expanded-row-wrapper {
-  animation: expandRowFade 0.3s ease-out;
-}
-
-@keyframes expandRowFade {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Container for expanded row with border highlight */
-.expanded-row-container {
-  background: linear-gradient(90deg, #ffa100 0%, #ff8c00 100%);
-  padding: 3px;
-  border-radius: 12px;
-  margin: 8px 0;
-  animation: expandRowGlow 0.5s ease-out;
-}
-
-@keyframes expandRowGlow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 161, 0, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 20px 5px rgba(255, 161, 0, 0.3);
-  }
-  100% {
-    box-shadow: 0 4px 16px rgba(255, 161, 0, 0.15);
-  }
-}
-
 /* Highlight Expanded Row */
-.highlighted-expanded-table :deep(tr.v-data-table__tr--clickable[aria-expanded="true"]) {
-  background: #fff3e0 !important;
-  border-left: 4px solid #ff9800 !important;
-}
 
-.highlighted-expanded-table :deep(tr.v-data-table__tr--clickable[aria-expanded="true"]:hover) {
-  background: #ffe0b2 !important;
-}
-
-/* Professional Minimal Expanded Row */
-.expanded-row-minimal {
-  background: #fff3e0 !important;
-  border-left: 4px solid #ff9800 !important;
-}
 
 .expanded-cell {
   padding: 0 !important;
-  background: #fff3e0 !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  border-top: 1px solid #ff9800 !important;
+}
+
+.v-theme--dark .expanded-cell {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-top-color: #ff9800 !important;
 }
 
 .minimal-expanded-container {
   position: relative;
-  padding: 8px 16px;
-  background: #fff9f0;
-  border-top: 1px solid #ff9800;
+  padding: 4px 8px;
 }
 
 /* Professional Details Table - Main Table */
 .professional-details-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  font-size: 0.75rem;
+  border-radius: 0;
+  background: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .professional-details-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .professional-details-table {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.v-theme--dark .professional-details-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .professional-details-table tbody tr:last-child {
@@ -2107,27 +2371,43 @@ onMounted(async () => {
 }
 
 .detail-label {
-  padding: 6px 12px;
+  padding: 3px 8px;
   font-weight: 600;
-  color: #616161;
-  background: #fafafa;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  background: rgba(var(--v-theme-on-surface), 0.04);
   white-space: nowrap;
   width: 100px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .detail-label {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .detail-value {
-  padding: 6px 12px;
-  color: #212121;
-  background: white;
-  font-size: 0.8125rem;
+  padding: 3px 8px;
+  color: rgb(var(--v-theme-on-surface));
+  background: rgb(var(--v-theme-surface));
+  font-size: 0.75rem;
+  line-height: 1.3;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .detail-value {
+  color: rgba(255, 255, 255, 0.87);
+  background: rgb(var(--v-theme-surface));
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Clickable Links in Detail Values */
 .detail-link {
-  color: #1976d2;
+  color: rgb(var(--v-theme-primary));
   text-decoration: none;
   font-weight: 500;
   cursor: pointer;
@@ -2135,30 +2415,52 @@ onMounted(async () => {
 }
 
 .detail-link:hover {
-  color: #1565c0;
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.8;
   text-decoration: underline;
+}
+
+.v-theme--dark .detail-link {
+  color: rgb(var(--v-theme-primary));
+}
+
+.v-theme--dark .detail-link:hover {
+  opacity: 0.9;
 }
 
 /* Voucher Inline Display */
 .voucher-inline {
   display: inline;
-  color: #1976d2;
+  color: rgb(var(--v-theme-primary));
   font-weight: 500;
+}
+
+.v-theme--dark .voucher-inline {
+  color: rgb(var(--v-theme-primary));
 }
 
 /* Voucher Details Table - Below Main Table (Exact Match) */
 .voucher-details-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-top: 12px;
+  font-size: 0.75rem;
+  background: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 0;
+  margin-top: 6px;
 }
 
 .voucher-details-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .voucher-details-table {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.v-theme--dark .voucher-details-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .voucher-details-table tbody tr:last-child {
@@ -2166,7 +2468,11 @@ onMounted(async () => {
 }
 
 .voucher-row {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .voucher-row {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .voucher-amount {
@@ -2178,7 +2484,11 @@ onMounted(async () => {
 }
 
 .voucher-total-row {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .voucher-total-row {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .voucher-total-amount {
@@ -2206,62 +2516,6 @@ onMounted(async () => {
   padding: 24px;
 }
 
-/* Remove any overlay effects */
-.expanded-row-card::before,
-.expanded-row-card::after {
-  display: none !important;
-}
-
-/* Ensure all child elements are fully opaque */
-.expanded-row-card * {
-  opacity: 1 !important;
-}
-
-/* Light mode text - full black for maximum clarity */
-.expanded-row-card .v-list,
-.expanded-row-card .v-list-item,
-.expanded-row-card .v-list-item-title,
-.expanded-row-card .v-list-item-subtitle {
-  background: transparent !important;
-  color: rgba(0, 0, 0, 0.87) !important;
-  opacity: 1 !important;
-}
-
-/* Dark mode support for expanded row */
-.v-theme--dark .expanded-row-card {
-  background: #1e1e1e !important;
-  color: #ffffff !important;
-}
-
-.v-theme--dark .expanded-row-header {
-  background: #252525 !important;
-  border-bottom-color: rgba(255, 161, 0, 0.3);
-}
-
-.v-theme--dark .expanded-row-container {
-  box-shadow: 0 4px 20px rgba(255, 161, 0, 0.25);
-}
-
-.v-theme--dark .details-section-card,
-.v-theme--dark .payment-section-card,
-.v-theme--dark .workflow-section-card {
-  background: #252525 !important;
-  border-color: rgba(255, 161, 0, 0.2);
-}
-
-.v-theme--dark .expanded-row-card .v-list,
-.v-theme--dark .expanded-row-card .v-list.bg-transparent,
-.v-theme--dark .expanded-row-card .v-list-item,
-.v-theme--dark .expanded-row-card .v-list-item__underlay,
-.v-theme--dark .expanded-row-card .v-list-item__content,
-.v-theme--dark .expanded-row-card .v-list-item-title,
-.v-theme--dark .expanded-row-card .v-list-item-subtitle,
-.v-theme--dark .expanded-row-card .v-list-subheader,
-.v-theme--dark .expanded-row-card .v-list-subheader__text {
-  background: transparent !important;
-  color: #ffffff !important;
-  opacity: 1 !important;
-}
 
 /* Compact Vouchers Inline Display */
 .compact-vouchers {
@@ -2300,86 +2554,14 @@ onMounted(async () => {
   background: transparent !important;
 }
 
-/* Expand icon color */
-.enhanced-table :deep(.v-data-table__expand-icon) {
-  color: #ffa100 !important;
-}
-
 /* Hover effect on expandable rows */
 .enhanced-table :deep(tr:hover .v-data-table__expand-icon) {
   transform: scale(1.2);
   transition: transform 0.2s ease;
-  color: #ff8c00 !important;
-}
-
-/* Dark mode for compact tables */
-.v-theme--dark .expanded-row-card {
-  background: #1e1e1e !important;
-}
-
-.v-theme--dark .expanded-row-header {
-  background: #252525 !important;
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.v-theme--dark .compact-expanded-content {
-  background: #1e1e1e !important;
-}
-
-.v-theme--dark .compact-details-table,
-.v-theme--dark .compact-payment-table {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.v-theme--dark .compact-details-table td,
-.v-theme--dark .compact-payment-table td {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
-}
-
-.v-theme--dark .compact-label {
-  color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.v-theme--dark .compact-value {
-  color: #ffffff !important;
-}
-
-.v-theme--dark .compact-vouchers,
-.v-theme--dark .workflow-note {
-  border-top-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Removed old voucher expansion panel styles - now using inline chips */
 
-.filter-row {
-  display: flex;
-  align-items: flex-start;
-}
-.full-width-input {
-  width: 100%;
-}
-.filter-actions-horizontal {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-}
-.filter-actions-horizontal .v-btn {
-  flex: 1 1 0;
-  min-width: 120px;
-}
-@media (max-width: 600px) {
-  .filter-actions-horizontal {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .filter-actions-horizontal .v-btn {
-    width: 100%;
-    min-width: unset;
-  }
-}
 
 /* Workflow icon - simple static styling */
 .workflow-status-icon {
@@ -2393,36 +2575,50 @@ onMounted(async () => {
 </style>
 
 <style scoped>
+/* Override CSS variables for this component's tables */
+.surgical-guide-report :deep(.v-data-table),
+.surgical-guide-report :deep(.v-table),
+.surgical-guide-report :deep(.v-data-table__wrapper),
+.surgical-guide-report :deep(.v-table__wrapper) {
+  --border-radius-lg: 0 !important;
+  --border-radius-md: 0 !important;
+  --border-radius-sm: 0 !important;
+}
+
 .enhanced-table .v-data-table__wrapper {
   background: #fafbfc;
 }
-/* Table header styling with orange brand color */
+/* Remove border-radius from all table elements */
+.enhanced-table :deep(.v-data-table__wrapper),
+.enhanced-table :deep(.v-table__wrapper),
+.enhanced-table :deep(.v-data-table),
+.enhanced-table :deep(.v-table),
+.enhanced-table :deep(thead),
+.enhanced-table :deep(thead tr) {
+  border-radius: 0 !important;
+}
+
+/* Table header styling with primary brand color */
 .enhanced-table :deep(.v-data-table__th),
 .enhanced-table .v-data-table__th,
 .enhanced-table :deep(thead th),
 .enhanced-table thead th {
   position: sticky;
   top: 0;
-  background: #ffa100 !important; /* Brand orange background */
   z-index: 2;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff !important; /* White text */
+  color: #FFFFFF !important; /* White text */
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 3px solid #ff8c00;
+  border-bottom: 3px solid #E65100;
   padding: 12px 10px !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   contain: layout style paint; /* Performance isolation */
+  border-radius: 0 !important;
 }
 
-.enhanced-table :deep(.v-data-table__th:hover),
-.enhanced-table .v-data-table__th:hover,
-.enhanced-table :deep(thead th:hover),
-.enhanced-table thead th:hover {
-  background: #ff8c00 !important;
-  color: #ffffff !important;
-}
+
 .enhanced-table .v-data-table__tr {
   contain: layout style; /* Isolate row rendering */
 }
@@ -2493,8 +2689,15 @@ onMounted(async () => {
 }
 
 .enhanced-table .v-data-table__td {
-  font-size: 0.98rem;
-  padding: 10px 8px;
+  font-size: 0.85rem;
+  padding: 2px 8px;
+}
+
+/* Ultra compact overrides */
+.ultra-compact-table .v-data-table__td {
+  font-size: 0.8rem !important;
+  padding: 2px 8px !important;
+  height: 32px !important;
 }
 </style>
 
@@ -2525,7 +2728,6 @@ onMounted(async () => {
   }
 }
 
-
 /* Table row hover effect */
 .v-data-table tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.02);
@@ -2550,16 +2752,8 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Active filter card styling */
-:deep(.v-card.active-filter) {
-  box-shadow: 0 6px 16px rgba(255, 161, 0, 0.4) !important;
-  border: 2px solid #ffa100 !important;
-}
 
-:deep(.v-card.active-filter .card-top-bar) {
-  height: 6px;
-  background: #ffa100 !important;
-}
+
 
 .clickable-card {
   cursor: pointer;
@@ -2588,212 +2782,743 @@ onMounted(async () => {
   text-decoration: none;
 }
 
-/* Force exactly 5 cards per row for statistics cards using a custom flex class */
-@media (min-width: 960px) {
-  .five-col-row {
+/* ===================================== */
+/* ENHANCED GRID LAYOUT */
+/* ===================================== */
+
+
+.compact-filters-col {
+  padding: 0;
+  padding-right: 16px;
+}
+
+.compact-filters-card {
+  border-radius: 0;
+  background: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.v-theme--dark .compact-filters-card {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.compact-filters-content {
+  padding: 16px !important;
+  background: transparent !important;
+}
+
+.gap-1 {
+  gap: 4px;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.flex-1 {
+  flex: 1 1 0;
+}
+
+/* Compact Statistics Tags - Horizontal Layout */
+/* Enhanced Statistics Section */
+.enhanced-stats-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.v-theme--dark .enhanced-stats-section {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.stats-section-title {
     display: flex;
-    flex-wrap: wrap;
-    margin-left: -8px;
-    margin-right: -8px;
+  align-items: center;
+  margin-bottom: 12px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.v-theme--dark .stats-section-title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.enhanced-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.enhanced-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 56px;
+}
+
+.v-theme--dark .enhanced-stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.enhanced-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.3);
+}
+
+.v-theme--dark .enhanced-stat-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 140, 0, 0.4);
+}
+
+.enhanced-stat-card.stat-card-active {
+  background: rgba(var(--v-theme-primary), 0.1);
+  border: 2px solid rgb(var(--v-theme-primary));
+  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.2);
+}
+
+.v-theme--dark .enhanced-stat-card.stat-card-active {
+  background: rgba(255, 140, 0, 0.15);
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.stat-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.v-theme--dark .stat-card-icon {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stat-icon-primary {
+  background: rgba(255, 140, 0, 0.1) !important;
+  color: #ff8c00;
+}
+
+.stat-icon-success {
+  background: rgba(67, 160, 71, 0.1) !important;
+  color: #43a047;
+}
+
+.stat-icon-info {
+  background: rgba(25, 118, 210, 0.1) !important;
+  color: #1976d2;
+}
+
+.stat-icon-error {
+  background: rgba(229, 57, 53, 0.1) !important;
+  color: #e53935;
+}
+
+.stat-icon-purple {
+  background: rgba(142, 36, 170, 0.1) !important;
+  color: #8e24aa;
+}
+
+.stat-icon-cyan {
+  background: rgba(0, 188, 212, 0.1) !important;
+  color: #00bcd4;
+}
+
+.stat-icon-orange {
+  background: rgba(230, 81, 0, 0.1) !important;
+  color: #e65100;
+}
+
+.stat-icon-grey {
+  background: rgba(97, 97, 97, 0.1) !important;
+  color: #616161;
+}
+
+.stat-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-card-label {
+  font-size: 0.7rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.v-theme--dark .stat-card-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stat-card-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgb(var(--v-theme-on-surface));
+  line-height: 1.2;
+}
+
+.v-theme--dark .stat-card-value {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.enhanced-stat-card.stat-card-active .stat-card-value {
+  color: rgb(var(--v-theme-primary));
+}
+
+.v-theme--dark .enhanced-stat-card.stat-card-active .stat-card-value {
+  color: rgb(var(--v-theme-primary));
+}
+
+/* Responsive adjustments for enhanced layout */
+@media (max-width: 959px) {
+  .compact-filters-content {
+    padding: 12px !important;
   }
-  .five-col-row > .v-col {
-    flex: 0 0 20%;
-    max-width: 20%;
-    padding-left: 8px;
-    padding-right: 8px;
+  
+  .enhanced-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .enhanced-stat-card {
+    padding: 8px 10px;
+    min-height: 52px;
+  }
+  
+  .stat-card-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stat-card-value {
+    font-size: 1rem;
   }
 }
 
-/* ===================================== */
-/* REMOVE SCROLLBAR FLASH */
-/* ===================================== */
-
-/* Hide all scrollbars globally to prevent flash */
-.enhanced-table,
-.enhanced-table *,
-.enhanced-table :deep(*) {
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* IE and Edge */
+.filters-col {
+  padding: 8px;
 }
 
-.enhanced-table::-webkit-scrollbar,
-.enhanced-table *::-webkit-scrollbar,
-.enhanced-table :deep(*)::-webkit-scrollbar {
-  display: none !important; /* Chrome, Safari, Opera */
-  width: 0 !important;
-  height: 0 !important;
+.filters-card {
+  height: 100%;
+    display: flex;
+  flex-direction: column;
 }
 
-/* Specifically target table wrapper and body */
-.enhanced-table :deep(.v-data-table__wrapper) {
-  overflow: visible !important;
-  scrollbar-width: none !important;
+
+
+.filters-card-title .v-icon {
+  color: white !important;
 }
 
-.enhanced-table :deep(.v-data-table__wrapper)::-webkit-scrollbar {
-  display: none !important;
+/* Dark mode support for filter card */
+.v-theme--dark .filters-card-title {
+  background: linear-gradient(135deg, #ff8c00 0%, #ff7700 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
-.enhanced-table :deep(.v-table__wrapper) {
-  overflow: visible !important;
-  scrollbar-width: none !important;
+.filters-card-content {
+  flex: 1;
+  padding: 20px;
 }
 
-.enhanced-table :deep(.v-table__wrapper)::-webkit-scrollbar {
-  display: none !important;
+/* Compact Summary Cards Section */
+.compact-summary-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Hide scrollbars on table body */
-.enhanced-table :deep(tbody) {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+.compact-summary-title {
+  display: flex;
+  align-items: center;
+  color: rgba(0, 0, 0, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.enhanced-table :deep(tbody)::-webkit-scrollbar {
-  display: none !important;
+.compact-summary-cards {
+  gap: 8px;
 }
 
-/* Prevent overflow that causes scrollbar flash */
-.enhanced-table :deep(.v-data-table) {
-  overflow: visible !important;
+.compact-card-col {
+  padding: 4px !important;
 }
 
-.enhanced-table :deep(.v-table) {
-  overflow: visible !important;
-}
-
-/* Ensure pagination footer is visible and styled */
-.enhanced-table :deep(.v-data-table-footer) {
-  border-top: 2px solid #ffa100;
-  padding: 12px 16px;
-  overflow: visible !important;
-}
-
-/* ===================================== */
-/* ENHANCED LOADING STATES */
-/* ===================================== */
-
-/* Loading overlay card */
-.loading-overlay-card {
-  background: white !important;
-  border-radius: 16px !important;
-  min-width: 300px;
-  box-shadow: 0 8px 32px rgba(255, 161, 0, 0.2) !important;
-}
-
-.v-theme--dark .loading-overlay-card {
-  background: #1e1e1e !important;
-}
-
-/* Loading card styling */
-.loading-card {
-  background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
-  border-left: 4px solid #ffa100;
-  overflow: hidden;
-}
-
-.v-theme--dark .loading-card {
-  background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
-}
-
-/* Shimmer animation for skeleton cards */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton-shimmer {
-  animation: shimmer 1.5s infinite;
-}
-
-/* Skeleton card styling */
-.skeleton-card {
+.compact-summary-card {
+  height: 100%;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
 }
 
-.skeleton-card::after {
-  content: '';
+.compact-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+
+.compact-card-top-bar {
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
+  right: 0;
+  height: 3px;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.4),
-    transparent
-  );
-  animation: skeleton-loading 1.5s infinite;
 }
 
-@keyframes skeleton-loading {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
+.compact-card-content {
+  padding: 8px 6px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 4px;
+  min-height: 80px;
 }
 
-/* Table skeleton loader */
-.table-skeleton-loader {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+.compact-card-icon {
+  margin-bottom: 2px;
+}
+
+.compact-card-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.compact-card-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Dark mode support for compact cards */
+.v-theme--dark .compact-summary-section {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.v-theme--dark .compact-summary-title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.v-theme--dark .compact-card-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+
+.table-col {
+  padding: 0;
+  padding-left: 16px;
+}
+
+.table-card {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0;
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.v-theme--dark .table-card {
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.table-card-title {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  min-height: 40px;
+}
+
+.table-card-title.compact-title {
+  padding: 6px 12px;
+  min-height: 36px;
+}
+
+.table-card :deep(.v-card-text) {
+  padding: 8px !important;
+  background: transparent !important;
+}
+
+/* Dark mode support for table card */
+.v-theme--dark .table-card-title {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Ultra Compact Table Styling */
+.ultra-compact-table {
+  font-size: 0.85rem;
+}
+
+/* Compact Legend */
+.compact-legend {
+  padding: 6px 12px !important;
+  min-height: 32px;
+}
+
+.compact-legend .legend-item {
+  gap: 4px;
+}
+
+/* Ultra Compact Table Headers */
+.ultra-compact-table :deep(.v-data-table__th),
+.ultra-compact-table :deep(thead th),
+.ultra-compact-table :deep(thead tr),
+.ultra-compact-table :deep(thead),
+.ultra-compact-table :deep(.v-data-table__wrapper),
+.ultra-compact-table :deep(.v-table__wrapper),
+.ultra-compact-table :deep(.v-data-table),
+.ultra-compact-table :deep(.v-table) {
+  border-radius: 0 !important;
+}
+
+.ultra-compact-table :deep(.v-data-table__th),
+.ultra-compact-table :deep(thead th) {
+  padding: 4px 8px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600;
+  height: 30px !important;
+  line-height: 1.2;
+  background: #FF8C00 !important; /* Primary orange background */
+  color: #FFFFFF !important; /* White text */
+  border-radius: 0 !important;
+}
+
+/* Ultra Compact Table Cells */
+.ultra-compact-table :deep(.v-data-table__td),
+.ultra-compact-table :deep(tbody td) {
+  padding: 2px 8px !important;
+  font-size: 0.8rem !important;
+  height: 32px !important;
+  line-height: 1.2;
+}
+
+/* Compact Icons in Table */
+.ultra-compact-table :deep(.v-icon) {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.ultra-compact-table :deep(.v-icon[size="small"]) {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.ultra-compact-table :deep(.v-icon[size="x-small"]) {
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+/* Compact Chips in Table */
+.ultra-compact-table :deep(.v-chip) {
+  height: 18px !important;
+  font-size: 0.65rem !important;
+  padding: 0 4px !important;
+}
+
+/* Compact Expand Icon */
+.ultra-compact-table :deep(.v-data-table__expand-icon) {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 16px !important;
+}
+
+/* Professional Compact Table Footer */
+.ultra-compact-table :deep(.v-data-table-footer) {
+  padding: 6px 16px !important;
+  min-height: 40px;
+  max-height: 40px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  background: rgb(var(--v-theme-surface)) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer) {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Items per page selector - compact and properly positioned */
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page) {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: auto;
+  flex-shrink: 0;
+  order: 1;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page > span) {
+  white-space: nowrap;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.75rem;
+}
+
+.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer__items-per-page > span) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-select) {
+  font-size: 0.75rem;
+  min-width: 60px;
+  max-width: 80px;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-field) {
+  padding: 2px 8px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-field__input) {
+  min-height: 24px !important;
+  padding: 0 4px !important;
+  font-size: 0.75rem !important;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-field__append-inner) {
+  padding: 0 4px !important;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-icon) {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Pagination controls - compact and professional, centered */
+.ultra-compact-table :deep(.v-data-table-footer__pagination) {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  flex: 1;
+  justify-content: center;
+  order: 2;
+  margin: 0 auto;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn) {
+  min-width: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
   border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-.v-theme--dark .table-skeleton-loader {
-  border-color: rgba(255, 255, 255, 0.12);
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn--icon) {
+  min-width: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
 }
 
-/* Enhanced skeleton loader colors */
-:deep(.v-skeleton-loader__bone) {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 161, 0, 0.08) 0%,
-    rgba(255, 161, 0, 0.15) 50%,
-    rgba(255, 161, 0, 0.08) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-wave 1.5s ease-in-out infinite;
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn .v-icon) {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
-@keyframes skeleton-wave {
-  0% {
-    background-position: 200% 0;
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn:hover) {
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn:hover) {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn--disabled) {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Page info text - compact and properly positioned */
+.ultra-compact-table :deep(.v-data-table-footer__info) {
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  padding: 0;
+  white-space: nowrap;
+  min-width: auto;
+  flex-shrink: 0;
+  order: 3;
+  margin-left: auto;
+}
+
+.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer__info) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Compact chip for page numbers */
+.ultra-compact-table :deep(.v-data-table-footer__pagination .v-chip) {
+  height: 24px !important;
+  font-size: 0.7rem !important;
+  padding: 0 6px !important;
+  min-width: 24px !important;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Responsive pagination - better mobile layout */
+@media (max-width: 960px) {
+  .ultra-compact-table :deep(.v-data-table-footer) {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 12px !important;
+    min-height: auto;
+    max-height: none;
+    justify-content: center;
   }
-  100% {
-    background-position: -200% 0;
+
+  .ultra-compact-table :deep(.v-data-table-footer__items-per-page) {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .ultra-compact-table :deep(.v-data-table-footer__pagination) {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+    flex: none;
+    margin: 0;
+  }
+
+  .ultra-compact-table :deep(.v-data-table-footer__info) {
+    order: 3;
+    width: 100%;
+    text-align: center;
+    margin: 4px 0 0 0;
   }
 }
 
-/* Loading progress circular pulse */
-.v-progress-circular {
-  animation: progress-pulse 2s ease-in-out infinite;
+/* Reduce row spacing */
+.ultra-compact-table :deep(tbody tr) {
+  height: 32px !important;
 }
 
-@keyframes progress-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
+/* Compact expanded row content */
+.ultra-compact-table :deep(.expanded-row-minimal) {
+  padding: 2px 0 !important;
+}
+
+.ultra-compact-table :deep(.minimal-expanded-container) {
+  padding: 4px 8px !important;
+}
+
+.ultra-compact-table :deep(.professional-details-table),
+.ultra-compact-table :deep(.voucher-details-table) {
+  font-size: 0.7rem;
+}
+
+.ultra-compact-table :deep(.detail-label),
+.ultra-compact-table :deep(.detail-value) {
+  padding: 2px 6px !important;
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
+
+.ultra-compact-table :deep(.detail-label) {
+  font-size: 0.65rem;
+}
+
+.ultra-compact-table :deep(.professional-details-table .v-icon),
+.ultra-compact-table :deep(.voucher-details-table .v-icon) {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Container spacing improvements - Compact for maximum table visibility */
+.surgical-guide-report {
+  padding: 8px;
+}
+
+@media (min-width: 960px) {
+  .surgical-guide-report {
+    padding: 12px;
   }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
+}
+
+@media (min-width: 1264px) {
+  .surgical-guide-report {
+    padding: 16px;
   }
 }
 
-/* Smooth fade-in for loaded content */
-.summary-cards:not(.skeleton-card),
-.enhanced-table {
-  animation: fade-in 0.4s ease-in;
+
+
+
+/* Improved responsive behavior for filters */
+@media (max-width: 959px) {
+  .filters-col {
+    margin-bottom: 16px;
+  }
+  
+  .filters-card {
+    margin-bottom: 0;
+  }
 }
 
+/* Better grid alignment - Remove gaps between filters and table */
+.v-row.no-gutters {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.v-row.no-gutters > .compact-filters-col {
+  padding-left: 0;
+  padding-right: 16px;
+}
+
+.v-row.no-gutters > .table-col {
+  padding-left: 16px;
+  padding-right: 0;
+}
+.compact-footer{
+  background: none !important;
+}
 @keyframes fade-in {
   from {
     opacity: 0;

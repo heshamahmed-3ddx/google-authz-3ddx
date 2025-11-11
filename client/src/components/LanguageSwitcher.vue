@@ -15,7 +15,7 @@
           class="language-btn"
           :aria-label="`Current language: ${currentLanguage.nativeName}`"
         >
-          <v-icon size="18" class="lang-icon">mdi-translate</v-icon>
+          <v-icon size="18" class="lang-icon">mdi-web</v-icon>
           <span class="lang-code">{{
             currentLanguage.code.toUpperCase()
           }}</span>
@@ -137,7 +137,12 @@ const changeLanguage = (languageCode) => {
 
 .lang-icon {
   opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, color 0.2s;
+  color: #146e9c !important; /* Brand blue for light mode */
+}
+
+.v-theme--dark .lang-icon {
+  color: #ef9043 !important; /* Brand orange for dark mode */
 }
 
 .language-btn:hover .lang-icon {

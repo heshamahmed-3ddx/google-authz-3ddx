@@ -1,4 +1,4 @@
-import { createApp } from "vue";
+import { createApp, nextTick } from "vue";
 import { createPinia } from "pinia";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
@@ -14,9 +14,6 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { themeConfig } from "./stores/theme.js";
 import { i18n, isRTL } from "./i18n";
-import { showLoader, hideLoader } from "./plugins/global-loader";
-import globalLoaderPlugin from "./plugins/global-loader";
-import GlobalLoader from "./components/GlobalLoader.vue";
 
 // Import custom theme styles
 import "./styles/theme.css";
@@ -79,73 +76,10 @@ const vuetify = createVuetify({
   },
 });
 
-// Network instrumentation: wrap fetch and XMLHttpRequest so all requests
-// (even those triggered during component mount) will start/stop the global loader.
-try {
-  if (typeof window !== "undefined") {
-    // FETCH
-    if (window.fetch) {
-      const _origFetch = window.fetch.bind(window);
-      window.fetch = async (...args) => {
-        const init = args[1] || {};
-        const headers = (init && init.headers) || {};
-        const suppress = Boolean(
-          init.suppressLoader ||
-            headers["X-Suppress-Loader"] === "1" ||
-            headers["x-suppress-loader"] === "1",
-        );
-        const forceLoader = Boolean(init.forceLoader || init._forceLoader);
-        const shouldShow = !(suppress && !forceLoader);
-        if (shouldShow) showLoader();
-        try {
-          const res = await _origFetch(...args);
-          if (shouldShow) hideLoader();
-          return res;
-        } catch (err) {
-          if (shouldShow) hideLoader();
-          throw err;
-        }
-      };
-    }
-
-    // XHR
-    if (window.XMLHttpRequest) {
-      const XHR = window.XMLHttpRequest;
-      const origOpen = XHR.prototype.open;
-      const origSend = XHR.prototype.send;
-      XHR.prototype.open = function (method, url, ...rest) {
-        this.__requestUrl = url;
-        return origOpen.apply(this, [method, url, ...rest]);
-      };
-      XHR.prototype.send = function (_body) {
-        try {
-          const url = this.__requestUrl || "";
-          const isStatic = /\.(png|jpg|jpeg|svg|gif|ico|css|js)(\?.*)?$/.test(
-            url,
-          );
-          const suppress = isStatic; // keep lightweight here - axios handles patterns
-          const shouldShow = !suppress;
-          if (shouldShow) showLoader();
-          this.addEventListener("loadend", () => {
-            if (shouldShow) hideLoader();
-          });
-        } catch (e) {
-          // ignore
-        }
-        return origSend.apply(this, arguments);
-      };
-    }
-  }
-} catch (e) {
-  // ignore instrumentation errors
-}
 
 const app = createApp(App);
 const pinia = createPinia();
 
-// Install global loader plugin and register the minimal component
-app.use(globalLoaderPlugin);
-app.component("GlobalLoader", GlobalLoader);
 
 // Development-only: suppress specific noisy Vue warnings in headless environments
 if (import.meta.env.DEV) {
@@ -180,10 +114,8 @@ app.use(router);
 // Mount app
 app.mount("#app");
 
-// Remove initial loader once app is mounted
-setTimeout(() => {
-  document.body.classList.add("app-mounted");
-}, 100);
+// Mark app as mounted
+document.body.classList.add("app-mounted");
 
 // Wire NProgress to router navigation
 router.beforeEach((to, from, next) => {

@@ -1,9 +1,9 @@
-import { useLocale } from 'vuetify'
+import { useLocale } from "vuetify";
 
 export function useLocaleToggle() {
-  const { current } = useLocale()
+  const { current } = useLocale();
   function toggleLocale() {
-    current.value = current.value === 'en' ? 'ar' : 'en'
+    current.value = current.value === "en" ? "ar" : "en";
   }
-  return { current, toggleLocale }
+  return { current, toggleLocale };
 }
