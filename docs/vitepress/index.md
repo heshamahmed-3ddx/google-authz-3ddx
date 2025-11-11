@@ -82,7 +82,7 @@ Comprehensive documentation for the entire Google AuthZ 3DDX platform: client, b
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd google-authz-3ddx
+cd InsightHub
 
 # Install dependencies
 npm install
