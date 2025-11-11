@@ -60,7 +60,7 @@ scrape_configs:
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd google-authz-3ddx
+cd InsightHub
 
 # Run setup script
 ./scripts/setup-dev.sh
@@ -102,7 +102,7 @@ See [docs/getting-started.md](./docs/getting-started.md) for a step-by-step demo
 ## �📁 Project Structure
 
 ```
-google-authz-3ddx/
+InsightHub/
 ├── 📁 server/          # Node.js + Express backend
 │   ├── src/            # Server source code
 │   ├── package.json    # Server dependencies
