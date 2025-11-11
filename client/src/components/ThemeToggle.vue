@@ -99,7 +99,12 @@ const setTheme = (theme) => {
 }
 
 .theme-icon {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+  color: #146e9c !important; /* Brand blue for light mode */
+}
+
+.v-theme--dark .theme-icon {
+  color: #ef9043 !important; /* Brand orange for dark mode */
 }
 
 .theme-btn:hover .theme-icon {

@@ -202,6 +202,13 @@ export const NAVIGATION_CONFIG = [
         route: "/dev/webhooks",
         permissions: ["admin", "SWD", "developers"],
       },
+      {
+        id: "color-system-test",
+        title: "Color System Test",
+        icon: "mdi-palette",
+        route: "/dev/color-system-test",
+        permissions: ["*"], // Accessible to all authenticated users for testing
+      },
     ],
   },
 

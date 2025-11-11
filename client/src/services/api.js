@@ -5,7 +5,6 @@
  */
 
 import axios from "axios";
-import { showLoader, hideLoader } from "../plugins/global-loader";
 
 /** @constant {string} BASE_URL - Base URL for API requests */
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -30,8 +29,15 @@ const apiClient = axios.create({
   },
 });
 // URL patterns that should not trigger the global loader by default.
+// Authentication endpoints are excluded to avoid showing loader during sign-in
 const SUPPRESS_LOADER_PATTERNS = [
+  // All authentication endpoints (sign-in, login, logout, callback)
+  "/auth/",
+  "/auth/google",
+  "/auth/google/callback",
   "/auth/me",
+  "/auth/logout",
+  // Session and health check endpoints
   "/api/session",
   "/api/session/info",
   "/api/health",
@@ -53,23 +59,36 @@ apiClient.interceptors.request.use(
       );
       // Auto-suppress for quick/background endpoints unless explicitly overridden
       const url = (config.url || "").toString();
+      
+      // Check if URL matches suppress patterns
       const matchesPattern = SUPPRESS_LOADER_PATTERNS.some(
         (p) => url.startsWith(p) || url.includes(p),
       );
+      
+      // Check if it's a static asset
       const isStaticAsset = /\.(png|jpg|jpeg|svg|gif|ico|css|js)(\?.*)?$/.test(
         url,
       );
+      
+      // IMPORTANT: Disable automatic loader for API requests
+      // Loader now only shows once during initial page load
+      // Individual API requests should not trigger the loader
+      const isApiEndpoint = url.startsWith("/api/");
+      const isAuthEndpoint = url.startsWith("/auth/");
+      
       const forceLoader = Boolean(config.forceLoader || config._forceLoader);
+      
+      // Always suppress loader for API requests (unless explicitly forced)
+      // The loader is now only shown during initial page load
       const suppress = forceLoader
         ? false
-        : suppressExplicit || matchesPattern || isStaticAsset;
+        : true; // Suppress all automatic loaders - only show on initial page load
 
       if (!suppress) {
         // Show the global loader for this request. We don't use per-request ids
         // with the plugin; instead mark that we showed the loader so the
         // response handler knows to hide it.
         try {
-          showLoader();
           // eslint-disable-next-line no-param-reassign
           config._loaderShown = true;
         } catch (e) {
@@ -94,7 +113,6 @@ apiClient.interceptors.request.use(
   (error) => {
     try {
       if (error.config && error.config._loaderShown) {
-        hideLoader();
       }
     } catch (e) {
       void e;
@@ -109,7 +127,6 @@ apiClient.interceptors.response.use(
     // Hide loader on response only if a loader id was attached
     try {
       if (response.config && response.config._loaderShown) {
-        hideLoader();
       }
       // If suppressed or no marker present, don't touch the loader stack
     } catch (e) {
@@ -123,7 +140,6 @@ apiClient.interceptors.response.use(
     // Hide loader on error only if a loader id was attached
     try {
       if (error.config && error.config._loaderShown) {
-        hideLoader();
       }
     } catch (e) {
       void e;

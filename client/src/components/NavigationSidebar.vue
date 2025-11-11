@@ -1,16 +1,12 @@
-/* Sidebar elements: prefer rounded corners from theme */
-.v-list-item, .v-list-group,
-.v-list-group__items, .v-list-item__prepend, .v-list-item__append,
-.v-list-item__content, .v-list-item__title, .v-list-item__subtitle {
-  border-radius: var(--border-radius-sm) !important;
-}
-
+/* Sidebar elements: prefer rounded corners from theme */ .v-list-item,
+.v-list-group, .v-list-group__items, .v-list-item__prepend,
+.v-list-item__append, .v-list-item__content, .v-list-item__title,
+.v-list-item__subtitle { border-radius: var(--border-radius-sm) !important; }
 .navigation-sidebar, .sidebar-header, .user-info-section, .sidebar-footer,
 .navigation-menu, .navigation-item, .footer-item, .logout-item,
 .navigation-group :deep(.v-list-group__items),
 .navigation-item.active-route::after, .logo-avatar, .user-avatar {
-  border-radius: var(--border-radius-sm) !important;
-}
+border-radius: var(--border-radius-sm) !important; }
 <template>
   <v-navigation-drawer
     v-model="drawer"

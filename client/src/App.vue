@@ -3,29 +3,26 @@
     <!-- Route loading is handled by NProgress (top-of-page) -->
 
     <!-- Navigation Sidebar (lazy-loaded, only when authenticated) -->
-    <Suspense>
+    <!-- DISABLED: Sidebar temporarily disabled -->
+    <!-- <Suspense>
       <template #default>
         <NavigationSidebar v-if="authStore.isAuthenticated" v-model="drawer" />
       </template>
       <template #fallback>
-        <!-- small placeholder for sidebar -->
         <div
           v-if="authStore.isAuthenticated"
           style="width: 64px; height: 100%"
         ></div>
       </template>
-    </Suspense>
-
-    <!-- Global loader placed early so it mounts before routed views and local spinners -->
-    <GlobalLoader />
+    </Suspense> -->
 
     <v-app-bar
       v-if="showAppBar"
       :elevation="0"
-      color="white"
+      :color="themeStore.isDark ? '#1e1e1e' : '#ffffff'"
       flat
       height="64"
-      class="compact-appbar main-appbar"
+      class="compact-appbar main-appbar sharp-appbar"
     >
       <v-app-bar-title
         class="d-flex align-center pa-0 ml-4"
@@ -52,35 +49,36 @@
           v-if="authStore.isAuthenticated"
           variant="text"
           size="small"
-          color="secondary"
+          color="error"
           icon
           class="logout-btn"
           :aria-label="$t('auth.logout')"
           @click="handleLogout"
         >
-          <v-icon size="20">mdi-location-exit</v-icon>
+          <v-icon size="20">mdi-logout</v-icon>
         </v-btn>
       </div>
     </v-app-bar>
 
     <!-- Breadcrumbs Section -->
     <div v-if="authStore.isAuthenticated && showAppBar" class="breadcrumbs-bar">
-      <v-container fluid class="py-2 px-4">
+      <v-container fluid class="py-0 px-4">
         <div class="d-flex align-center">
           <!-- Menu button for sidebar toggle -->
-          <v-btn
+          <!-- DISABLED: Sidebar menu button temporarily disabled -->
+          <!-- <v-btn
             icon
             size="small"
             variant="text"
-            class="mr-3"
+            class="mr-2"
             @click="drawer = !drawer"
           >
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
+            <v-icon size="small">mdi-menu</v-icon>
+          </v-btn> -->
 
-          <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
+          <v-breadcrumbs :items="breadcrumbItems" class="pa-0" density="compact">
             <template #divider>
-              <v-icon size="small">mdi-chevron-right</v-icon>
+              <v-icon size="x-small">mdi-chevron-right</v-icon>
             </template>
           </v-breadcrumbs>
         </div>
@@ -135,7 +133,6 @@ import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
-import GlobalLoader from "@/components/GlobalLoader.vue";
 import { defineAsyncComponent } from "vue";
 
 // Lazy load heavier components and use Suspense fallbacks
@@ -161,7 +158,7 @@ const route = useRoute();
 
 // Hide AppBar on login/home page
 const showAppBar = computed(() => {
-  return route.name !== 'Home' && route.path !== '/';
+  return route.name !== "Home" && route.path !== "/";
 });
 
 // Toggle language between 'en' and 'ar'
@@ -261,12 +258,21 @@ const breadcrumbItems = computed(() => {
 
 // Route loading handled globally with NProgress (main.js)
 
+// Initialize theme from store (which loads from localStorage)
+// and apply to Vuetify immediately
+vuetifyTheme.change(themeStore.currentTheme);
+
 // Watch for theme changes and apply to Vuetify
 watch(
   () => themeStore.currentTheme,
   (newTheme) => {
     vuetifyTheme.change(newTheme);
-    // Applied theme to Vuetify
+    // Also update document class for Vuetify theme
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("v-theme--dark");
+    } else {
+      document.documentElement.classList.remove("v-theme--dark");
+    }
   },
   { immediate: true },
 );
@@ -329,9 +335,8 @@ const snackbar = reactive({
 // };
 
 // Check authentication status on app load - silently handle failures
-authStore.checkAuth().catch(() => {
-  // Silently handle initial auth check failure - this is expected for non-authenticated users
-});
+// After auth check completes, ensure loader is hidden (in case it's still showing)
+authStore.checkAuth();
 </script>
 
 <style scoped>
@@ -401,8 +406,38 @@ authStore.checkAuth().catch(() => {
 }
 
 /* Main app bar without border - breadcrumbs will have the border */
-.main-appbar :deep(.v-app-bar) {
+.main-appbar :deep(.v-app-bar),
+.v-application .main-appbar :deep(.v-app-bar),
+.v-theme--dark .main-appbar :deep(.v-app-bar),
+.v-theme--dark .v-application .main-appbar :deep(.v-app-bar) {
   border-bottom: none !important;
+  border-radius: 0 !important;
+}
+
+.main-appbar :deep(.v-toolbar),
+.v-application .main-appbar :deep(.v-toolbar),
+.v-theme--dark .main-appbar :deep(.v-toolbar),
+.v-theme--dark .v-application .main-appbar :deep(.v-toolbar) {
+  border-radius: 0 !important;
+}
+
+/* Sharp edges for appbar - override all border-radius */
+.sharp-appbar,
+.sharp-appbar :deep(.v-app-bar),
+.sharp-appbar :deep(.v-toolbar),
+.sharp-appbar :deep(.v-toolbar__content),
+.sharp-appbar :deep(.v-toolbar__prepend),
+.sharp-appbar :deep(.v-toolbar__append),
+.v-application .sharp-appbar,
+.v-application .sharp-appbar :deep(.v-app-bar),
+.v-application .sharp-appbar :deep(.v-toolbar),
+.v-theme--dark .sharp-appbar,
+.v-theme--dark .sharp-appbar :deep(.v-app-bar),
+.v-theme--dark .sharp-appbar :deep(.v-toolbar),
+.v-theme--dark .v-application .sharp-appbar,
+.v-theme--dark .v-application .sharp-appbar :deep(.v-app-bar),
+.v-theme--dark .v-application .sharp-appbar :deep(.v-toolbar) {
+  border-radius: 0 !important;
 }
 
 /* Breadcrumbs bar styling */
@@ -412,6 +447,8 @@ authStore.checkAuth().catch(() => {
   position: sticky;
   top: 64px;
   z-index: 100;
+  min-height: 32px;
+  max-height: 32px;
 }
 
 .v-theme--dark .breadcrumbs-bar {
@@ -419,12 +456,35 @@ authStore.checkAuth().catch(() => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.breadcrumbs-bar :deep(.v-container) {
+  min-height: auto !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbs-bar :deep(.v-container > .d-flex) {
+  height: 100%;
+  align-items: center;
+}
+
 .breadcrumbs-bar :deep(.v-breadcrumbs) {
   padding: 0;
+  min-height: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumbs-bar :deep(.v-breadcrumbs-item) {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  padding: 2px 4px;
+}
+
+.breadcrumbs-bar :deep(.v-breadcrumbs-divider) {
+  margin: 0 4px;
+  font-size: 0.75rem;
 }
 
 .breadcrumbs-bar :deep(.v-breadcrumbs-item--disabled) {
@@ -440,9 +500,9 @@ authStore.checkAuth().catch(() => {
   flex-direction: row-reverse;
 }
 
-[dir="rtl"] .breadcrumbs-bar .mr-3 {
+[dir="rtl"] .breadcrumbs-bar .mr-2 {
   margin-right: 0 !important;
-  margin-left: 12px !important;
+  margin-left: 8px !important;
 }
 
 [dir="rtl"] .breadcrumbs-bar :deep(.v-breadcrumbs) {
@@ -457,10 +517,14 @@ authStore.checkAuth().catch(() => {
 :deep(.v-app-bar) {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
-.v-theme--dark :deep(.v-app-bar) {
+.v-theme--dark :deep(.v-app-bar),
+.v-theme--dark .v-application :deep(.v-app-bar),
+.v-theme--dark .v-application .v-app-bar {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0 !important;
 }
 
 :deep(.v-card) {
@@ -796,7 +860,12 @@ authStore.checkAuth().catch(() => {
 }
 
 .logout-btn .v-icon {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+  color: #146e9c !important; /* Brand blue for light mode */
+}
+
+.v-theme--dark .logout-btn .v-icon {
+  color: #ef9043 !important; /* Brand orange for dark mode */
 }
 
 .logout-btn:hover .v-icon {

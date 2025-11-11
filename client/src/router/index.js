@@ -144,6 +144,15 @@ const routes = [
       requiredGroups: ["admin", "SWD", "developers"],
     },
   },
+  {
+    path: "/dev/color-system-test",
+    name: "ColorSystemTest",
+    component: () => import("@/views/ColorSystemTest.vue"),
+    meta: {
+      requiresAuth: true,
+      requiredGroups: ["*"], // Accessible to all authenticated users for testing
+    },
+  },
 
   // ========================================
   // PROJECTS ROUTES
