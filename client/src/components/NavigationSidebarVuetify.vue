@@ -40,7 +40,10 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRoute } from "vue-router";
+
 const drawer = ref(true);
+const route = useRoute();
 
 // Example navigation items
 const navigation = [
@@ -49,8 +52,9 @@ const navigation = [
   // Add more items as needed
 ];
 
-function isActiveRoute(route) {
-  return window.location.pathname === route;
+function isActiveRoute(itemRoute) {
+  if (!itemRoute) return false;
+  return route.path === itemRoute || route.path.startsWith(`${itemRoute}/`);
 }
 </script>
 

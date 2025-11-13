@@ -5,8 +5,8 @@ import { hasNavigationAccess } from "@/config/navigationConfig";
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: () => import("@/views/HomeView.vue"),
+    name: "Login",
+    component: () => import("@/views/LoginPage.vue"),
   },
   {
     path: "/dashboard",
@@ -330,6 +330,21 @@ const routes = [
     component: () => import("@/views/CallbackView.vue"),
   },
 
+  // ========================================
+  // ERROR PAGES
+  // ========================================
+  {
+    path: "/unauthorized",
+    name: "Unauthorized",
+    component: () => import("@/views/UnauthorizedView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/404",
+    name: "NotFound",
+    component: () => import("@/views/NotFoundView.vue"),
+  },
+
   // Redirect old routes to dashboard
   {
     path: "/user-details",
@@ -343,6 +358,15 @@ const routes = [
     path: "/client-confirmation",
     redirect: "/dashboard",
   },
+
+  // ========================================
+  // CATCH-ALL 404 ROUTE (MUST BE LAST)
+  // ========================================
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFoundCatchAll",
+    component: () => import("@/views/NotFoundView.vue"),
+  },
 ];
 
 const router = createRouter({
@@ -354,18 +378,23 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  // Check if user is already authenticated
+  let isAuthenticated = authStore.isAuthenticated;
+  
+  // If not cached, check with server
+  if (!isAuthenticated) {
+    isAuthenticated = await authStore.checkAuth();
+  }
+
+  // If logged-in user tries to access login page, redirect to dashboard
+  if (to.name === "Login" && isAuthenticated) {
+    next({ name: "Dashboard" });
+    return;
+  }
+
   if (to.meta.requiresAuth) {
-    // Only check authentication if we don't already have a user
-    // This prevents unnecessary API calls on every navigation
-    let isAuthenticated = authStore.isAuthenticated;
-
     if (!isAuthenticated) {
-      // Check authentication from server only if not cached
-      isAuthenticated = await authStore.checkAuth();
-    }
-
-    if (!isAuthenticated) {
-      next({ name: "Home" });
+      next({ name: "Login" });
       return;
     }
 
@@ -394,7 +423,7 @@ router.beforeEach(async (to, from, next) => {
       const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
 
       if (!hasAccess) {
-        // Redirect to dashboard with error message
+        // Redirect to unauthorized page with context
         if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
           console.warn(
@@ -404,7 +433,13 @@ router.beforeEach(async (to, from, next) => {
           // eslint-disable-next-line no-console
           console.warn(`User groups:`, userGroups);
         }
-        next({ name: "Dashboard" });
+        next({
+          name: "Unauthorized",
+          query: {
+            from: to.path,
+            requiredGroups: to.meta.requiredGroups.join(", "),
+          },
+        });
         return;
       }
     }

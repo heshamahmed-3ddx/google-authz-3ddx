@@ -1,10 +1,77 @@
 <template>
-  <v-container>
+  <v-container fluid>
+    <!-- Compact Page Header -->
     <v-row>
       <v-col cols="12">
-        <h1 class="text-h4 mb-6">{{ pageTitle }}</h1>
+        <PageHeader
+          :title="pageTitle"
+          :subtitle="pageDescription"
+          :icon="pageIcon"
+        />
+      </v-col>
+    </v-row>
 
-        <v-card elevation="3" class="mb-6">
+    <!-- Main Content with Compact Layout -->
+    <v-row no-gutters>
+      <!-- Placeholder: Ready for filters when data is implemented -->
+      <v-col cols="12" md="3" class="pr-md-2 mb-4 mb-md-0">
+        <v-card elevation="1" class="compact-filters-card">
+          <v-card-text class="pa-3">
+            <div class="text-caption font-weight-medium mb-3 d-flex align-center">
+              <v-icon size="16" class="mr-1">mdi-filter-outline</v-icon>
+              Filters
+            </div>
+            
+            <!-- Quick Actions -->
+            <div v-if="quickActions.length > 0" class="enhanced-stats-section">
+              <div class="stats-section-title">
+                <v-icon size="16" class="mr-1">mdi-lightning-bolt</v-icon>
+                <span class="text-caption font-weight-medium">Quick Actions</span>
+              </div>
+              <div class="enhanced-stats-grid">
+                <div
+                  v-for="action in quickActions"
+                  :key="action.title"
+                  class="enhanced-stat-card"
+                >
+                  <div class="stat-card-icon" :class="`stat-icon-${action.color}`">
+                    <v-icon size="18">{{ action.icon }}</v-icon>
+                  </div>
+                  <div class="stat-card-content">
+                    <div class="stat-card-label">{{ action.title }}</div>
+                    <div class="text-caption text-medium-emphasis" style="font-size: 0.65rem">
+                      {{ action.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coming Soon Notice -->
+            <v-alert
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="mt-3"
+            >
+              <div class="text-caption">
+                Full implementation coming soon
+              </div>
+            </v-alert>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Main Content Area -->
+      <v-col cols="12" md="9" class="pl-md-2">
+        <v-card elevation="1" class="table-card">
+          <v-card-title class="d-flex justify-space-between align-center compact-title">
+            <div class="d-flex align-center">
+              <v-icon size="small" style="margin-inline-end: 6px">{{ pageIcon }}</v-icon>
+              <span class="text-subtitle-2 font-weight-medium">{{ pageTitle }}</span>
+            </div>
+          </v-card-title>
+
           <v-card-text class="text-center py-12">
             <v-icon
               :icon="pageIcon"
@@ -12,59 +79,14 @@
               color="primary"
               class="mb-4"
             ></v-icon>
-            <h2 class="text-h5 mb-3">{{ pageTitle }}</h2>
-            <p class="text-body-1 text-medium-emphasis mb-6">
+            <h2 class="text-h6 mb-3">{{ pageTitle }}</h2>
+            <p class="text-body-2 text-medium-emphasis mb-6">
               {{ pageDescription }}
             </p>
 
             <v-chip color="info" variant="tonal" prepend-icon="mdi-information">
               Coming Soon
             </v-chip>
-          </v-card-text>
-        </v-card>
-
-        <!-- Breadcrumb navigation -->
-        <v-card elevation="2" class="mb-6">
-          <v-card-text>
-            <div class="d-flex align-center">
-              <v-icon icon="mdi-map-marker-path" class="mr-2"></v-icon>
-              <v-breadcrumbs :items="breadcrumbs" density="compact">
-                <template #divider>
-                  <v-icon icon="mdi-chevron-right"></v-icon>
-                </template>
-              </v-breadcrumbs>
-            </div>
-          </v-card-text>
-        </v-card>
-
-        <!-- Quick actions (if applicable) -->
-        <v-card v-if="quickActions.length > 0" elevation="2">
-          <v-card-title>
-            <v-icon icon="mdi-lightning-bolt" class="mr-2"></v-icon>
-            Quick Actions
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col
-                v-for="action in quickActions"
-                :key="action.title"
-                cols="12"
-                md="6"
-                lg="4"
-              >
-                <v-card variant="tonal" :color="action.color">
-                  <v-card-text class="text-center py-6">
-                    <v-icon :icon="action.icon" size="32" class="mb-3"></v-icon>
-                    <div class="text-subtitle-1 font-weight-medium">
-                      {{ action.title }}
-                    </div>
-                    <div class="text-caption mt-2">
-                      {{ action.description }}
-                    </div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -75,10 +97,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import {
-  getBreadcrumbTrail,
-  NAVIGATION_CONFIG,
-} from "@/config/navigationConfig";
+import PageHeader from "@/components/PageHeader.vue";
 
 const route = useRoute();
 
@@ -411,17 +430,4 @@ const pageTitle = computed(() => pageConfig.value.title);
 const pageIcon = computed(() => pageConfig.value.icon);
 const pageDescription = computed(() => pageConfig.value.description);
 const quickActions = computed(() => pageConfig.value.actions);
-
-const breadcrumbs = computed(() => {
-  const trail = getBreadcrumbTrail(NAVIGATION_CONFIG, route.path);
-  return trail.map((item) => ({
-    title: item.title,
-    disabled: item.route === route.path,
-    to: item.route,
-  }));
-});
 </script>
-
-<style scoped>
-/* Optional custom styles */
-</style>

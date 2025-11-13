@@ -81,9 +81,12 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useDisplay } from "vuetify";
+import { useRoute } from "vue-router";
+
 const drawer = ref(true);
 const { mobile } = useDisplay();
 const isMobile = computed(() => mobile.value);
+const route = useRoute();
 
 // Navigation items
 const navigation = [
@@ -113,8 +116,9 @@ const navigation = [
   },
 ];
 
-function isActiveRoute(route) {
-  return window.location.pathname === route;
+function isActiveRoute(itemRoute) {
+  if (!itemRoute) return false;
+  return route.path === itemRoute || route.path.startsWith(`${itemRoute}/`);
 }
 
 function toggleTheme() {

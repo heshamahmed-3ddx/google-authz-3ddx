@@ -28,9 +28,16 @@
 
     <v-row>
       <v-col cols="12">
-        <h1 class="text-h4 mb-6" style="min-height: 40px">
-          {{ $t("dashboard.title") || "Dashboard" }}
-        </h1>
+        <PageHeader
+          :title="$t('dashboard.title') || 'Dashboard'"
+          :subtitle="$t('dashboard.subtitle') || 'Overview of your account and system status'"
+          icon="mdi-view-dashboard"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
 
         <v-alert
           type="info"
@@ -907,6 +914,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useDevModeStore } from "@/stores/devMode";
 import api from "@/services/api";
+import PageHeader from "@/components/PageHeader.vue";
 import {
   DASHBOARD_ACCESS_CONFIG,
   getRequiredGroupsForRestrictedAccess,

@@ -1,7 +1,5 @@
 <template>
   <v-app>
-    <!-- Route loading is handled by NProgress (top-of-page) -->
-
     <!-- Navigation Sidebar (lazy-loaded, only when authenticated) -->
     <!-- DISABLED: Sidebar temporarily disabled -->
     <!-- <Suspense>
@@ -91,18 +89,23 @@
           <router-view />
         </template>
         <template #fallback>
-          <!-- small inline fallback while async route loads -->
-          <div class="route-fallback pa-6">
-            <v-skeleton-loader
-              type="heading, text"
-              width="60%"
-            ></v-skeleton-loader>
+          <!-- Native Vue loader for route loading -->
+          <div class="route-fallback fill-height d-flex align-center justify-center">
+            <div class="text-center">
+              <v-progress-circular
+                indeterminate
+                color="primary"
+                size="64"
+                class="mb-4"
+              ></v-progress-circular>
+              <div class="text-body-2 text-medium-emphasis">
+                {{ $t("common.loading") || "Loading..." }}
+              </div>
+            </div>
           </div>
         </template>
       </Suspense>
     </v-main>
-
-    <!-- Global loader overlay (single instance mounted early) -->
 
     <!-- Development Toolbar (lazy-loaded in Suspense) -->
     <Suspense>
@@ -156,9 +159,9 @@ const vuetifyLocale = useLocale();
 const router = useRouter();
 const route = useRoute();
 
-// Hide AppBar on login/home page
+// Hide AppBar on login page (landing page)
 const showAppBar = computed(() => {
-  return route.name !== "Home" && route.path !== "/";
+  return route.name !== "Login" && route.path !== "/";
 });
 
 // Toggle language between 'en' and 'ar'
@@ -205,33 +208,46 @@ const handleLogout = async () => {
 
     // Ensure navigation even if logout threw - go to public Home page
     try {
-      await router.push({ name: "Home" });
+      await router.push({ name: "Login" });
     } catch (navErr) {
-      // Fallback to root path
-      window.location.href = "/";
+      // Fallback to router push to login; as a last resort use location
+      try {
+        await router.push({ path: "/" });
+      } catch (e) {
+        // Router navigation failed. Log a warning but avoid forcing a full page reload.
+        // A forced reload here would discard app state; keep user on current page.
+        // If you intentionally want to force a full reload in some environments,
+        // re-enable `window.location.href = '/'` here.
+        // eslint-disable-next-line no-console
+        console.warn("Navigation fallback to root failed, not reloading.", e);
+      }
     }
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Logout flow failed:", error);
-    // As a last resort, force redirect to root
-    window.location.href = "/";
+    // As a last resort try router navigation then force redirect
+    try {
+      await router.push({ path: "/login" });
+    } catch (e) {
+      // Router navigation failed to redirect to root; avoid full reload.
+      // eslint-disable-next-line no-console
+      console.warn("Final navigation attempt to root failed, not reloading.", e);
+    }
   }
 };
 
 // Drawer state - hidden by default, user can open when needed
 const drawer = ref(false);
 
-// Route loading handled globally with NProgress in main.js
-
 // Breadcrumb items computed from current route
 const breadcrumbItems = computed(() => {
   const items = [];
 
-  // Add home
+  // Add home - use 'to' instead of 'href' for Vue Router navigation (no page refresh)
   items.push({
     title: t("nav.home"),
     disabled: false,
-    href: "/dashboard",
+    to: "/dashboard",
   });
 
   // Add current route breadcrumbs
@@ -255,8 +271,6 @@ const breadcrumbItems = computed(() => {
 
   return items;
 });
-
-// Route loading handled globally with NProgress (main.js)
 
 // Initialize theme from store (which loads from localStorage)
 // and apply to Vuetify immediately
@@ -335,7 +349,6 @@ const snackbar = reactive({
 // };
 
 // Check authentication status on app load - silently handle failures
-// After auth check completes, ensure loader is hidden (in case it's still showing)
 authStore.checkAuth();
 </script>
 
@@ -836,6 +849,12 @@ authStore.checkAuth();
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+
+/* Route fallback loader - Native Vue loader for async route loading */
+.route-fallback {
+  min-height: 400px;
+  width: 100%;
 }
 
 /* Appbar actions */

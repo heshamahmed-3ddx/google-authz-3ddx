@@ -278,6 +278,7 @@
       "subtitle": "تحليلات شاملة لحالات الدليل الجراحي والمالية",
       "verifyingAccess": "التحقق من الوصول",
       "checkingPermissions": "جاري التحقق من الأذونات...",
+      "summary": "الملخص",
   "apiDocs": "توثيق API",
   "reportFeatureDoc": "توثيق ميزة التقرير",
   "accessDenied": "تم رفض الوصول",
@@ -326,6 +327,12 @@
       "fullyPostpaid": "مدفوع لاحقاً بالكامل",
       "partiallyPostpaid": "مدفوع لاحقاً جزئياً",
       "vouchers": "القسائم",
+      "totalVoucherPaid": "إجمالي المدفوع بالقسائم",
+      "supportTypes": {
+        "teeth": "الأسنان",
+        "tissue": "الأنسجة",
+        "bone": "العظام"
+      },
       "rushOrders": "عاجل",
       "onHold": "معلق",
       "confirmed": "مؤكد",
@@ -346,6 +353,15 @@
       "workflow": "سير العمل",
       "free": "مجاني",
       "rush": "عاجل",
+      "created": "تاريخ الإنشاء",
+      "designed": "تاريخ التصميم",
+      "designer": "المصمم",
+      "support": "الدعامة",
+      "cost": "التكلفة",
+      "extraction": "الاستخراج",
+      "boneReduction": "تقليل العظام",
+      "notAssigned": "غير معين",
+      "noStatusSet": "لم يتم تعيين حالة",
       "table": {
         "id": "المعرف",
         "scanCenter": "مركز المسح",
@@ -362,14 +378,27 @@
         "clearSearch": "مسح البحث",
         "noDataAvailable": "لا توجد بيانات متاحة",
         "noDataMessage": "حدد نطاق تاريخ واضغط \"إعادة التحميل\" لعرض البيانات.",
+        "selectDateAndReload": "حدد نطاق تاريخ واضغط \"إعادة التحميل\" لعرض البيانات.",
         "itemsPerPage": "عدد العناصر في الصفحة:",
+        "pageText": "{0}-{1} من {2}",
         "of": "من",
-        "page": "صفحة"
+        "page": "صفحة",
+        "rowsPerPage": "عدد الصفوف في الصفحة:",
+        "allItems": "الكل"
       },
       "tooltips": {
         "designer": "المصمم المعين للحالة",
         "hasExtraction": "يشير إلى ما إذا تم إجراء الاستخراج",
         "boneReduction": "يشير إلى ما إذا تم اختيار تقليل العظام"
+      },
+      "status": {
+        "qcShipping": "مراقبة الجودة والشحن",
+        "confirmedByOEM": "مؤكد من الشركة المصنعة",
+        "onHold": "معلق",
+        "multiple": "متعدد",
+        "active": "نشط",
+        "inProcess": "قيد المعالجة",
+        "inactive": "غير نشط"
       }
     }
   },
@@ -382,5 +411,21 @@
     "english": "English",
     "arabic": "العربية",
     "current": "اللغة الحالية"
+  },
+  "errors": {
+    "404": {
+      "title": "الصفحة غير موجودة",
+      "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+      "goHome": "الذهاب إلى لوحة التحكم",
+      "goBack": "العودة"
+    },
+    "403": {
+      "title": "تم رفض الوصول",
+      "description": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+      "permissionInfo": "تتطلب هذه الصفحة أذونات محددة أو عضوية مجموعة.",
+      "contactAdmin": "اتصل بالمسؤول إذا كنت تعتقد أنه يجب أن يكون لديك حق الوصول.",
+      "goHome": "الذهاب إلى لوحة التحكم",
+      "goBack": "العودة"
+    }
   }
 }
