@@ -13,7 +13,7 @@
     "install:server": "cd server && npm install",
     "install:client": "cd client && npm install",
     "install:tests": "cd tests && npm install",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\" \"npm run dev:docs\"",
+    "dev": "node scripts/startup-banner.js && concurrently --kill-others --raw 'npm run dev:client > /dev/null 2>&1' './scripts/server-wrapper.sh' 'npm run dev:docs > /dev/null 2>&1'",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "dev:docs": "cd docs && npx vitepress dev",
