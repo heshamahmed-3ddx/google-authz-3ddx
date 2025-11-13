@@ -28,124 +28,70 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-// URL patterns that should not trigger the global loader by default.
-// Authentication endpoints are excluded to avoid showing loader during sign-in
-const SUPPRESS_LOADER_PATTERNS = [
-  // All authentication endpoints (sign-in, login, logout, callback)
-  "/auth/",
-  "/auth/google",
-  "/auth/google/callback",
-  "/auth/me",
-  "/auth/logout",
-  // Session and health check endpoints
-  "/api/session",
-  "/api/session/info",
-  "/api/health",
-  "/api/ping",
-  "/api/status",
-];
 
-// Request interceptor
+// Request interceptor (loader logic removed - using native Vue Suspense)
 apiClient.interceptors.request.use(
   (config) => {
-    // Show global loader for API requests unless explicitly suppressed.
-    try {
-      const suppressHeader =
-        config.headers &&
-        (config.headers["X-Suppress-Loader"] === "1" ||
-          config.headers["x-suppress-loader"] === "1");
-      const suppressExplicit = Boolean(
-        config._suppressLoader || config.suppressLoader || suppressHeader,
-      );
-      // Auto-suppress for quick/background endpoints unless explicitly overridden
-      const url = (config.url || "").toString();
-      
-      // Check if URL matches suppress patterns
-      const matchesPattern = SUPPRESS_LOADER_PATTERNS.some(
-        (p) => url.startsWith(p) || url.includes(p),
-      );
-      
-      // Check if it's a static asset
-      const isStaticAsset = /\.(png|jpg|jpeg|svg|gif|ico|css|js)(\?.*)?$/.test(
-        url,
-      );
-      
-      // IMPORTANT: Disable automatic loader for API requests
-      // Loader now only shows once during initial page load
-      // Individual API requests should not trigger the loader
-      const isApiEndpoint = url.startsWith("/api/");
-      const isAuthEndpoint = url.startsWith("/auth/");
-      
-      const forceLoader = Boolean(config.forceLoader || config._forceLoader);
-      
-      // Always suppress loader for API requests (unless explicitly forced)
-      // The loader is now only shown during initial page load
-      const suppress = forceLoader
-        ? false
-        : true; // Suppress all automatic loaders - only show on initial page load
-
-      if (!suppress) {
-        // Show the global loader for this request. We don't use per-request ids
-        // with the plugin; instead mark that we showed the loader so the
-        // response handler knows to hide it.
-        try {
-          // eslint-disable-next-line no-param-reassign
-          config._loaderShown = true;
-        } catch (e) {
-          void e;
-        }
-      } else {
-        // mark explicitly suppressed so response handler doesn't try to hide
-        // eslint-disable-next-line no-param-reassign
-        config._loaderSuppressed = true;
-      }
-    } catch (e) {
-      // ignore loader failures
-    }
-    // Disabled API request logging to reduce console noise
-    // logApiCall(config.method?.toUpperCase() || 'GET', config.url || '', {
-    //   baseURL: config.baseURL,
-    //   timeout: config.timeout
-    // }, 'request');
-
+    // API request configuration - no loader logic needed
     return config;
   },
   (error) => {
-    try {
-      if (error.config && error.config._loaderShown) {
-      }
-    } catch (e) {
-      void e;
-    }
     return Promise.reject(error);
   },
 );
 
-// Response interceptor
+// Response interceptor with auth error handling
 apiClient.interceptors.response.use(
   (response) => {
-    // Hide loader on response only if a loader id was attached
-    try {
-      if (response.config && response.config._loaderShown) {
-      }
-      // If suppressed or no marker present, don't touch the loader stack
-    } catch (e) {
-      void e;
-    }
-    // Logging disabled - earlier implementation recorded API calls here
-
     return response;
   },
-  (error) => {
-    // Hide loader on error only if a loader id was attached
-    try {
-      if (error.config && error.config._loaderShown) {
-      }
-    } catch (e) {
-      void e;
-    }
-    // Logging disabled - errors are still propagated to callers
+  async (error) => {
+    const status = error.response?.status;
+    const config = error.config;
 
+    // Handle authentication and authorization errors globally
+    if (status === 401) {
+      // 401 Unauthorized - User is not authenticated
+      // Skip redirect if this is already an auth check
+      if (!config?.url?.includes("/auth/me") && !config?._skipAuthRedirect) {
+        // Import router dynamically to avoid circular dependencies
+        const { default: router } = await import("@/router");
+        const { useAuthStore } = await import("@/stores/auth");
+        const authStore = useAuthStore();
+
+        // Clear auth state
+        authStore.user = null;
+        authStore.tokens = null;
+
+        // Redirect to login page
+        router.push({ name: "Login" });
+      }
+    } else if (status === 403) {
+      // 403 Forbidden - User is authenticated but doesn't have permission
+      // Skip redirect if explicitly disabled
+      if (!config?._skipAuthRedirect) {
+        const { default: router } = await import("@/router");
+        const currentPath = router.currentRoute.value.path;
+
+        // Redirect to unauthorized page with context
+        router.push({
+          name: "Unauthorized",
+          query: {
+            from: currentPath,
+            reason: error.response?.data?.message || "Access denied",
+          },
+        });
+      }
+    } else if (status === 404) {
+      // 404 Not Found - Optional: redirect to 404 page for API endpoints
+      // Only redirect if explicitly enabled in config
+      if (config?._redirect404) {
+        const { default: router } = await import("@/router");
+        router.push({ name: "NotFound" });
+      }
+    }
+
+    // Always propagate errors to callers for component-level handling
     return Promise.reject(error);
   },
 );

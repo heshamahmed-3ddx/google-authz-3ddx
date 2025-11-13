@@ -105,13 +105,19 @@ const changeLanguage = (languageCode) => {
 
     setLocale(languageCode);
 
-    // Only reload if RTL direction changes for smoother UX
+    // If RTL direction changes, update document and trigger reflow instead of full reload
     if (wasRTL !== willBeRTL) {
-      // Add a smooth transition effect
+      // Add a smooth transition effect for visual change
       document.body.style.transition = "all 0.3s ease";
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+      // Update document direction and classes immediately. `App.vue` watches locale and will also update these.
+      document.documentElement.dir = willBeRTL ? "rtl" : "ltr";
+      document.documentElement.classList.toggle("rtl", willBeRTL);
+      document.documentElement.classList.toggle("ltr", !willBeRTL);
+      document.body.classList.toggle("rtl", willBeRTL);
+      document.body.classList.toggle("ltr", !willBeRTL);
+      // Trigger resize so UI libraries can recompute layout if needed
+      window.dispatchEvent(new Event("resize"));
+      // If some components require re-initialization, re-mount or call their init functions specifically.
     }
   }
   showMenu.value = false;

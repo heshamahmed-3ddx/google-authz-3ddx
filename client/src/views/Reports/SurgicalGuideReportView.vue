@@ -132,8 +132,39 @@
 
     <!-- Main Report Interface (Finance22 only) -->
     <template v-if="accessInfo.hasReportAccess">
+      <!-- Loading Skeleton Loaders -->
+      <v-row v-if="loading.table" no-gutters class="skeleton-loader-row">
+        <v-col cols="12" md="3" class="pr-md-2 skeleton-col">
+          <v-card elevation="1" class="skeleton-card h-100">
+            <v-card-text class="pa-3">
+              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader type="button" class="mb-3"></v-skeleton-loader>
+              <v-divider class="my-3"></v-divider>
+              <v-skeleton-loader type="heading" class="mb-2"></v-skeleton-loader>
+              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
+              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
+              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
+              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
+              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
+            </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="9" class="skeleton-col">
+          <v-card elevation="1" class="skeleton-card h-100">
+            <v-card-text class="pa-3">
+              <v-skeleton-loader type="heading" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader type="table-heading"></v-skeleton-loader>
+              <v-skeleton-loader type="table-tbody"></v-skeleton-loader>
+              <v-skeleton-loader type="table-tfoot"></v-skeleton-loader>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
       <!-- Filters and Table Side by Side -->
-      <v-row no-gutters>
+      <v-row v-else no-gutters>
         <!-- Filters Section - 3 columns -->
         <v-col cols="12" md="3" class="compact-filters-col">
           <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
@@ -414,6 +445,8 @@
               :items-length="pagination.total"
               :items-per-page="10"
               :items-per-page-options="[10, 25, 50]"
+              :items-per-page-text="t('reports.surgicalGuide.table.itemsPerPage')"
+              :page-text="t('reports.surgicalGuide.table.pageText')"
               :class="[
                 'elevation-1',
 
@@ -1002,9 +1035,11 @@ const pagination = reactive({
   hasPrevPage: false,
 });
 
-// Simplified loading state - only for access check (before global loader is available)
+// Loading state for access check and table data (component-level loading)
+// Start with table loading true so skeleton shows immediately on mount
 const loading = reactive({
   access: true,
+  table: true, // Start as true to show skeleton immediately
 });
 
 const snackbar = reactive({
@@ -1174,7 +1209,8 @@ const compactStats = computed(() => {
 // =====================================
 
 // Main table headers (compact view - details in expandable row)
-const tableHeaders = [
+// Table headers with translations
+const computedTableHeaders = computed(() => [
   {
     title: "",
     key: "data-table-expand",
@@ -1183,35 +1219,35 @@ const tableHeaders = [
     width: "48px",
   },
   {
-    title: "ID",
+    title: t("reports.surgicalGuide.table.id"),
     key: "orderSGID",
     value: "orderSGID",
     sortable: true,
     width: "140px",
   },
   {
-    title: "Scan Center",
+    title: t("reports.surgicalGuide.table.scanCenter"),
     key: "scanCenterFullName",
     value: "scanCenterFullName",
     sortable: true,
     width: "240px",
   },
   {
-    title: "Doctor",
+    title: t("reports.surgicalGuide.table.doctor"),
     key: "doctorFullName",
     value: "doctorFullName",
     sortable: true,
     width: "240px",
   },
   {
-    title: "Patient",
+    title: t("reports.surgicalGuide.table.patient"),
     key: "patientName",
     value: "patientName",
     sortable: true,
     width: "180px",
   },
   {
-    title: "Cost",
+    title: t("reports.surgicalGuide.table.cost"),
     key: "cost",
     value: "cost",
     sortable: true,
@@ -1219,25 +1255,20 @@ const tableHeaders = [
     width: "110px",
   },
   {
-    title: "Type",
+    title: t("reports.surgicalGuide.table.type"),
     key: "typeLabel",
     value: "typeLabel",
     sortable: true,
     width: "100px",
   },
   {
-    title: "Created",
+    title: t("reports.surgicalGuide.table.created"),
     key: "createdTime",
     value: "createdTime",
     sortable: true,
     width: "130px",
   },
-];
-
-// Computed headers - rely on CSS direction (RTL) instead of reversing headers in JS
-// Reversing headers in JS combined with setting direction can cause confusing layouts
-// so we keep a stable header order and use CSS to present RTL correctly.
-const computedTableHeaders = computed(() => tableHeaders);
+]);
 
 
 // Track last options received from v-data-table-server to avoid duplicate fetch loops
@@ -1332,7 +1363,7 @@ async function fetchReport() {
 
 /**
  * Internal function to fetch report data
- * Uses global loader instead of local loading states
+ * Uses full-page skeleton loaders for loading states
  * Has guard to prevent multiple simultaneous calls
  */
 async function fetchReportData() {
@@ -1343,7 +1374,7 @@ async function fetchReportData() {
 
   try {
     isFetching = true;
-    // Show global loader
+    loading.table = true;
 
     const params = {
       startDate: filters.startDate || "1900-01-01",
@@ -1445,8 +1476,8 @@ async function fetchReportData() {
     // Ensure flag is reset on error
     tableOptionsDisabled = false;
   } finally {
-    // Hide global loader
     isFetching = false;
+    loading.table = false;
   }
 }
 
@@ -1550,11 +1581,10 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
 
 /**
  * Export report to CSV
- * Uses global loader instead of local loading state
+ * Loading is handled by Vue Suspense (native Vue loader)
  */
 async function exportToCSV() {
   try {
-    // Show global loader
 
     const params = new URLSearchParams({
       startDate: filters.startDate,
@@ -1600,7 +1630,7 @@ async function exportToCSV() {
       "error",
     );
   } finally {
-    // Hide global loader
+    // Loading handled by Vue Suspense
   }
 }
 
@@ -1854,6 +1884,44 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ==========================================
+   SKELETON LOADER STYLES - EQUAL HEIGHT
+   ========================================== */
+
+/* Ensure skeleton loader columns have equal height */
+.skeleton-loader-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.skeleton-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+}
+
+.skeleton-card .v-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive: reduce min-height on mobile */
+@media (max-width: 960px) {
+  .skeleton-card {
+    min-height: 400px;
+  }
+}
+
+/* ==========================================
+   TABLE STYLES
+   ========================================== */
+
 /* Expanded row styling - minimal padding */
 /* Enforce explicit LTR/RTL styles at the table level to avoid mixed-direction cells.
    Use `.rtl-table` and `.ltr-table` classes applied on the v-data-table-server element.

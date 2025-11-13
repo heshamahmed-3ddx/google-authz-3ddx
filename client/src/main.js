@@ -9,9 +9,6 @@ import "vuetify/styles";
 
 import App from "./App.vue";
 import router from "./router";
-// NProgress for top-of-page progress indicator
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
 import { themeConfig } from "./stores/theme.js";
 import { i18n, isRTL } from "./i18n";
 
@@ -116,16 +113,6 @@ app.mount("#app");
 
 // Mark app as mounted
 document.body.classList.add("app-mounted");
-
-// Wire NProgress to router navigation
-router.beforeEach((to, from, next) => {
-  NProgress.start();
-  next();
-});
-
-router.afterEach(() => {
-  NProgress.done();
-});
 
 // Register service worker in production for basic caching/PWA behavior
 if (import.meta.env.PROD && "serviceWorker" in navigator) {

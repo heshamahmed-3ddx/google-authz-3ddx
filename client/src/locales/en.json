@@ -283,7 +283,7 @@
       "subtitle": "Comprehensive surgical guide cases and financial analytics",
       "verifyingAccess": "Verifying Access",
       "checkingPermissions": "Checking your permissions...",
-      "summary": "SG Orders Summary",
+      "summary": "Summary",
   "apiDocs": "API Documentation",
   "reportFeatureDoc": "Report Feature Doc",
   "accessDenied": "Access Denied",
@@ -393,8 +393,11 @@
         "noDataMessage": "Select a date range and click \"Reload\" to view data.",
         "selectDateAndReload": "Select a date range and click \"Reload\" to view data.",
         "itemsPerPage": "Items per page:",
+        "pageText": "{0}-{1} of {2}",
         "of": "of",
-        "page": "Page"
+        "page": "Page",
+        "rowsPerPage": "Rows per page:",
+        "allItems": "All"
       },
       "tooltips": {
         "designer": "Designer assigned to the case",
@@ -418,5 +421,21 @@
   },
   "language": {
     "switch": "Switch"
+  },
+  "errors": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "goHome": "Go to Dashboard",
+      "goBack": "Go Back"
+    },
+    "403": {
+      "title": "Access Denied",
+      "description": "You don't have permission to access this page.",
+      "permissionInfo": "This page requires specific permissions or group membership.",
+      "contactAdmin": "Contact your administrator if you believe you should have access.",
+      "goHome": "Go to Dashboard",
+      "goBack": "Go Back"
+    }
   }
 }

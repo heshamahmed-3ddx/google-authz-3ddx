@@ -200,20 +200,7 @@
   transform: translateY(-2px);
 }
 
-/* NProgress custom styling to use theme secondary color */
-#nprogress .bar {
-  background: var(--medical-secondary) !important; /* fallback brand secondary */
-  height: 3px !important;
-}
-
-#nprogress .peg {
-  box-shadow: 0 0 8px var(--medical-secondary) !important;
-}
-
-#nprogress .spinner-icon {
-  border-top-color: var(--medical-secondary) !important;
-  border-left-color: var(--medical-secondary) !important;
-}
+/* NProgress removed - using native Vue Suspense for loading */
 
 .v-card--variant-elevated {
   box-shadow: var(--shadow-medium) !important;
@@ -321,60 +308,15 @@
   display: block !important;
 }
 
-/* Enhanced progress indicators */
+/* Enhanced progress indicators - Native Vue/Vuetify loaders */
 .v-progress-circular {
   transition: all var(--theme-transition) !important;
+  display: block !important; /* Native Vue Suspense loading - allow v-progress-circular to be visible */
 }
 
-/* By default hide the Vuetify circular progress to centralize loading UX through GlobalLoader.
-   If a local spinner is intentionally required, add the `allow-local-spinner` class to it. */
-.v-progress-circular:not(.allow-local-spinner) {
-  display: none !important;
-}
-
-/* Ensure GlobalLoader overlay sits above other UI and NProgress */
-.v-overlay__content,
-.vue-loading-overlay {
-  z-index: 99999 !important;
-}
-
-/* NProgress bar should be below the fullscreen loader */
-#nprogress .bar {
-  z-index: 9998 !important;
-}
-
-/* Global pulse for the loader lamp to ensure animation applies when overlay is mounted outside SFC scope */
-.global-loader-overlay .loader-lamp {
-  width: 140px !important;
-  height: 140px !important;
-  object-fit: contain !important;
-  animation: lamp-pulse-global 1.4s ease-in-out infinite !important;
-}
-
-@keyframes lamp-pulse-global {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-
-/* Lighten the overlay scrim and center loader content */
-.global-loader-overlay {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.global-loader-overlay .v-overlay__scrim {
-  background: rgba(0,0,0,0.12) !important; /* lighter scrim */
-}
-
-.global-loader-overlay .v-overlay__content {
-  background: transparent !important;
-}
-
-.global-loader-overlay .loader-lamp {
-  width: 220px !important;
-  height: 220px !important;
+/* Skeleton loaders for content placeholders */
+.v-skeleton-loader {
+  border-radius: var(--border-radius-md) !important;
 }
 
 /* Enhanced tables */
@@ -578,6 +520,265 @@
 }
 
 
+
+/* ============================================
+   COMPACT LAYOUT SYSTEM - GLOBAL STYLES
+   Extracted from Surgical Guide Report UI
+   ============================================ */
+
+/* Compact Header Styles */
+.compact-header {
+  min-height: 48px;
+}
+
+.compact-header-title {
+  font-size: 1.1rem !important;
+  font-weight: 600;
+  margin: 0;
+  padding-top: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.header-subtitle,
+.compact-header-subtitle {
+  margin-top: 2px;
+  font-size: 0.75rem;
+}
+
+/* Compact Title for Cards */
+.compact-title {
+  padding: 10px 16px !important;
+  min-height: 48px !important;
+}
+
+.compact-title .text-subtitle-2 {
+  font-size: 0.875rem !important;
+}
+
+/* Table Card Styles */
+.table-card {
+  height: 100%;
+}
+
+.table-card-title {
+  background: rgba(var(--v-theme-surface), 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.v-theme--dark .table-card-title {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Compact Legend */
+.compact-legend {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.v-theme--dark .compact-legend {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Ultra Compact Table Styles */
+.ultra-compact-table :deep(.v-data-table__th),
+.ultra-compact-table :deep(thead th) {
+  padding: 4px 8px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600;
+  height: 30px !important;
+  background: #146e9c !important;
+  color: #ffffff !important;
+  border-radius: 0 !important;
+}
+
+.ultra-compact-table :deep(.v-data-table__td),
+.ultra-compact-table :deep(tbody td) {
+  padding: 2px 8px !important;
+  font-size: 0.8rem !important;
+  height: 32px !important;
+  line-height: 1.2;
+}
+
+.ultra-compact-table :deep(.v-data-table-footer) {
+  padding: 6px 16px !important;
+  min-height: 40px;
+  max-height: 40px;
+}
+
+/* Table hover effect */
+.ultra-compact-table :deep(tbody tr:hover) {
+  background-color: rgba(20, 110, 156, 0.08) !important;
+}
+
+.v-theme--dark .ultra-compact-table :deep(tbody tr:hover) {
+  background-color: rgba(20, 110, 156, 0.15) !important;
+}
+
+/* Enhanced Table Styles */
+.enhanced-table :deep(.v-data-table__th) {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  background: #146e9c !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  padding: 4px 8px !important;
+  border-radius: 0 !important;
+}
+
+/* Alternating row colors */
+.enhanced-table :deep(.v-data-table__tr:nth-child(even)) {
+  background: #f5f5f5;
+}
+
+.enhanced-table :deep(.v-data-table__tr:nth-child(odd)) {
+  background: #ffffff;
+}
+
+.v-theme--dark .enhanced-table :deep(.v-data-table__tr:nth-child(even)) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.v-theme--dark .enhanced-table :deep(.v-data-table__tr:nth-child(odd)) {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+/* Skeleton Loader Equal Height */
+.skeleton-loader-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.skeleton-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+}
+
+.skeleton-card .v-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 960px) {
+  .skeleton-card {
+    min-height: 400px;
+  }
+}
+
+/* RTL Table Support */
+.rtl-table {
+  direction: rtl !important;
+}
+
+.rtl-table :deep(.v-data-table__wrapper),
+.rtl-table :deep(.v-table__wrapper) {
+  direction: rtl !important;
+}
+
+.rtl-table :deep(th),
+.rtl-table :deep(td) {
+  text-align: right !important;
+}
+
+.ltr-table {
+  direction: ltr !important;
+}
+
+.ltr-table :deep(.v-data-table__wrapper),
+.ltr-table :deep(.v-table__wrapper) {
+  direction: ltr !important;
+}
+
+.ltr-table :deep(th),
+.ltr-table :deep(td) {
+  text-align: left !important;
+}
+
+/* Compact Form Controls */
+.compact-filters-col .v-text-field {
+  font-size: 0.875rem;
+}
+
+.compact-filters-col .v-btn {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Stats Grid - Global */
+.enhanced-stats-section {
+  margin-top: 16px;
+}
+
+.stats-section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 600;
+}
+
+.v-theme--dark .stats-section-title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.enhanced-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.enhanced-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v-theme--dark .enhanced-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.enhanced-stat-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(20, 110, 156, 0.3);
+  transform: translateX(2px);
+}
+
+.v-theme--dark .enhanced-stat-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stat-card-active {
+  background: rgba(20, 110, 156, 0.1) !important;
+  border-color: #146e9c !important;
+  box-shadow: 0 2px 8px rgba(20, 110, 156, 0.2);
+}
+
+[dir="rtl"] .enhanced-stat-card:hover {
+  transform: translateX(-2px);
+}
 
 /* Print styles */
 @media print {
