@@ -367,7 +367,7 @@ router.get('/user/details', requireAuth, async (req, res) => {
     const userSchema = z.object({
       email: z.string().email(),
       name: z.string().min(1),
-      picture: z.string().url().nullable().optional()
+      picture: z.union([z.string().url(), z.string().length(0), z.null(), z.undefined()]).optional()
     })
     const tokensSchema = z.object({
       access_token: z.string().min(1),
@@ -376,6 +376,13 @@ router.get('/user/details', requireAuth, async (req, res) => {
     const userParse = userSchema.safeParse(req.session.user)
     const tokensParse = tokensSchema.safeParse(req.session.tokens)
     if (!userParse.success || !tokensParse.success) {
+      logger.warn('Session validation failed', {
+        userParseErrors: userParse.error?.errors || [],
+        tokensParseErrors: tokensParse.error?.errors || [],
+        hasUser: !!req.session.user,
+        hasTokens: !!req.session.tokens,
+        userEmail: req.session?.user?.email
+      });
       return res.status(400).json({
         error: {
           code: 'VALIDATION_ERROR',
@@ -558,6 +565,22 @@ router.get('/user/details', requireAuth, async (req, res) => {
         error: err.message,
         errorCode: err.code
       });
+      
+      // Check if it's a token expiration or authentication error
+      if (err.code === 401 || err.code === 403 || err.message?.includes('invalid_grant') || 
+          err.message?.includes('token') || err.message?.includes('expired') ||
+          err.message?.includes('Invalid Credentials') || err.message?.includes('unauthorized')) {
+        return res.status(401).json({
+          error: {
+            code: 'TOKEN_EXPIRED',
+            http: 401,
+            message: 'Authentication tokens have expired. Please sign in again.',
+            details: 'Your session has expired. Please refresh the page and sign in again.'
+          },
+          requestId: req.requestId || 'unknown'
+        });
+      }
+      
       return res.status(500).json({
         error: {
           code: 'GOOGLE_API_ERROR',
@@ -779,15 +802,37 @@ router.get('/user/details', requireAuth, async (req, res) => {
       requestId: req.requestId || 'unknown'
     });
   } catch (error) {
-    req.logger?.error({
+    const userEmail = req.session?.user?.email || 'unknown';
+    logger.error('User details error', {
       error: error.message,
-      userEmail: req.session?.user?.email
-    }, 'User details error');
+      errorCode: error.code,
+      stack: error.stack,
+      userEmail,
+      hasSession: !!req.session,
+      hasUser: !!req.session?.user,
+      hasTokens: !!req.session?.tokens,
+      requestId: req.requestId || 'unknown'
+    });
+    
+    // Check if it's a token expiration error
+    if (error.code === 401 || error.message?.includes('invalid_grant') || error.message?.includes('token') || error.message?.includes('expired')) {
+      return res.status(401).json({
+        error: {
+          code: 'TOKEN_EXPIRED',
+          http: 401,
+          message: 'Authentication tokens have expired. Please sign in again.',
+          details: 'Your session has expired. Please refresh the page and sign in again.'
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+    
     res.status(500).json({
       error: {
         code: 'INTERNAL_ERROR',
         http: 500,
-        message: 'Failed to fetch user details'
+        message: 'Failed to fetch user details',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       },
       requestId: req.requestId || 'unknown'
     })
