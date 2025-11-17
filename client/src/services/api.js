@@ -6,8 +6,35 @@
 
 import axios from "axios";
 
+/**
+ * Dynamically determine the API base URL based on the current window location
+ * This allows the app to work both on localhost and network IP addresses
+ * @returns {string} The API base URL
+ */
+function getApiBaseUrl() {
+  // If environment variable is set, use it (production)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In development, dynamically construct the API URL based on current location
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol; // http: or https:
+    const hostname = window.location.hostname; // localhost or 192.168.100.3
+    const apiPort = '3001'; // Backend port
+    
+    return `${protocol}//${hostname}:${apiPort}`;
+  }
+  
+  // Fallback (SSR or node context)
+  return "http://localhost:3001";
+}
+
 /** @constant {string} BASE_URL - Base URL for API requests */
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const BASE_URL = getApiBaseUrl();
+
+// Export BASE_URL for use in other modules (e.g., OAuth redirects)
+export { BASE_URL };
 
 // API logger removed to avoid client-side logging overhead
 
@@ -51,19 +78,21 @@ apiClient.interceptors.response.use(
 
     // Handle authentication and authorization errors globally
     if (status === 401) {
-      // 401 Unauthorized - User is not authenticated
-      // Skip redirect if this is already an auth check
-      if (!config?.url?.includes("/auth/me") && !config?._skipAuthRedirect) {
+      // 401 Unauthorized - User is not authenticated or token expired
+      // Always redirect to login page when token expires (unless explicitly skipped)
+      if (!config?._skipAuthRedirect) {
         // Import router dynamically to avoid circular dependencies
         const { default: router } = await import("@/router");
         const { useAuthStore } = await import("@/stores/auth");
         const authStore = useAuthStore();
 
-        // Clear auth state
+        // Clear auth state and cached data
         authStore.user = null;
         authStore.tokens = null;
+        authStore.cachedUserDetails = null;
+        authStore.cachedUserRights = null;
 
-        // Redirect to login page
+        // Always redirect to login page when token expires
         router.push({ name: "Login" });
       }
     } else if (status === 403) {

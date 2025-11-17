@@ -913,7 +913,7 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useDevModeStore } from "@/stores/devMode";
-import api from "@/services/api";
+import api, { BASE_URL } from "@/services/api";
 import PageHeader from "@/components/PageHeader.vue";
 import {
   DASHBOARD_ACCESS_CONFIG,
@@ -960,10 +960,9 @@ function toggleSimulatedGroup(group) {
   }
 }
 
-// API Documentation URLs
-const baseApiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
-const swaggerUrl = computed(() => `${baseApiUrl}/docs`);
-const jsdocUrl = computed(() => `${baseApiUrl}/jsdoc`); // Placeholder for future JSDoc endpoint
+// API Documentation URLs (using dynamic BASE_URL)
+const swaggerUrl = computed(() => `${BASE_URL}/docs`);
+const jsdocUrl = computed(() => `${BASE_URL}/jsdoc`); // Placeholder for future JSDoc endpoint
 
 // userAgent, isAdmin removed as unused
 
@@ -1119,10 +1118,6 @@ async function fetchUserDetails() {
   if (authStore.cachedUserDetails) {
     userDetails.value = authStore.cachedUserDetails;
     loadingDetails.value = false;
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.log("User details from cache:", userDetails.value);
-    }
     return;
   }
 
