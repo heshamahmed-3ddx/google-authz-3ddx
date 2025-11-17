@@ -41,6 +41,23 @@
       <v-spacer></v-spacer>
 
       <div class="appbar-actions">
+        <!-- Menu button for overlay sidebar -->
+        <v-tooltip location="bottom">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-if="authStore.isAuthenticated"
+              v-bind="tooltipProps"
+              icon
+              size="small"
+              variant="text"
+              class="mr-2 apps-menu-btn"
+              @click="overlaySidebarOpen = !overlaySidebarOpen"
+            >
+              <v-icon size="small">mdi-apps</v-icon>
+            </v-btn>
+          </template>
+          <span>App Navigation</span>
+        </v-tooltip>
         <LanguageSwitcher />
         <ThemeToggle />
         <v-btn
@@ -62,18 +79,6 @@
     <div v-if="authStore.isAuthenticated && showAppBar" class="breadcrumbs-bar">
       <v-container fluid class="py-0 px-4">
         <div class="d-flex align-center">
-          <!-- Menu button for sidebar toggle -->
-          <!-- DISABLED: Sidebar menu button temporarily disabled -->
-          <!-- <v-btn
-            icon
-            size="small"
-            variant="text"
-            class="mr-2"
-            @click="drawer = !drawer"
-          >
-            <v-icon size="small">mdi-menu</v-icon>
-          </v-btn> -->
-
           <v-breadcrumbs :items="breadcrumbItems" class="pa-0" density="compact">
             <template #divider>
               <v-icon size="x-small">mdi-chevron-right</v-icon>
@@ -106,6 +111,19 @@
         </template>
       </Suspense>
     </v-main>
+
+    <!-- Overlay Sidebar -->
+    <Suspense>
+      <template #default>
+        <OverlaySidebar
+          v-if="authStore.isAuthenticated"
+          v-model="overlaySidebarOpen"
+        />
+      </template>
+      <template #fallback>
+        <!-- Sidebar placeholder -->
+      </template>
+    </Suspense>
 
     <!-- Development Toolbar (lazy-loaded in Suspense) -->
     <Suspense>
@@ -141,6 +159,9 @@ import { defineAsyncComponent } from "vue";
 // Lazy load heavier components and use Suspense fallbacks
 const NavigationSidebar = defineAsyncComponent(
   () => import("@/components/NavigationSidebar.vue"),
+);
+const OverlaySidebar = defineAsyncComponent(
+  () => import("@/components/OverlaySidebar.vue"),
 );
 const DevToolbar = defineAsyncComponent(
   () => import("@/components/DevToolbar.vue"),
@@ -238,6 +259,9 @@ const handleLogout = async () => {
 
 // Drawer state - hidden by default, user can open when needed
 const drawer = ref(false);
+
+// Overlay sidebar state
+const overlaySidebarOpen = ref(false);
 
 // Breadcrumb items computed from current route
 const breadcrumbItems = computed(() => {
@@ -868,6 +892,32 @@ authStore.checkAuth();
 [dir="rtl"] .appbar-actions {
   padding-right: 0;
   padding-left: 20px;
+}
+
+/* Apps menu button */
+.apps-menu-btn {
+  min-width: 36px !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+}
+
+.apps-menu-btn .v-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+  color: #FF8C00 !important; /* Brand orange for light mode */
+}
+
+.v-theme--dark .apps-menu-btn .v-icon {
+  color: #FFB74D !important; /* Brand orange for dark mode */
+}
+
+.apps-menu-btn:hover .v-icon {
+  transform: scale(1.1);
+  color: #E65100 !important;
+}
+
+.v-theme--dark .apps-menu-btn:hover .v-icon {
+  color: #FFCC80 !important;
 }
 
 /* Logout button */

@@ -1,4 +1,7 @@
 {
+  "common": {
+    "loading": "Loading..."
+  },
   "app": {
     "title": "InsightHub",
     "apiResponse": "API Response",
@@ -111,6 +114,7 @@
   },
   "dashboard": {
   "title": "Dashboard",
+    "subtitle": "Overview of your account and system status",
     "welcomeTitle": "Welcome to your dashboard!",
     "welcomeMessage": "Here you can explore various Google API integrations and manage your authenticated session.",
     "userInformation": "User Information",
