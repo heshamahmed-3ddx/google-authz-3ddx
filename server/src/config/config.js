@@ -72,8 +72,17 @@ export const CONFIG = {
     modelPath: path.resolve(__dirname, 'casbin/model.conf'),
     policyPath: path.resolve(__dirname, 'casbin/policy.csv'),
     usersPath: path.resolve(__dirname, 'casbin/users.json'),
+    tableName: process.env.CASBIN_TABLE_NAME || 'casbin_rule', // Database table name for policies
+    usersTableName: process.env.CASBIN_USERS_TABLE_NAME || 'casbin_users', // Database table name for users
     autoSave: true,
     syncInterval: 300000, // 5 minutes
+    useEnhancedAdapter: process.env.CASBIN_USE_ENHANCED !== 'false', // Use enhanced adapter with caching (default: true)
+    batchSize: parseInt(process.env.CASBIN_BATCH_SIZE) || 100, // Batch size for bulk operations
+    maxRetries: parseInt(process.env.CASBIN_MAX_RETRIES) || 3, // Max retry attempts for transient failures
+    cache: {
+      enabled: process.env.CASBIN_CACHE_ENABLED !== 'false', // Enable policy caching (default: true)
+      ttl: parseInt(process.env.CASBIN_CACHE_TTL) || 60000 // Cache TTL in milliseconds (default: 1 minute)
+    },
     /**
      * Test authorization config (used for Casbin service self-test)
      * DO NOT use real user emails or sensitive data in production
@@ -113,7 +122,7 @@ export const CONFIG = {
 
   // Database/Storage Configuration
   storage: {
-    type: 'file', // 'file' | 'database'
+    type: process.env.STORAGE_TYPE || 'database', // 'file' | 'database' - can be overridden by STORAGE_TYPE env var
     backupInterval: 24 * 60 * 60 * 1000, // 24 hours
     retentionDays: 30
   },

@@ -16,16 +16,7 @@
   </v-container>
 
   <!-- Main Content -->
-  <v-container v-else>
-    <v-row>
-      <v-col cols="12" class="d-flex justify-space-between align-center mb-2">
-        <!-- DevToolbar floating controls are now the only dev mode UI -->
-        <div></div>
-      </v-col>
-    </v-row>
-
-    <!-- DevToolbar floating controls are now the only dev mode UI -->
-
+  <v-container v-else fluid class="dashboard-page">
     <v-row>
       <v-col cols="12">
         <PageHeader
@@ -36,14 +27,13 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row no-gutters>
       <v-col cols="12">
-
         <v-alert
           type="info"
           variant="tonal"
-          class="mb-6 stable-card"
-          style="min-height: 110px; height: 110px"
+          density="compact"
+          class="mb-3 stable-card"
         >
           <v-alert-title style="min-height: 24px">
             <template v-if="!loadingDetails">
@@ -68,15 +58,14 @@
 
         <!-- User Info Card -->
         <v-card
-          class="mb-6 stable-card"
-          elevation="3"
-          style="min-height: 280px"
+          class="mb-3 stable-card"
+          elevation="1"
         >
-          <v-card-title>
-            <v-icon class="mr-2">mdi-account-details</v-icon>
-            {{ $t("dashboard.userDetailsOrganization") }}
+          <v-card-title class="compact-title pa-3">
+            <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-account-details</v-icon>
+            <span class="text-subtitle-2 font-weight-medium">{{ $t("dashboard.userDetailsOrganization") }}</span>
           </v-card-title>
-          <v-card-text>
+          <v-card-text class="pa-3">
             <template v-if="loadingDetails">
               <!-- Global loader will display for API calls; local inline spinner removed -->
             </template>
@@ -180,8 +169,8 @@
               <v-divider class="my-6"></v-divider>
               <v-row>
                 <v-col cols="12" class="pb-0">
-                  <h4 class="text-subtitle-1 font-weight-bold mb-4">
-                    <v-icon class="mr-2" size="20">mdi-badge-account</v-icon>
+                  <h4 class="text-subtitle-2 font-weight-medium mb-3">
+                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-badge-account</v-icon>
                     Employee Information
                   </h4>
                 </v-col>
@@ -276,10 +265,8 @@
               <v-divider class="my-6"></v-divider>
               <v-row>
                 <v-col cols="12" class="pb-0">
-                  <h4 class="text-subtitle-1 font-weight-bold mb-4">
-                    <v-icon class="mr-2" size="20"
-                      >mdi-card-account-phone</v-icon
-                    >
+                  <h4 class="text-subtitle-2 font-weight-medium mb-3">
+                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-card-account-phone</v-icon>
                     Contact Information
                   </h4>
                 </v-col>
@@ -401,11 +388,11 @@
               </v-row>
 
               <!-- Groups Section -->
-              <v-divider class="my-6"></v-divider>
+              <v-divider class="my-3"></v-divider>
               <v-row>
                 <v-col cols="12">
-                  <h4 class="text-subtitle-1 font-weight-bold mb-4">
-                    <v-icon class="mr-2" size="20">mdi-account-group</v-icon>
+                  <h4 class="text-subtitle-2 font-weight-medium mb-3">
+                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-account-group</v-icon>
                     {{ $t("dashboard.groups") }}
                   </h4>
 
@@ -416,6 +403,7 @@
                       userDetails.groupRoles.length > 0
                     "
                     variant="outlined"
+                    elevation="0"
                   >
                     <v-table density="comfortable">
                       <thead>
@@ -508,8 +496,8 @@
           v-if="hasRestrictedAccess && userRights"
           type="info"
           variant="tonal"
-          class="mb-6"
-          prominent
+          density="compact"
+          class="mb-3"
           border="start"
         >
           <v-alert-title class="d-flex align-center">
@@ -537,37 +525,36 @@
         <!-- User Rights & Permissions -->
         <v-card
           v-if="canViewUserRights"
-          class="mb-6 stable-card"
-          elevation="3"
-          style="min-height: 320px"
+          class="mb-3 stable-card"
+          elevation="1"
         >
-          <v-card-title>
-            <v-icon class="mr-2">mdi-shield-account</v-icon>
-            {{ $t("dashboard.userRightsPermissions") }}
+          <v-card-title class="compact-title pa-3">
+            <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-shield-account</v-icon>
+            <span class="text-subtitle-2 font-weight-medium">{{ $t("dashboard.userRightsPermissions") }}</span>
           </v-card-title>
-          <v-card-text v-if="userRights">
-            <div class="mb-4">
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-card variant="tonal" color="primary">
-                    <v-card-text class="text-center py-3">
-                      <v-icon size="32" class="mb-2">mdi-account</v-icon>
-                      <div class="text-h6">{{ userRights.userEmail }}</div>
-                      <div class="text-body-2">
+          <v-card-text v-if="userRights" class="pa-3">
+            <div class="mb-3">
+              <v-row no-gutters>
+                <v-col cols="12" md="6" class="pr-md-2">
+                  <v-card variant="tonal" color="primary" elevation="0">
+                    <v-card-text class="text-center py-2">
+                      <v-icon size="24" class="mb-1">mdi-account</v-icon>
+                      <div class="text-subtitle-2 font-weight-medium">{{ userRights.userEmail }}</div>
+                      <div class="text-caption">
                         {{ $t("dashboard.authorizationSubject") }}
                       </div>
                     </v-card-text>
                   </v-card>
                 </v-col>
-                <v-col cols="12" md="6">
-                  <v-card variant="tonal" color="success">
-                    <v-card-text class="text-center py-3">
-                      <v-icon size="32" class="mb-2">mdi-shield-check</v-icon>
-                      <div class="text-h6">
+                <v-col cols="12" md="6" class="pl-md-2">
+                  <v-card variant="tonal" color="success" elevation="0">
+                    <v-card-text class="text-center py-2">
+                      <v-icon size="24" class="mb-1">mdi-shield-check</v-icon>
+                      <div class="text-subtitle-2 font-weight-medium">
                         {{ userRights.rights.length }}
                         {{ $t("dashboard.resources") }}
                       </div>
-                      <div class="text-body-2">
+                      <div class="text-caption">
                         {{ $t("dashboard.accessGranted") }}
                       </div>
                     </v-card-text>
@@ -738,11 +725,11 @@
 
                   <!-- Field Descriptions Table -->
                   <v-divider class="my-6"></v-divider>
-                  <h4 class="text-subtitle-1 font-weight-bold mb-4">
-                    <v-icon class="mr-2" size="20">mdi-table-edit</v-icon>
+                  <h4 class="text-subtitle-2 font-weight-medium mb-3">
+                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-table-edit</v-icon>
                     Field Descriptions
                   </h4>
-                  <v-card variant="outlined">
+                  <v-card variant="outlined" elevation="0">
                     <v-table density="comfortable">
                       <thead>
                         <tr class="field-descriptions-header">
@@ -1467,6 +1454,27 @@ onMounted(async () => {
 
 .dev-mode-content {
   padding: 8px 0;
+}
+
+.dashboard-page {
+  padding: 8px;
+}
+
+@media (min-width: 600px) {
+  .dashboard-page {
+    padding: 12px;
+  }
+}
+
+@media (min-width: 960px) {
+  .dashboard-page {
+    padding: 16px;
+  }
+}
+
+.compact-title {
+  padding: 6px 12px;
+  min-height: 36px;
 }
 </style>
 /* Minimal animated dots loader */ .dots-loader { display: inline-block; width:

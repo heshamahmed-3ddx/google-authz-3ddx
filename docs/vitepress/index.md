@@ -25,17 +25,17 @@ features:
     title: Casbin RBAC
     details: Fine-grained role-based access control with policy management
   - icon: 🎨
-    title: Modern UI
-    details: Vue 3 + Vuetify 3 with dark mode, i18n, and responsive design
+    title: Compact UI Design
+    details: Global compact UI system with consistent spacing, typography, and components
+  - icon: ⚙️
+    title: Settings Management
+    details: Comprehensive settings page with roles, permissions, and policies management
   - icon: 📊
     title: Reports & Analytics
     details: Surgical guide financial reports with filtering and export
   - icon: 🚀
     title: Developer Tools
     details: Dev mode with group simulation and permission testing
-  - icon: 📱
-    title: Responsive Design
-    details: Mobile-first approach with Oracle Fusion-inspired navigation
 ---
 
 # Welcome to 3DDX Documentation
@@ -43,6 +43,10 @@ features:
 Comprehensive documentation for the entire Google AuthZ 3DDX platform: client, backend, components, API, architecture, and guides.
 
 ## 📚 Core Documentation
+
+### UI & Styling
+- **[Compact UI Style Guide](./compact-ui-style-guide)** - Global compact design system
+- **[Settings Page Guide](./settings-page-guide)** - Settings and permissions management
 
 ### Backend
 - **[Backend API Reference](./backend-api)** - Complete REST API documentation
@@ -97,6 +101,8 @@ npm run dev
 
 - ✅ **OAuth 2.0 Authentication** - Secure Google login
 - ✅ **Casbin RBAC** - Fine-grained permissions
+- ✅ **Compact UI System** - Global consistent design
+- ✅ **Settings Management** - Roles, permissions, and policies
 - ✅ **Surgical Guide Reports** - Financial analytics
 - ✅ **Multi-language Support** - EN, AR, ES, FR
 - ✅ **Dark Mode** - Light, dark, and auto themes
@@ -115,6 +121,8 @@ npm run dev
 - [Legacy API Reference](./api-reference)
 
 ### Frontend
+- [Compact UI Style Guide](./compact-ui-style-guide) - Global design system
+- [Settings Page Guide](./settings-page-guide) - Settings management
 - [Vue Components](./vue-components) - Component library
 - [Client Services](./client-services) - Stores and APIs
 - [Legacy Components](./components)
@@ -156,4 +164,4 @@ Need help? Check these resources:
 
 ---
 
-**Last Updated:** December 2024 | **Version:** 1.0.0
+**Last Updated:** January 2025 | **Version:** 1.1.0

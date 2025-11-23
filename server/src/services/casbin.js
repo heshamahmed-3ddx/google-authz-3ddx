@@ -16,6 +16,9 @@ const __dirname = path.dirname(__filename);
 import fs from 'fs';
 import { createContextLogger, logSystemInit, logExternalService, logSecurityEvent } from './logger.js';
 import { CONFIG } from '../config/config.js';
+import MySQLAdapter from '../adapters/casbin-mysql-adapter.js';
+import MySQLAdapterEnhanced from '../adapters/casbin-mysql-adapter-enhanced.js';
+import databaseService from './database.js';
 
 const logger = createContextLogger(__filename, 'CasbinService');
 
@@ -32,11 +35,13 @@ class CasbinService {
   constructor() {
     this.enforcer = null;
     this.usersData = null;
+    this.storageType = CONFIG.storage.type || 'file'; // 'file' or 'database'
+    this.adapter = null;
   }
 
   /**
    * Initialize Casbin enforcer with model and policies
-   * Loads RBAC model configuration, policy rules, and user data from files
+   * Supports both file-based and database storage modes
    * @returns {Promise<boolean>} - True if initialization successful
    * @throws {Error} - When model, policy, or user files cannot be loaded
    * @example
@@ -45,33 +50,85 @@ class CasbinService {
   async initialize() {
     try {
       const modelPath = CONFIG.casbin.modelPath;
-      const policyPath = CONFIG.casbin.policyPath;
       const usersPath = CONFIG.casbin.usersPath;
+      this.storageType = CONFIG.storage.type || 'file';
 
-      // Verify files exist
+      // Model file is always required
       if (!fs.existsSync(modelPath)) {
         logger.error('Casbin model file not found', { modelPath });
         throw new Error(`Casbin model file not found: ${modelPath}`);
       }
-      if (!fs.existsSync(policyPath)) {
-        logger.error('Casbin policy file not found', { policyPath });
-        throw new Error(`Casbin policy file not found: ${policyPath}`);
-      }
+
+      // Users file is always required (for now)
       if (!fs.existsSync(usersPath)) {
         logger.error('Users data file not found', { usersPath });
         throw new Error(`Users data file not found: ${usersPath}`);
       }
 
-      logger.info('Casbin initialization started', { modelPath, policyPath, usersPath });
+      logger.info('Casbin initialization started', {
+        storageType: this.storageType,
+        configStorageType: CONFIG.storage.type,
+        modelPath,
+        usersPath
+      });
 
-      // Initialize enforcer
-      this.enforcer = await newEnforcer(modelPath, policyPath);
+      // Initialize enforcer based on storage type
+      if (this.storageType === 'database') {
+        // Check if database is initialized
+        try {
+          const pool = databaseService.getPool();
+          logger.debug('Database pool available for Casbin', {
+            poolExists: !!pool
+          });
+        } catch (error) {
+          logger.warn('Database not initialized, falling back to file storage', {
+            error: error.message,
+            stack: error.stack
+          });
+          this.storageType = 'file';
+        }
+
+        if (this.storageType === 'database') {
+          // Use enhanced MySQL adapter with caching and performance optimizations
+          const useEnhanced = CONFIG.casbin.useEnhancedAdapter !== false; // Default: true
+          
+          if (useEnhanced) {
+            this.adapter = new MySQLAdapterEnhanced(
+              CONFIG.casbin.tableName || 'casbin_rule',
+              {
+                enableCache: CONFIG.casbin.cache?.enabled !== false, // Default: true
+                cacheTTL: CONFIG.casbin.cache?.ttl || 60000, // 1 minute default
+                batchSize: CONFIG.casbin.batchSize || 100,
+                maxRetries: CONFIG.casbin.maxRetries || 3
+              }
+            );
+            logger.info('Casbin enforcer initialized with enhanced MySQL adapter (caching enabled)');
+          } else {
+            this.adapter = new MySQLAdapter(CONFIG.casbin.tableName || 'casbin_rule');
+            logger.info('Casbin enforcer initialized with MySQL adapter');
+          }
+          
+          this.enforcer = await newEnforcer(modelPath, this.adapter);
+        }
+      }
+
+      // Fallback to file-based storage
+      if (this.storageType === 'file') {
+        const policyPath = CONFIG.casbin.policyPath;
+        if (!fs.existsSync(policyPath)) {
+          logger.error('Casbin policy file not found', { policyPath });
+          throw new Error(`Casbin policy file not found: ${policyPath}`);
+        }
+        this.enforcer = await newEnforcer(modelPath, policyPath);
+        logger.info('Casbin enforcer initialized with file adapter');
+      }
 
       // Load and count policies
       const allPolicies = await this.enforcer.getPolicy();
       const allGroupings = await this.enforcer.getGroupingPolicy();
 
       logger.info('Casbin enforcer initialized successfully', {
+        storageType: this.storageType,
         policiesCount: allPolicies.length,
         groupingsCount: allGroupings.length
       });
@@ -96,8 +153,8 @@ class CasbinService {
 
       // Log system initialization completion
       logSystemInit('Casbin Enforcer', 'initialized successfully', {
+        storageType: this.storageType,
         modelPath,
-        policyPath,
         usersPath,
         policyCount: (await this.enforcer.getPolicy()).length,
         userCount: this.usersData.users.length
@@ -107,7 +164,8 @@ class CasbinService {
     } catch (error) {
       logger.error('Failed to initialize Casbin enforcer', {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
+        storageType: this.storageType
       });
       throw error;
     }
@@ -328,6 +386,12 @@ class CasbinService {
     }
 
     const added = await this.enforcer.addPolicy(subject, object, action);
+    
+    // Auto-save if enabled and using database
+    if (CONFIG.casbin.autoSave && this.storageType === 'database') {
+      await this.enforcer.savePolicy();
+    }
+    
     return added;
   }
 
@@ -344,6 +408,12 @@ class CasbinService {
     }
 
     const removed = await this.enforcer.removePolicy(subject, object, action);
+    
+    // Auto-save if enabled and using database
+    if (CONFIG.casbin.autoSave && this.storageType === 'database') {
+      await this.enforcer.savePolicy();
+    }
+    
     return removed;
   }
 
@@ -459,6 +529,12 @@ class CasbinService {
     }
 
     const added = await this.enforcer.addGroupingPolicy(userEmail, group);
+    
+    // Auto-save if enabled and using database
+    if (CONFIG.casbin.autoSave && this.storageType === 'database') {
+      await this.enforcer.savePolicy();
+    }
+    
     return added;
   }
 
@@ -474,6 +550,12 @@ class CasbinService {
     }
 
     const removed = await this.enforcer.removeGroupingPolicy(userEmail, group);
+    
+    // Auto-save if enabled and using database
+    if (CONFIG.casbin.autoSave && this.storageType === 'database') {
+      await this.enforcer.savePolicy();
+    }
+    
     return removed;
   }
 
@@ -595,6 +677,54 @@ class CasbinService {
     return userInfo.groups?.includes('admin') || 
            userInfo.roles?.includes('admin') || 
            userInfo.roles?.includes('system-admin');
+  }
+
+  /**
+   * Get performance metrics (if using enhanced adapter)
+   * @returns {Object|null} Metrics object or null if not available
+   */
+  getMetrics() {
+    if (this.adapter && typeof this.adapter.getMetrics === 'function') {
+      return this.adapter.getMetrics();
+    }
+    return null;
+  }
+
+  /**
+   * Reset performance metrics (if using enhanced adapter)
+   */
+  resetMetrics() {
+    if (this.adapter && typeof this.adapter.resetMetrics === 'function') {
+      this.adapter.resetMetrics();
+      logger.info('Casbin performance metrics reset');
+    }
+  }
+
+  /**
+   * Invalidate policy cache (if using enhanced adapter)
+   */
+  invalidateCache() {
+    if (this.adapter && typeof this.adapter.invalidateCache === 'function') {
+      this.adapter.invalidateCache();
+      logger.info('Casbin policy cache invalidated');
+    }
+  }
+
+  /**
+   * Reload policies from database (invalidates cache and reloads)
+   * @returns {Promise<void>}
+   */
+  async reloadPolicies() {
+    if (!this.enforcer) {
+      throw new Error('Casbin enforcer not initialized');
+    }
+
+    // Invalidate cache if using enhanced adapter
+    this.invalidateCache();
+
+    // Reload policies
+    await this.enforcer.loadPolicy();
+    logger.info('Policies reloaded from database');
   }
 }
 

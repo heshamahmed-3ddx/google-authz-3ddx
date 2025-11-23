@@ -229,6 +229,12 @@ const routes = [
     meta: { requiresAuth: true, requiredGroups: ["admin", "SWD", "finance"] },
   },
   {
+    path: "/reports/powerbi",
+    name: "PowerBIReporting",
+    component: () => import("@/views/Reports/PowerBIView.vue"),
+    meta: { requiresAuth: true, requiredGroups: ["*"] },
+  },
+  {
     path: "/reports/user-activity",
     name: "UserActivity",
     component: () => import("@/views/Reports/UserActivityView.vue"),
@@ -254,7 +260,7 @@ const routes = [
     path: "/system/settings",
     name: "SystemSettings",
     component: () => import("@/views/System/SettingsView.vue"),
-    meta: { requiresAuth: true, requiredGroups: ["admin"] },
+    meta: { requiresAuth: true, requiredGroups: ["*"] }, // All authenticated users can view, but only admins can edit
   },
   {
     path: "/system/integrations",

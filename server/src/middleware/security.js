@@ -53,10 +53,16 @@ export const securityHeaders = helmet({
         "'self'",
         'https://accounts.google.com',
         'https://www.googleapis.com',
-        'https://oauth2.googleapis.com'
+        'https://oauth2.googleapis.com',
+        'https://app.powerbi.com',
+        'https://*.powerbi.com',
+        'https://wabi-*.analysis.windows.net',
+        'https://*.pbidedicated.windows.net'
       ],
       frameSrc: [
-        'https://accounts.google.com'
+        'https://accounts.google.com',
+        'https://app.powerbi.com',
+        'https://*.powerbi.com'
       ]
     }
   },

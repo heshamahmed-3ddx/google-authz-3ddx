@@ -246,7 +246,31 @@ const server = app.listen(PORT, async () => {
       ]
     });
     
-    // Initialize Casbin authorization system
+    // Initialize MySQL database connection FIRST (if configured)
+    // This must happen before Casbin if using database storage mode
+    if (process.env.DB_HOST && process.env.DB_NAME) {
+      try {
+        await databaseService.initialize();
+        logSystemInit('MySQL Database', 'connected', {
+          host: process.env.DB_HOST,
+          database: process.env.DB_NAME
+        });
+      } catch (error) {
+        logger.warn('Database initialization failed - surgical guide reports and Casbin database mode will not be available', {
+          error: error.message,
+          stack: error.stack
+        });
+        logSystemInit('MySQL Database', 'failed', {
+          error: error.message
+        });
+      }
+    } else {
+      logger.info('Database not configured - surgical guide reports disabled', {
+        hint: 'Set DB_HOST and DB_NAME environment variables to enable'
+      });
+    }
+    
+    // Initialize Casbin authorization system (after database if using database mode)
     try {
       await casbinService.initialize()
       logSystemInit('Casbin Authorization System', 'ready', {
@@ -260,29 +284,6 @@ const server = app.listen(PORT, async () => {
       });
       logSystemInit('Casbin Authorization System', 'failed', {
         error: error.message
-      });
-    }
-    
-    // Initialize MySQL database connection (if configured)
-    if (process.env.DB_HOST && process.env.DB_NAME) {
-      try {
-        await databaseService.initialize();
-        logSystemInit('MySQL Database', 'connected', {
-          host: process.env.DB_HOST,
-          database: process.env.DB_NAME
-        });
-      } catch (error) {
-        logger.warn('Database initialization failed - surgical guide reports will not be available', {
-          error: error.message,
-          stack: error.stack
-        });
-        logSystemInit('MySQL Database', 'failed', {
-          error: error.message
-        });
-      }
-    } else {
-      logger.info('Database not configured - surgical guide reports disabled', {
-        hint: 'Set DB_HOST and DB_NAME environment variables to enable'
       });
     }
     

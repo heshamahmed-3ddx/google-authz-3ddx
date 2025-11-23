@@ -1751,6 +1751,141 @@ router.delete('/admin/user-groups', requireAuth, requireAdmin, async (req, res) 
 });
 
 /**
+ * Get Casbin performance metrics
+ * @route GET /api/admin/casbin/metrics
+ */
+router.get('/admin/casbin/metrics', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const metrics = casbinService.getMetrics();
+    
+    if (!metrics) {
+      return res.json({
+        data: {
+          message: 'Metrics not available (not using enhanced adapter)',
+          metrics: null
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+
+    res.json({
+      data: {
+        metrics,
+        timestamp: new Date().toISOString()
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Failed to get Casbin metrics');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to get metrics'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Reset Casbin performance metrics
+ * @route POST /api/admin/casbin/metrics/reset
+ */
+router.post('/admin/casbin/metrics/reset', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    casbinService.resetMetrics();
+    
+    res.json({
+      data: {
+        message: 'Metrics reset successfully'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Failed to reset metrics');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to reset metrics'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Invalidate Casbin policy cache
+ * @route POST /api/admin/casbin/cache/invalidate
+ */
+router.post('/admin/casbin/cache/invalidate', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    casbinService.invalidateCache();
+    
+    res.json({
+      data: {
+        message: 'Cache invalidated successfully'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Failed to invalidate cache');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to invalidate cache'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Reload policies from database
+ * @route POST /api/admin/casbin/reload
+ */
+router.post('/admin/casbin/reload', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    await casbinService.reloadPolicies();
+    
+    res.json({
+      data: {
+        message: 'Policies reloaded successfully'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Failed to reload policies');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to reload policies'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
  * Development-only endpoint to get Casbin state for debugging
  * GET /api/dev/casbin-state
  * 
