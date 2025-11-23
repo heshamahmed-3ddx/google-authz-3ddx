@@ -1,0 +1,773 @@
+/**
+ * Compact UI Global Styles
+ * 
+ * This file contains global compact design patterns used across the application.
+ * These styles provide a consistent, space-efficient UI design.
+ */
+
+/* ========================================
+   PAGE CONTAINERS
+   ======================================== */
+
+/* Standard page container with responsive padding */
+.page-container,
+.dashboard-page,
+.settings-page,
+.surgical-guide-report {
+  padding: 8px;
+}
+
+@media (min-width: 600px) {
+  .page-container,
+  .dashboard-page,
+  .settings-page,
+  .surgical-guide-report {
+    padding: 12px;
+  }
+}
+
+@media (min-width: 960px) {
+  .page-container,
+  .dashboard-page,
+  .settings-page,
+  .surgical-guide-report {
+    padding: 16px;
+  }
+}
+
+/* ========================================
+   HEADERS
+   ======================================== */
+
+/* Compact header container */
+.compact-header {
+  min-height: 50px !important;
+}
+
+/* Compact header title */
+.compact-header-title {
+  font-size: 1.25rem !important;
+  line-height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  margin-bottom: 0 !important;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+/* Compact header subtitle */
+.compact-header-subtitle {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  min-height: 1rem !important;
+  margin-top: 2px !important;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+/* Compact card title */
+.compact-title {
+  padding: 6px 12px !important;
+  min-height: 36px !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Compact card with standard elevation */
+.compact-card {
+  elevation: 1;
+}
+
+/* Compact card text padding */
+.compact-card-text {
+  padding: 12px !important;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+/* Section headings - compact style */
+.compact-section-title {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  margin-bottom: 12px !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Compact text sizes */
+.compact-text {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.compact-text-small {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* ========================================
+   SPACING
+   ======================================== */
+
+/* Compact margins */
+.compact-mb-1 {
+  margin-bottom: 4px !important;
+}
+
+.compact-mb-2 {
+  margin-bottom: 8px !important;
+}
+
+.compact-mb-3 {
+  margin-bottom: 12px !important;
+}
+
+.compact-mt-1 {
+  margin-top: 4px !important;
+}
+
+.compact-mt-2 {
+  margin-top: 8px !important;
+}
+
+.compact-mt-3 {
+  margin-top: 12px !important;
+}
+
+/* Compact padding */
+.compact-pa-1 {
+  padding: 4px !important;
+}
+
+.compact-pa-2 {
+  padding: 8px !important;
+}
+
+.compact-pa-3 {
+  padding: 12px !important;
+}
+
+/* ========================================
+   ICONS
+   ======================================== */
+
+/* Compact icon styling */
+.compact-icon {
+  size: small;
+  margin-inline-end: 6px;
+}
+
+/* Icon in compact header */
+.compact-header-title .v-icon,
+.compact-title .v-icon {
+  size: small !important;
+  margin-inline-end: 6px !important;
+}
+
+/* ========================================
+   FORMS & INPUTS
+   ======================================== */
+
+/* Compact Text Fields - Default styling */
+.v-text-field,
+.v-select,
+.v-textarea,
+.v-autocomplete,
+.v-combobox {
+  font-size: 0.875rem;
+}
+
+/* Compact Text Field - Outlined variant with compact density */
+.v-text-field[class*="density-compact"],
+.v-text-field.density-compact,
+.v-text-field {
+  --v-field-input-padding-top: 8px;
+  --v-field-input-padding-bottom: 8px;
+}
+
+.v-text-field.variant-outlined {
+  --v-field-border-width: 1px;
+}
+
+/* Compact Select Fields */
+.v-select[class*="density-compact"],
+.v-select.density-compact,
+.v-select {
+  --v-field-input-padding-top: 8px;
+  --v-field-input-padding-bottom: 8px;
+}
+
+/* Table footer select - extra compact */
+.v-data-table-footer__items-per-page .v-select {
+  font-size: 0.75rem !important;
+  min-width: 60px;
+  max-width: 80px;
+}
+
+.v-data-table-footer__items-per-page .v-field {
+  padding: 2px 8px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+}
+
+.v-data-table-footer__items-per-page .v-field__input {
+  min-height: 24px !important;
+  padding: 0 4px !important;
+  font-size: 0.75rem !important;
+}
+
+.v-data-table-footer__items-per-page .v-field__append-inner {
+  padding: 0 4px !important;
+}
+
+.v-data-table-footer__items-per-page .v-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Compact Textarea */
+.v-textarea[class*="density-compact"],
+.v-textarea.density-compact,
+.v-textarea {
+  --v-field-input-padding-top: 8px;
+  --v-field-input-padding-bottom: 8px;
+}
+
+/* Hide details by default for compact fields */
+.v-text-field.hide-details,
+.v-select.hide-details,
+.v-textarea.hide-details {
+  margin-bottom: 0;
+}
+
+/* Compact form fields utility class */
+.compact-field {
+  density: compact;
+  variant: outlined;
+  hide-details: true;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+/* Compact Buttons - Default small size */
+.v-btn {
+  text-transform: none !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  will-change: auto;
+}
+
+/* Small buttons - compact size */
+.v-btn.size-small,
+.v-btn[class*="size-small"] {
+  min-width: 64px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+}
+
+/* Default buttons - standard compact size */
+.v-btn.size-default,
+.v-btn:not([class*="size-"]) {
+  min-width: 80px;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+/* Compact button utility class */
+.compact-btn {
+  size: small;
+  min-width: 64px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+}
+
+/* Button variants - outlined is common */
+.v-btn.variant-outlined {
+  border-width: 1px;
+}
+
+.v-btn.variant-elevated {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.v-btn.variant-elevated:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Button icons */
+.v-btn .v-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.v-btn.size-small .v-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Button prepend/append icons */
+.v-btn--prepend > .v-btn__prepend > .v-icon,
+.v-btn--append > .v-btn__append > .v-icon {
+  margin-inline-end: 4px;
+}
+
+.v-btn--prepend > .v-btn__prepend > .v-icon:first-child {
+  margin-inline-start: -4px;
+}
+
+/* Icon buttons - compact */
+.v-btn--icon {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.v-btn--icon.size-small {
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+/* Table footer buttons - extra compact */
+.v-data-table-footer .v-btn,
+.v-data-table-footer .v-btn--icon {
+  min-width: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  font-size: 0.75rem !important;
+}
+
+.v-data-table-footer .v-btn .v-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.v-data-table-footer .v-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.v-theme--dark .v-data-table-footer .v-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.v-data-table-footer .v-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Button hover effects */
+.v-btn:hover {
+  transition: all 0.2s ease;
+}
+
+.v-btn.variant-outlined:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+
+.v-btn.variant-elevated:hover {
+  transform: translateY(-1px);
+}
+
+/* Button disabled state */
+.v-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ========================================
+   ALERTS
+   ======================================== */
+
+/* Compact alerts */
+.compact-alert {
+  density: compact;
+}
+
+/* ========================================
+   TABLES
+   ======================================== */
+
+/* Remove border-radius from all table elements globally */
+.v-data-table__wrapper,
+.v-table__wrapper,
+.v-data-table,
+.v-table,
+.v-data-table__th,
+.v-data-table__td,
+.v-data-table thead,
+.v-data-table thead tr,
+.v-data-table thead th,
+.v-data-table tbody td {
+  border-radius: 0 !important;
+}
+
+/* Ultra Compact Table - Default style for all tables */
+.ultra-compact-table,
+.v-data-table,
+.v-table {
+  font-size: 0.85rem;
+  border-radius: 0 !important;
+}
+
+/* Table Header Styling - Orange background with white text */
+.ultra-compact-table .v-data-table__th,
+.ultra-compact-table thead th,
+.v-data-table__th,
+.v-data-table thead th {
+  padding: 4px 8px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  height: 30px !important;
+  line-height: 1.2 !important;
+  background: #FF8C00 !important; /* Primary orange background */
+  color: #FFFFFF !important; /* White text */
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Cell Styling */
+.ultra-compact-table .v-data-table__td,
+.ultra-compact-table tbody td,
+.v-data-table__td,
+.v-data-table tbody td {
+  padding: 2px 8px !important;
+  font-size: 0.8rem !important;
+  height: 32px !important;
+  line-height: 1.2 !important;
+}
+
+/* Table Row Hover Effect */
+.v-data-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.v-theme--dark .v-data-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Compact Icons in Table */
+.ultra-compact-table .v-icon,
+.v-data-table .v-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.ultra-compact-table .v-icon[size="small"],
+.v-data-table .v-icon[size="small"] {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.ultra-compact-table .v-icon[size="x-small"],
+.v-data-table .v-icon[size="x-small"] {
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+/* Compact Chips in Table */
+.ultra-compact-table .v-chip,
+.v-data-table .v-chip {
+  height: 18px !important;
+  font-size: 0.65rem !important;
+  padding: 0 4px !important;
+}
+
+/* Compact Expand Icon */
+.ultra-compact-table .v-data-table__expand-icon,
+.v-data-table__expand-icon {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 16px !important;
+}
+
+/* Table Footer Styling */
+.ultra-compact-table .v-data-table-footer,
+.v-data-table-footer {
+  padding: 6px 16px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.v-theme--dark .v-data-table-footer {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Items per page selector */
+.ultra-compact-table .v-data-table-footer__items-per-page,
+.v-data-table-footer__items-per-page {
+  font-size: 0.75rem !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: auto;
+  flex-shrink: 0;
+}
+
+/* Pagination info */
+.ultra-compact-table .v-data-table-footer__info,
+.v-data-table-footer__info {
+  font-size: 0.75rem !important;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  white-space: nowrap;
+}
+
+/* Pagination controls - compact and professional */
+.v-data-table-footer__pagination {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  flex: 1;
+  justify-content: center;
+  order: 2;
+  margin: 0 auto;
+}
+
+/* Compact chip for page numbers in pagination */
+.v-data-table-footer__pagination .v-chip {
+  height: 24px !important;
+  font-size: 0.7rem !important;
+  padding: 0 6px !important;
+  min-width: 24px !important;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Table Card Styling */
+.table-card {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0 !important;
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.v-theme--dark .table-card {
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.table-card-title {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  min-height: 40px;
+}
+
+.table-card-title.compact-title {
+  padding: 6px 12px;
+  min-height: 36px;
+}
+
+.table-card :deep(.v-card-text) {
+  padding: 8px !important;
+  background: transparent !important;
+}
+
+.v-theme--dark .table-card-title {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Compact table title utility */
+.compact-table-title {
+  padding: 6px 12px;
+  min-height: 36px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Compact Legend (for table legends) */
+.compact-legend {
+  padding: 6px 12px !important;
+  min-height: 32px;
+}
+
+.compact-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ========================================
+   LISTS
+   ======================================== */
+
+/* Compact list items */
+.compact-list {
+  density: compact;
+}
+
+/* ========================================
+   CHIPS & BADGES
+   ======================================== */
+
+/* Compact chips */
+.compact-chip {
+  size: small;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Text size utilities */
+.text-compact {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-compact-small {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Spacing utilities */
+.spacing-compact > * + * {
+  margin-top: 8px;
+}
+
+.spacing-compact-tight > * + * {
+  margin-top: 4px;
+}
+
+/* ========================================
+   COMPONENT SPECIFIC
+   ======================================== */
+
+/* Compact card sections */
+.compact-card-section {
+  margin-bottom: 12px;
+}
+
+.compact-card-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Compact divider */
+.compact-divider {
+  margin: 12px 0 !important;
+}
+
+/* Compact row spacing */
+.compact-row {
+  margin-bottom: 12px;
+}
+
+.compact-row:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   RESPONSIVE COMPACT
+   ======================================== */
+
+/* On mobile, make things even more compact */
+@media (max-width: 599px) {
+  .compact-header-title {
+    font-size: 1.125rem !important;
+  }
+
+  .compact-title {
+    padding: 4px 8px !important;
+    min-height: 32px !important;
+  }
+
+  .compact-card-text {
+    padding: 8px !important;
+  }
+}
+
+/* ========================================
+   DARK MODE SUPPORT
+   ======================================== */
+
+.v-theme--dark .compact-card {
+  background-color: rgba(var(--v-theme-surface), 0.8);
+}
+
+/* ========================================
+   RTL SUPPORT
+   ======================================== */
+
+[dir="rtl"] .compact-icon,
+[dir="rtl"] .compact-header-title .v-icon,
+[dir="rtl"] .compact-title .v-icon {
+  margin-inline-end: 0 !important;
+  margin-inline-start: 6px !important;
+}
+
+/* RTL Table Support */
+.rtl-table .v-data-table,
+.rtl-table .v-table,
+[dir="rtl"] .v-data-table,
+[dir="rtl"] .v-table {
+  direction: rtl;
+  text-align: right;
+}
+
+.ltr-table .v-data-table,
+.ltr-table .v-table,
+[dir="ltr"] .v-data-table,
+[dir="ltr"] .v-table {
+  direction: ltr;
+  text-align: left;
+}
+
+/* RTL Table Footer */
+.rtl-table.ultra-compact-table .v-data-table-footer,
+[dir="rtl"] .v-data-table-footer {
+  flex-direction: row-reverse;
+}
+
+.rtl-table.ultra-compact-table .v-data-table-footer__items-per-page,
+[dir="rtl"] .v-data-table-footer__items-per-page {
+  order: 3;
+}
+
+.rtl-table.ultra-compact-table .v-data-table-footer__pagination,
+[dir="rtl"] .v-data-table-footer__pagination {
+  order: 2;
+}
+
+.rtl-table.ultra-compact-table .v-data-table-footer__info,
+[dir="rtl"] .v-data-table-footer__info {
+  order: 1;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Flip icon buttons (previous/next) horizontally so arrows point correctly in RTL */
+.rtl-table .v-data-table-footer .v-btn--icon,
+[dir="rtl"] .v-data-table-footer .v-btn--icon {
+  transform: scaleX(-1) !important;
+}
+

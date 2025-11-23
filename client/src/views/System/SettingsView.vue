@@ -1,70 +1,79 @@
 <template>
-  <v-container>
+  <v-container fluid class="settings-page">
+    <!-- Header Section -->
     <v-row>
       <v-col cols="12">
-        <h1 class="text-h4 mb-6">{{ pageTitle }}</h1>
-
-        <v-card elevation="3" class="mb-6">
-          <v-card-text class="text-center py-12">
-            <v-icon
-              :icon="pageIcon"
-              size="64"
-              color="primary"
-              class="mb-4"
-            ></v-icon>
-            <h2 class="text-h5 mb-3">{{ pageTitle }}</h2>
-            <p class="text-body-1 text-medium-emphasis mb-6">
-              {{ pageDescription }}
-            </p>
-
-            <v-chip color="info" variant="tonal" prepend-icon="mdi-information">
-              Coming Soon
-            </v-chip>
-          </v-card-text>
-        </v-card>
-
-        <!-- Breadcrumb navigation -->
-        <v-card elevation="2" class="mb-6">
-          <v-card-text>
-            <div class="d-flex align-center">
-              <v-icon icon="mdi-map-marker-path" class="mr-2"></v-icon>
-              <v-breadcrumbs :items="breadcrumbs" density="compact">
-                <template #divider>
-                  <v-icon icon="mdi-chevron-right"></v-icon>
-                </template>
-              </v-breadcrumbs>
-            </div>
-          </v-card-text>
-        </v-card>
-
-        <!-- Quick actions (if applicable) -->
-        <v-card v-if="quickActions.length > 0" elevation="2">
-          <v-card-title>
-            <v-icon icon="mdi-lightning-bolt" class="mr-2"></v-icon>
-            Quick Actions
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col
-                v-for="action in quickActions"
-                :key="action.title"
-                cols="12"
-                md="6"
-                lg="4"
+        <div
+          class="d-flex justify-space-between mb-2 header-container compact-header"
+        >
+          <div>
+            <h1 class="text-h6 pt-2 compact-header-title">
+              <v-icon size="small" style="margin-inline-end: 6px" color="primary"
+                >mdi-cog</v-icon
               >
-                <v-card variant="tonal" :color="action.color">
-                  <v-card-text class="text-center py-6">
-                    <v-icon :icon="action.icon" size="32" class="mb-3"></v-icon>
-                    <div class="text-subtitle-1 font-weight-medium">
-                      {{ action.title }}
-                    </div>
-                    <div class="text-caption mt-2">
-                      {{ action.description }}
-                    </div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
+              Settings
+            </h1>
+            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
+              Manage system settings and configurations
+            </p>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
+
+    <!-- Settings Tabs -->
+    <v-row no-gutters>
+      <v-col cols="12">
+        <v-card elevation="1">
+          <v-tabs
+            v-model="activeTab"
+            bg-color="primary"
+            slider-color="white"
+            color="white"
+            class="settings-tabs"
+            density="compact"
+          >
+            <v-tab value="general">
+              <v-icon icon="mdi-cog-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              General
+            </v-tab>
+            <v-tab value="security">
+              <v-icon icon="mdi-security" size="small" style="margin-inline-end: 6px"></v-icon>
+              Security
+            </v-tab>
+            <v-tab value="notifications">
+              <v-icon icon="mdi-bell-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              Notifications
+            </v-tab>
+            <v-tab value="integrations">
+              <v-icon icon="mdi-puzzle-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              Integrations
+            </v-tab>
+          </v-tabs>
+
+          <v-card-text class="pa-0">
+            <!-- Tab Content -->
+            <v-window v-model="activeTab">
+              <!-- General Tab -->
+              <v-window-item value="general">
+                <GeneralSettings />
+              </v-window-item>
+
+              <!-- Security Tab -->
+              <v-window-item value="security">
+                <SecuritySettings />
+              </v-window-item>
+
+              <!-- Notifications Tab -->
+              <v-window-item value="notifications">
+                <NotificationsSettings />
+              </v-window-item>
+
+              <!-- Integrations Tab -->
+              <v-window-item value="integrations">
+                <IntegrationsSettings />
+              </v-window-item>
+            </v-window>
           </v-card-text>
         </v-card>
       </v-col>
@@ -73,355 +82,72 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
-import {
-  getBreadcrumbTrail,
-  NAVIGATION_CONFIG,
-} from "@/config/navigationConfig";
+import { ref, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import SecuritySettings from "@/components/Settings/SecuritySettings.vue";
+import GeneralSettings from "@/components/Settings/GeneralSettings.vue";
+import NotificationsSettings from "@/components/Settings/NotificationsSettings.vue";
+import IntegrationsSettings from "@/components/Settings/IntegrationsSettings.vue";
 
 const route = useRoute();
+const router = useRouter();
+const activeTab = ref("general");
 
-// Page configuration based on route
-const pageConfig = computed(() => {
-  const configs = {
-    // User Management
-    "/users": {
-      title: "Users",
-      icon: "mdi-account-group",
-      description: "Manage user accounts, permissions, and access levels.",
-      actions: [
-        {
-          title: "Add User",
-          icon: "mdi-account-plus",
-          color: "primary",
-          description: "Create a new user account",
-        },
-        {
-          title: "Import Users",
-          icon: "mdi-upload",
-          color: "secondary",
-          description: "Bulk import users from file",
-        },
-        {
-          title: "User Reports",
-          icon: "mdi-chart-box",
-          color: "info",
-          description: "View user statistics",
-        },
-      ],
-    },
-    "/groups": {
-      title: "Groups",
-      icon: "mdi-google-circles-communities",
-      description: "Manage groups and group memberships for access control.",
-      actions: [
-        {
-          title: "Create Group",
-          icon: "mdi-plus-circle",
-          color: "primary",
-          description: "Create a new group",
-        },
-        {
-          title: "Sync Groups",
-          icon: "mdi-sync",
-          color: "secondary",
-          description: "Sync with Google Workspace",
-        },
-      ],
-    },
-    "/roles": {
-      title: "Roles & Permissions",
-      icon: "mdi-shield-account",
-      description: "Define roles and manage permission assignments.",
-      actions: [
-        {
-          title: "New Role",
-          icon: "mdi-shield-plus",
-          color: "primary",
-          description: "Create a new role",
-        },
-        {
-          title: "Permission Matrix",
-          icon: "mdi-matrix",
-          color: "info",
-          description: "View permission matrix",
-        },
-      ],
-    },
-    "/policies": {
-      title: "Access Policies",
-      icon: "mdi-shield-lock",
-      description: "Configure access control policies using Casbin.",
-      actions: [
-        {
-          title: "New Policy",
-          icon: "mdi-file-plus",
-          color: "primary",
-          description: "Add new policy rule",
-        },
-        {
-          title: "Test Policy",
-          icon: "mdi-test-tube",
-          color: "secondary",
-          description: "Test policy enforcement",
-        },
-      ],
-    },
-
-    // Organization
-    "/organization/structure": {
-      title: "Organization Structure",
-      icon: "mdi-sitemap",
-      description: "View and manage the organizational hierarchy.",
-      actions: [],
-    },
-    "/organization/departments": {
-      title: "Departments",
-      icon: "mdi-office-building",
-      description: "Manage department structure and assignments.",
-      actions: [],
-    },
-    "/organization/cost-centers": {
-      title: "Cost Centers",
-      icon: "mdi-cash-multiple",
-      description: "Configure cost centers for financial tracking.",
-      actions: [],
-    },
-    "/organization/units": {
-      title: "Organizational Units",
-      icon: "mdi-file-tree",
-      description: "Manage organizational units in Google Workspace.",
-      actions: [],
-    },
-
-    // Finance
-    "/finance/invoices": {
-      title: "Invoices",
-      icon: "mdi-file-document",
-      description: "Manage invoices and billing records.",
-      actions: [
-        {
-          title: "New Invoice",
-          icon: "mdi-plus",
-          color: "primary",
-          description: "Create new invoice",
-        },
-        {
-          title: "Pending Review",
-          icon: "mdi-clock-alert",
-          color: "warning",
-          description: "5 invoices pending",
-        },
-      ],
-    },
-    "/finance/budgets": {
-      title: "Budgets",
-      icon: "mdi-chart-pie",
-      description: "Track and manage department budgets.",
-      actions: [],
-    },
-    "/finance/reports": {
-      title: "Financial Reports",
-      icon: "mdi-chart-line",
-      description: "Generate and view financial reports.",
-      actions: [],
-    },
-    "/finance/approvals": {
-      title: "Approvals",
-      icon: "mdi-check-circle",
-      description: "Review and approve financial requests.",
-      actions: [],
-    },
-
-    // Development
-    "/dev/repositories": {
-      title: "Code Repositories",
-      icon: "mdi-source-repository",
-      description: "Access code repositories and version control.",
-      actions: [],
-    },
-    "/dev/deployments": {
-      title: "Deployments",
-      icon: "mdi-rocket-launch",
-      description: "Manage application deployments and releases.",
-      actions: [],
-    },
-    "/dev/api-keys": {
-      title: "API Keys",
-      icon: "mdi-key-variant",
-      description: "Manage API keys and authentication tokens.",
-      actions: [],
-    },
-    "/dev/webhooks": {
-      title: "Webhooks",
-      icon: "mdi-webhook",
-      description: "Configure webhooks for event notifications.",
-      actions: [],
-    },
-
-    // Projects
-    "/projects": {
-      title: "All Projects",
-      icon: "mdi-folder-multiple",
-      description: "View and manage all projects.",
-      actions: [],
-    },
-    "/projects/my-tasks": {
-      title: "My Tasks",
-      icon: "mdi-checkbox-marked-circle",
-      description: "View and manage your assigned tasks.",
-      actions: [],
-    },
-    "/projects/timesheets": {
-      title: "Timesheets",
-      icon: "mdi-clock-time-four",
-      description: "Log time and manage timesheets.",
-      actions: [],
-    },
-    "/projects/reports": {
-      title: "Project Reports",
-      icon: "mdi-chart-gantt",
-      description: "View project progress and analytics.",
-      actions: [],
-    },
-
-    // Documentation
-    "/docs/api": {
-      title: "API Documentation",
-      icon: "mdi-api",
-      description: "Interactive API documentation and references.",
-      actions: [],
-    },
-    "/docs/jsdoc": {
-      title: "Code Documentation",
-      icon: "mdi-file-document-outline",
-      description: "Detailed code documentation generated from JSDoc.",
-      actions: [],
-    },
-    "/docs/guides": {
-      title: "User Guides",
-      icon: "mdi-help-circle",
-      description: "Step-by-step guides and tutorials.",
-      actions: [],
-    },
-    "/docs/technical": {
-      title: "Technical Specifications",
-      icon: "mdi-file-code",
-      description: "Technical documentation and architecture specs.",
-      actions: [],
-    },
-
-    // Reports
-    "/reports/dashboards": {
-      title: "Dashboards",
-      icon: "mdi-view-dashboard",
-      description: "Customizable analytics dashboards.",
-      actions: [],
-    },
-    "/reports/user-activity": {
-      title: "User Activity",
-      icon: "mdi-account-clock",
-      description: "Track user activity and engagement.",
-      actions: [],
-    },
-    "/reports/logs": {
-      title: "System Logs",
-      icon: "mdi-text-box-search",
-      description: "View system logs and events.",
-      actions: [],
-    },
-    "/reports/audit": {
-      title: "Audit Trail",
-      icon: "mdi-history",
-      description: "Comprehensive audit trail of system changes.",
-      actions: [],
-    },
-
-    // System
-    "/system/settings": {
-      title: "System Settings",
-      icon: "mdi-cog-outline",
-      description: "Configure system-wide settings and preferences.",
-      actions: [],
-    },
-    "/system/integrations": {
-      title: "Integrations",
-      icon: "mdi-puzzle",
-      description: "Manage third-party integrations.",
-      actions: [],
-    },
-    "/system/notifications": {
-      title: "Notifications",
-      icon: "mdi-bell",
-      description: "Configure notification settings and alerts.",
-      actions: [],
-    },
-    "/system/security": {
-      title: "Security",
-      icon: "mdi-security",
-      description: "Security settings and access controls.",
-      actions: [],
-    },
-    "/system/backup": {
-      title: "Backup & Recovery",
-      icon: "mdi-backup-restore",
-      description: "Backup and disaster recovery settings.",
-      actions: [],
-    },
-
-    // Help
-    "/help/faq": {
-      title: "FAQs",
-      icon: "mdi-frequently-asked-questions",
-      description: "Frequently asked questions and answers.",
-      actions: [],
-    },
-    "/help/contact": {
-      title: "Contact Support",
-      icon: "mdi-email-outline",
-      description: "Get in touch with our support team.",
-      actions: [],
-    },
-    "/help/tutorials": {
-      title: "Video Tutorials",
-      icon: "mdi-video-outline",
-      description: "Watch tutorial videos and walkthroughs.",
-      actions: [],
-    },
-    "/help/whats-new": {
-      title: "What's New",
-      icon: "mdi-new-box",
-      description: "Latest updates and new features.",
-      actions: [],
-    },
-  };
-
-  return (
-    configs[route.path] || {
-      title: "Page",
-      icon: "mdi-file",
-      description: "This page is under construction.",
-      actions: [],
-    }
-  );
+// Set active tab from route query or default to general
+onMounted(() => {
+  if (route.query.tab) {
+    activeTab.value = route.query.tab;
+  }
 });
 
-const pageTitle = computed(() => pageConfig.value.title);
-const pageIcon = computed(() => pageConfig.value.icon);
-const pageDescription = computed(() => pageConfig.value.description);
-const quickActions = computed(() => pageConfig.value.actions);
-
-const breadcrumbs = computed(() => {
-  const trail = getBreadcrumbTrail(NAVIGATION_CONFIG, route.path);
-  return trail.map((item) => ({
-    title: item.title,
-    disabled: item.route === route.path,
-    to: item.route,
-  }));
+// Watch for tab changes and update route
+watch(activeTab, (newTab) => {
+  router.replace({ query: { ...route.query, tab: newTab } });
 });
 </script>
 
 <style scoped>
-/* Optional custom styles */
+.settings-page {
+  padding: 8px;
+}
+
+@media (min-width: 600px) {
+  .settings-page {
+    padding: 12px;
+  }
+}
+
+@media (min-width: 960px) {
+  .settings-page {
+    padding: 16px;
+  }
+}
+
+.compact-header {
+  min-height: 50px !important;
+}
+
+.compact-header-title {
+  font-size: 1.25rem !important;
+  line-height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+.compact-header-subtitle {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  min-height: 1rem !important;
+  margin-top: 2px !important;
+}
+
+.settings-tabs :deep(.v-tab) {
+  text-transform: none;
+  font-weight: 500;
+  min-height: 40px;
+}
+
+.settings-tabs :deep(.v-tab--selected) {
+  color: white;
+}
 </style>

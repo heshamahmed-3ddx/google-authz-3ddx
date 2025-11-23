@@ -310,6 +310,13 @@ export const NAVIGATION_CONFIG = [
         permissions: ["admin", "SWD", "finance"],
       },
       {
+        id: "powerbi-reporting",
+        title: "PowerBI Reporting",
+        icon: "mdi-microsoft-power-bi",
+        route: "/reports/powerbi",
+        permissions: ["*"],
+      },
+      {
         id: "user-activity",
         title: "User Activity",
         icon: "mdi-account-clock",
@@ -347,7 +354,7 @@ export const NAVIGATION_CONFIG = [
         title: "System Settings",
         icon: "mdi-cog-outline",
         route: "/system/settings",
-        permissions: ["admin"],
+        permissions: ["*"], // All authenticated users can view, but only admins can edit
       },
       {
         id: "integrations",

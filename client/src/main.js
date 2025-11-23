@@ -14,6 +14,8 @@ import { i18n, isRTL } from "./i18n";
 
 // Import custom theme styles
 import "./styles/theme.css";
+// Import compact UI global styles
+import "./styles/compact-ui.css";
 
 // Enhanced Vuetify theme configuration with 3D Diagnostix colors
 const vuetify = createVuetify({
@@ -62,13 +64,48 @@ const vuetify = createVuetify({
   },
   defaults: {
     VCard: {
-      elevation: 2,
+      elevation: 1, // Compact default elevation
     },
     VBtn: {
       style: "text-transform: none;",
     },
     VAppBar: {
       elevation: 1,
+    },
+    VTextField: {
+      density: "compact", // Compact default density
+      variant: "outlined", // Outlined variant by default
+      hideDetails: true, // Hide details by default for compact look
+    },
+    VSelect: {
+      density: "compact",
+      variant: "outlined",
+      hideDetails: true,
+    },
+    VTextarea: {
+      density: "compact",
+      variant: "outlined",
+      hideDetails: true,
+    },
+    VAutocomplete: {
+      density: "compact",
+      variant: "outlined",
+      hideDetails: true,
+    },
+    VCombobox: {
+      density: "compact",
+      variant: "outlined",
+      hideDetails: true,
+    },
+    VAlert: {
+      density: "compact", // Compact default density
+    },
+    VList: {
+      density: "compact",
+    },
+    VDataTable: {
+      density: "compact", // Compact density for all tables
+      class: "ultra-compact-table", // Apply ultra-compact styling
     },
   },
 });

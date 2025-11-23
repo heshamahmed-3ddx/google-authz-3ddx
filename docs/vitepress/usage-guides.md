@@ -10,12 +10,14 @@ This guide provides step-by-step instructions for common tasks and workflows in 
 
 1. [Authentication Flow](#authentication-flow)
 2. [Navigation System](#navigation-system)
-3. [Development Mode](#development-mode)
-4. [Surgical Guide Reports](#surgical-guide-reports)
-5. [User Management](#user-management)
-6. [Access Control](#access-control)
-7. [Theme Customization](#theme-customization)
-8. [Internationalization](#internationalization)
+3. [Compact UI System](#compact-ui-system)
+4. [Settings & Permissions](#settings--permissions)
+5. [Development Mode](#development-mode)
+6. [Surgical Guide Reports](#surgical-guide-reports)
+7. [User Management](#user-management)
+8. [Access Control](#access-control)
+9. [Theme Customization](#theme-customization)
+10. [Internationalization](#internationalization)
 
 ---
 
@@ -232,6 +234,187 @@ const goBack = () => {
 };
 </script>
 ```
+
+---
+
+## Compact UI System
+
+### 1. Using Compact UI Classes
+
+The application uses a global compact UI design system. All components automatically use compact styling.
+
+**Page Container:**
+```vue
+<template>
+  <v-container fluid class="page-container">
+    <!-- Your content -->
+  </v-container>
+</template>
+```
+
+**Compact Header:**
+```vue
+<template>
+  <div class="compact-header">
+    <h1 class="compact-header-title">
+      <v-icon size="small" style="margin-inline-end: 6px" color="primary">
+        mdi-icon-name
+      </v-icon>
+      Page Title
+    </h1>
+    <p class="compact-header-subtitle">Page description</p>
+  </div>
+</template>
+```
+
+**Compact Card:**
+```vue
+<template>
+  <v-card elevation="1">
+    <v-card-title class="compact-title">
+      <v-icon size="small" style="margin-inline-end: 6px" color="primary">
+        mdi-icon-name
+      </v-icon>
+      <span class="text-subtitle-2 font-weight-medium">Card Title</span>
+    </v-card-title>
+    <v-card-text class="compact-card-text">
+      <!-- Content -->
+    </v-card-text>
+  </v-card>
+</template>
+```
+
+### 2. Tables
+
+All tables automatically use ultra-compact styling with orange headers:
+
+```vue
+<template>
+  <v-card elevation="1" class="table-card">
+    <v-card-title class="table-card-title compact-title">
+      Table Title
+    </v-card-title>
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      density="compact"
+    />
+  </v-card>
+</template>
+```
+
+**Table Features:**
+- Orange header background (#FF8C00)
+- White header text
+- Compact cell padding
+- Sticky headers
+- Automatic compact footer
+
+### 3. Buttons and Inputs
+
+Buttons and inputs automatically use compact styling:
+
+```vue
+<template>
+  <!-- Compact button -->
+  <v-btn size="small" variant="outlined">Button</v-btn>
+  
+  <!-- Compact input (automatic) -->
+  <v-text-field
+    v-model="value"
+    label="Label"
+    density="compact"
+    variant="outlined"
+    hide-details
+  />
+</template>
+```
+
+See [Compact UI Style Guide](./compact-ui-style-guide.md) for complete documentation.
+
+---
+
+## Settings & Permissions
+
+### 1. Accessing Settings
+
+Navigate to `/system/settings` or `/system/settings?tab=security`
+
+**Access:**
+- **View:** All authenticated users
+- **Edit:** Admin users only
+
+### 2. Managing Roles
+
+**View Roles:**
+- All roles are displayed in the Roles & Permissions section
+- Click on a role to view details
+
+**Add Role (Admin Only):**
+1. Click "Add Role" button
+2. Enter role name and description
+3. Click "Create"
+
+**Edit Role (Admin Only):**
+1. Click edit icon next to role
+2. Modify details
+3. Click "Update"
+
+**Delete Role (Admin Only):**
+1. Click delete icon next to role
+2. Confirm deletion
+
+### 3. Managing Permissions
+
+**Using Permissions Matrix:**
+1. Select a role from dropdown
+2. View permissions grid (Resources × Actions)
+3. Click checkboxes to toggle permissions
+4. Changes save automatically
+
+**Permission Format:**
+- **Subject:** Role or group name
+- **Object:** Resource name (e.g., `users`, `projects`)
+- **Action:** Action type (e.g., `read`, `write`, `delete`)
+
+### 4. Managing Policies
+
+**View Policies:**
+- All policies displayed in table format
+- Shows subject, resource, and action
+
+**Add Policy (Admin Only):**
+1. Click "Add Policy" button
+2. Select subject (role/group)
+3. Enter resource name
+4. Select action
+5. Click "Create"
+
+**Edit Policy (Admin Only):**
+1. Click edit icon in policies table
+2. Modify policy details
+3. Click "Update"
+
+**Delete Policy (Admin Only):**
+1. Click delete icon
+2. Confirm deletion
+
+### 5. Security Options (Admin Only)
+
+**Cache Management:**
+- Click "Invalidate Cache" to clear Casbin cache
+- Forces reload from database
+
+**Policy Reload:**
+- Click "Reload Policies" to reload from database
+- Useful after manual database changes
+
+**Performance Metrics:**
+- View cache hit rate
+- View average query time
+- View operation counts
+
+See [Settings Page Guide](./settings-page-guide.md) for complete documentation.
 
 ---
 
