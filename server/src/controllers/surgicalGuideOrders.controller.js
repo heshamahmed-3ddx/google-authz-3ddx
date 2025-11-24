@@ -136,8 +136,8 @@ class SurgicalGuideOrdersController {
         requestId: req.requestId
       });
 
-      // Handle specific error types
-      if (error.message.includes('Invalid date') || error.message.includes('Date range')) {
+      // Handle validation errors
+      if (error.isValidationError || error.message.includes('Invalid date') || error.message.includes('Date range')) {
         return res.status(400).json({
           error: {
             code: 'VALIDATION_ERROR',
@@ -148,11 +148,30 @@ class SurgicalGuideOrdersController {
         });
       }
 
+      // Handle database connection errors
+      if (error.isDatabaseError || error.message.includes('Database') || error.message.includes('pool not initialized')) {
+        logger.error('Database error in report endpoint', {
+          error: error.message,
+          originalError: error.originalError?.message,
+          requestId: req.requestId
+        });
+        return res.status(503).json({
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            http: 503,
+            message: 'Database service is currently unavailable. Please check database connection.',
+            details: error.message
+          },
+          requestId: req.requestId
+        });
+      }
+
       res.status(500).json({
         error: {
           code: 'INTERNAL_ERROR',
           http: 500,
-          message: 'Failed to fetch report data'
+          message: 'Failed to fetch report data',
+          details: error.message
         },
         requestId: req.requestId
       });
@@ -226,7 +245,8 @@ class SurgicalGuideOrdersController {
         requestId: req.requestId
       });
 
-      if (error.message.includes('Invalid date') || error.message.includes('Date range')) {
+      // Handle validation errors
+      if (error.isValidationError || error.message.includes('Invalid date') || error.message.includes('Date range')) {
         return res.status(400).json({
           error: {
             code: 'VALIDATION_ERROR',
@@ -237,11 +257,30 @@ class SurgicalGuideOrdersController {
         });
       }
 
+      // Handle database connection errors
+      if (error.isDatabaseError || error.message.includes('Database') || error.message.includes('pool not initialized')) {
+        logger.error('Database error in summary endpoint', {
+          error: error.message,
+          originalError: error.originalError?.message,
+          requestId: req.requestId
+        });
+        return res.status(503).json({
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            http: 503,
+            message: 'Database service is currently unavailable. Please check database connection.',
+            details: error.message
+          },
+          requestId: req.requestId
+        });
+      }
+
       res.status(500).json({
         error: {
           code: 'INTERNAL_ERROR',
           http: 500,
-          message: 'Failed to fetch summary data'
+          message: 'Failed to fetch summary data',
+          details: error.message
         },
         requestId: req.requestId
       });
@@ -362,7 +401,30 @@ class SurgicalGuideOrdersController {
         });
       }
 
-      const userGroups = await casbinService.getUserGroups(userEmail);
+      // Get user groups with error handling
+      let userGroups = [];
+      try {
+        userGroups = await casbinService.getUserGroups(userEmail);
+      } catch (casbinError) {
+        // If Casbin fails, log but don't fail the request - return empty groups
+        logger.warn('Failed to get user groups from Casbin, returning empty groups', {
+          error: casbinError.message,
+          errorCode: casbinError.code,
+          userEmail,
+          requestId: req.requestId
+        });
+        userGroups = [];
+      }
+      
+      // Ensure userGroups is an array
+      if (!Array.isArray(userGroups)) {
+        logger.warn('User groups is not an array, defaulting to empty array', {
+          userGroups,
+          userEmail,
+          requestId: req.requestId
+        });
+        userGroups = [];
+      }
       
       res.json({
         success: true,
@@ -376,14 +438,20 @@ class SurgicalGuideOrdersController {
     } catch (error) {
       logger.error('Failed to check access', {
         error: error.message,
+        errorCode: error.code,
+        errorName: error.name,
+        stack: error.stack,
+        userEmail: req.session?.user?.email,
         requestId: req.requestId
       });
 
+      // Return a safe response even on error
       res.status(500).json({
         error: {
           code: 'INTERNAL_ERROR',
           http: 500,
-          message: 'Failed to check access permissions'
+          message: 'Failed to check access permissions',
+          details: error.message
         },
         requestId: req.requestId
       });

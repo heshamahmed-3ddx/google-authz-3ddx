@@ -10,6 +10,11 @@ import databaseService from '../services/database.js';
 
 class SurgicalGuideOrdersModel {
   async getReportData({ startDate, endDate, page = 1, limit = 50, searchQuery = '', orderTypeFilter = 'all' }) {
+    // Check if database is available
+    if (!databaseService.isAvailable()) {
+      throw new Error('Database service is not available. Please check database connection.');
+    }
+
     // Default date range: 2014-01-01 to 2015-01-01
     const defaultStartDate = '2014-01-01';
     const defaultEndDate = '2015-01-01';
@@ -156,10 +161,26 @@ class SurgicalGuideOrdersModel {
       ${orderTypeCondition}
     `;
     let data, countResult;
-    [data, countResult] = await Promise.all([
-      databaseService.query(dataQuery, [startTimestamp, endTimestamp, ...searchParams]),
-      databaseService.query(countQuery, [startTimestamp, endTimestamp, ...searchParams])
-    ]);
+    try {
+      [data, countResult] = await Promise.all([
+        databaseService.query(dataQuery, [startTimestamp, endTimestamp, ...searchParams]),
+        databaseService.query(countQuery, [startTimestamp, endTimestamp, ...searchParams])
+      ]);
+    } catch (error) {
+      // Enhance error with query context
+      const enhancedError = new Error(`Database query failed: ${error.message}`);
+      enhancedError.originalError = error;
+      enhancedError.query = 'getReportData';
+      enhancedError.startDate = sanitizedStartDate;
+      enhancedError.endDate = sanitizedEndDate;
+      throw enhancedError;
+    }
+    
+    // Validate query results
+    if (!countResult || countResult.length === 0) {
+      throw new Error('Count query returned no results');
+    }
+    
     const total = countResult[0]?.total || 0;
     const totalPages = Math.ceil(total / sanitizedLimit);
 
@@ -266,11 +287,27 @@ class SurgicalGuideOrdersModel {
    * Get summary statistics with order type breakdown using voucher data
    */
   async getSummary(startDate, endDate) {
-    // Convert date strings to Unix timestamps (seconds) for database comparison
-    const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
-    const endTimestamp = Math.floor(new Date(endDate + ' 23:59:59').getTime() / 1000);
-    
-    const query = `
+    try {
+      // Check if database is available
+      if (!databaseService.isAvailable()) {
+        throw new Error('Database service is not available. Please check database connection.');
+      }
+
+      // Validate inputs
+      if (!startDate || !endDate) {
+        throw new Error('startDate and endDate are required');
+      }
+
+      // Convert date strings to Unix timestamps (seconds) for database comparison
+      const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+      const endTimestamp = Math.floor(new Date(endDate + ' 23:59:59').getTime() / 1000);
+      
+      // Validate timestamps
+      if (isNaN(startTimestamp) || isNaN(endTimestamp)) {
+        throw new Error('Invalid date format. Use YYYY-MM-DD');
+      }
+      
+      const query = `
         SELECT 
           COUNT(DISTINCT sg.ID) as totalOrders,
           SUM(CASE WHEN sg.Cost > 0 THEN 1 ELSE 0 END) as postpaidOrders,
@@ -293,20 +330,47 @@ class SurgicalGuideOrdersModel {
         WHERE sg.dateSent >= ? AND sg.dateSent <= ?
       `;
 
-    const [summary] = await databaseService.query(query, [startTimestamp, endTimestamp]);
+      let results;
+      try {
+        results = await databaseService.query(query, [startTimestamp, endTimestamp]);
+      } catch (dbError) {
+        // Enhance error with context
+        const enhancedError = new Error(`Database query failed: ${dbError.message}`);
+        enhancedError.originalError = dbError;
+        enhancedError.query = 'getSummary';
+        enhancedError.startDate = startDate;
+        enhancedError.endDate = endDate;
+        enhancedError.isDatabaseError = true;
+        throw enhancedError;
+      }
+      
+      // Handle case where query returns empty result
+      if (!results || results.length === 0) {
+        throw new Error('Summary query returned no results');
+      }
 
-    return {
-      totalOrders: parseInt(summary.totalOrders) || 0,
-      postpaidOrders: parseInt(summary.postpaidOrders) || 0,
-      fullyPrepaidOrders: parseInt(summary.fullyPrepaidOrders) || 0,
-      freeOrders: parseInt(summary.freeOrders) || 0,
-      fullyPostpaidOrders: parseInt(summary.fullyPostpaidOrders) || 0,
-      partiallyPostpaidOrders: parseInt(summary.partiallyPostpaidOrders) || 0,
-      rushOrders: parseInt(summary.rushOrders) || 0,
-      onHoldOrders: parseInt(summary.onHoldOrders) || 0,
-      confirmedOrders: parseInt(summary.confirmedOrders) || 0,
-      activeOrders: parseInt(summary.activeOrders) || 0
-    };
+      const summary = results[0];
+
+      return {
+        totalOrders: parseInt(summary.totalOrders) || 0,
+        postpaidOrders: parseInt(summary.postpaidOrders) || 0,
+        fullyPrepaidOrders: parseInt(summary.fullyPrepaidOrders) || 0,
+        freeOrders: parseInt(summary.freeOrders) || 0,
+        fullyPostpaidOrders: parseInt(summary.fullyPostpaidOrders) || 0,
+        partiallyPostpaidOrders: parseInt(summary.partiallyPostpaidOrders) || 0,
+        rushOrders: parseInt(summary.rushOrders) || 0,
+        onHoldOrders: parseInt(summary.onHoldOrders) || 0,
+        confirmedOrders: parseInt(summary.confirmedOrders) || 0,
+        activeOrders: parseInt(summary.activeOrders) || 0
+      };
+    } catch (error) {
+      // Enhance error with context
+      const enhancedError = new Error(`Failed to get summary: ${error.message}`);
+      enhancedError.originalError = error;
+      enhancedError.startDate = startDate;
+      enhancedError.endDate = endDate;
+      throw enhancedError;
+    }
   }
 
   /**

@@ -151,16 +151,9 @@ app.mount("#app");
 // Mark app as mounted
 document.body.classList.add("app-mounted");
 
-// Register service worker in production for basic caching/PWA behavior
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch((err) => {
-      // eslint-disable-next-line no-console
-      console.warn("Service worker registration failed:", err);
-    });
-  });
-}
-// (fetch/XHR instrumentation is configured earlier in this file)
+// PWA Service Worker registration is handled automatically by vite-plugin-pwa
+// The plugin registers the service worker and handles updates automatically
+// No manual registration needed - the plugin injects the registration code
 
 // Development-only: expose app internals for smoke-tests and debugging
 if (import.meta.env.DEV) {

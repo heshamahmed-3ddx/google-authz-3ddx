@@ -921,7 +921,7 @@ const toast = reactive({
 
 // loading removed as unused
 
-// Page loading state for initial load
+// Page loading state for initial load - start as true to show skeleton immediately
 const isPageLoading = ref(true);
 
 // User details and rights data
@@ -1262,27 +1262,55 @@ onMounted(async () => {
       return;
     }
 
-    // Small delay to ensure skeleton is visible before starting API calls
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Show skeleton immediately (no delay)
+    isPageLoading.value = true;
 
-    // Only fetch if not already loaded (avoid duplicate API calls)
+    // Start fetching data immediately (parallel requests)
     const promises = [];
-    if (!userDetails.value || !userDetails.value.email) {
+    
+    // Check cache first, but still fetch in background for fresh data
+    if (authStore.cachedUserDetails) {
+      userDetails.value = authStore.cachedUserDetails;
+    } else {
       promises.push(fetchUserDetails());
     }
-    if (!userRights.value || !userRights.value.groups) {
+    
+    if (authStore.cachedUserRights) {
+      userRights.value = authStore.cachedUserRights;
+    } else {
       promises.push(fetchUserRights());
     }
 
-    if (promises.length > 0) {
-      await Promise.all(promises);
+    // If we have cached data, hide skeleton faster
+    if (authStore.cachedUserDetails && authStore.cachedUserRights) {
+      // Small delay to ensure smooth transition
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      isPageLoading.value = false;
     }
 
-    // Small delay to ensure content is painted before hiding skeleton
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  } finally {
-    // Hide loading skeleton
+    // Fetch fresh data in background if needed
+    if (promises.length > 0) {
+      // Don't wait for API calls to hide skeleton if we have cached data
+      Promise.all(promises).then(() => {
+        // Only hide if still loading (in case user navigated away)
+        if (isPageLoading.value) {
+          isPageLoading.value = false;
+        }
+      });
+      
+      // If no cached data, wait for API calls
+      if (!authStore.cachedUserDetails && !authStore.cachedUserRights) {
+        await Promise.all(promises);
+        isPageLoading.value = false;
+      }
+    } else {
+      // All data was cached, skeleton already hidden above
+      isPageLoading.value = false;
+    }
+  } catch (error) {
+    // Error handling - hide skeleton even on error
     isPageLoading.value = false;
+    showToast("Failed to load dashboard data", "error");
   }
 });
 </script>

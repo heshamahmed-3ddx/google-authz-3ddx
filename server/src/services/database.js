@@ -80,6 +80,14 @@ class DatabaseService {
   }
 
   /**
+   * Check if database is initialized and available
+   * @returns {boolean} True if database is available
+   */
+  isAvailable() {
+    return pool !== null;
+  }
+
+  /**
    * Get connection pool instance
    * @returns {mysql.Pool} Connection pool
    * @throws {Error} If pool is not initialized

@@ -975,12 +975,15 @@ function getHeaderTooltip(key) {
 import { ref, reactive, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useDevModeStore } from "@/stores/devMode";
+import { storeToRefs } from "pinia";
 import api from "@/services/api";
 import { useI18n } from "vue-i18n";
 import { isRTL } from "@/i18n";
 
 const router = useRouter();
 const devModeStore = useDevModeStore();
+// Use storeToRefs for reactive access to dev mode store values
+const { adminViewEnabled, simulatedGroups } = storeToRefs(devModeStore);
 const { t, locale } = useI18n();
 
 // Computed reactive RTL flag tied to the current i18n locale for this component
@@ -1304,44 +1307,53 @@ function navigateToDashboard() {
   router.push("/dashboard");
 }
 
+// Store the base user groups from API (only fetched once)
+const baseUserGroups = ref([]);
+
 /**
  * Check user access permissions
+ * @param {boolean} skipApiCall - If true, skip API call and only recompute from cached data
  */
-async function checkAccess() {
+async function checkAccess(skipApiCall = false) {
   try {
-    loading.access = true;
-    const response = await api.get("/api/reports/surgical_guide/access");
+    if (!skipApiCall) {
+      loading.access = true;
+      const response = await api.get("/api/reports/surgical_guide/access");
 
-    if (response.data.success) {
-      const accessData = response.data.data;
-
-      // In development mode, merge with simulated groups
-      if (import.meta.env.DEV) {
-        const mergedGroups = devModeStore.getMergedGroups(
-          accessData.userGroups,
-        );
-
-        // Check if merged groups include required groups
-        const hasReportAccess =
-          devModeStore.adminViewEnabled ||
-          mergedGroups.includes("Finance22") ||
-          mergedGroups.includes("admin");
-
-        const hasSwaggerAccess =
-          devModeStore.adminViewEnabled ||
-          mergedGroups.includes("Developers22") ||
-          mergedGroups.includes("admin") ||
-          mergedGroups.includes("SWD") ||
-          mergedGroups.includes("developers");
-
-        Object.assign(accessInfo, {
-          hasReportAccess,
-          hasSwaggerAccess,
-          userGroups: mergedGroups,
-        });
-      } else {
-        Object.assign(accessInfo, accessData);
+      if (response.data.success) {
+        const accessData = response.data.data;
+        baseUserGroups.value = accessData.userGroups || [];
+        
+        // In production, use API data directly
+        if (!import.meta.env.DEV) {
+          Object.assign(accessInfo, accessData);
+          return;
+        }
       }
+    }
+
+    // In development mode, always recompute from base groups + dev mode
+    if (import.meta.env.DEV) {
+      const mergedGroups = devModeStore.getMergedGroups(baseUserGroups.value);
+
+      // Check if merged groups include required groups
+      const hasReportAccess =
+        devModeStore.adminViewEnabled ||
+        mergedGroups.includes("Finance22") ||
+        mergedGroups.includes("admin");
+
+      const hasSwaggerAccess =
+        devModeStore.adminViewEnabled ||
+        mergedGroups.includes("Developers22") ||
+        mergedGroups.includes("admin") ||
+        mergedGroups.includes("SWD") ||
+        mergedGroups.includes("developers");
+
+      Object.assign(accessInfo, {
+        hasReportAccess,
+        hasSwaggerAccess,
+        userGroups: mergedGroups,
+      });
     }
   } catch (error) {
     showSnackbar(
@@ -1821,6 +1833,23 @@ function getStatusBgColor(item) {
 // =====================================
 // WATCHERS
 // =====================================
+
+/**
+ * Watch dev mode store changes to re-check access when groups change
+ * This allows the access to update immediately when user adds Finance22 via DevToolbar
+ * Skip API call since we're just recomputing from cached data + dev mode
+ */
+if (import.meta.env.DEV) {
+  watch(
+    [adminViewEnabled, simulatedGroups],
+    () => {
+      // Re-check access when dev mode changes (skip API call, use cached base groups)
+      // Always recompute in dev mode, even if baseUserGroups is empty (user might have no real groups)
+      checkAccess(true); // Skip API call, just recompute from base groups + dev mode
+    },
+    { deep: true }
+  );
+}
 
 /**
  * Watch search query with debounce

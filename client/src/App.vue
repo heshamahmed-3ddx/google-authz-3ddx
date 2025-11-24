@@ -89,9 +89,24 @@
     </div>
 
     <v-main class="main-content-stable">
+      <!-- Route-level loading indicator -->
+      <div v-if="isRouteLoading" class="route-loading-overlay fill-height d-flex align-center justify-center">
+        <div class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+            class="mb-4"
+          ></v-progress-circular>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ $t("common.loading") || "Loading..." }}
+          </div>
+        </div>
+      </div>
+      
       <Suspense>
         <template #default>
-          <router-view />
+          <router-view v-show="!isRouteLoading" />
         </template>
         <template #fallback>
           <!-- Native Vue loader for route loading -->
@@ -144,6 +159,9 @@
       {{ snackbar.message }}
       <v-icon class="toast-close" size="small">mdi-close</v-icon>
     </div>
+
+    <!-- PWA Update Prompt -->
+    <PWAUpdatePrompt />
   </v-app>
 </template>
 
@@ -154,6 +172,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt.vue";
 import { defineAsyncComponent } from "vue";
 
 // Lazy load heavier components and use Suspense fallbacks
@@ -179,6 +198,56 @@ const vuetifyTheme = useTheme();
 const vuetifyLocale = useLocale();
 const router = useRouter();
 const route = useRoute();
+
+// Route loading state for immediate feedback during navigation
+const isRouteLoading = ref(false);
+let routeLoadingTimeout = null;
+
+// Show loading immediately when navigation starts (before route changes)
+router.beforeEach((to, from) => {
+  // Only show loading if navigating to a different route
+  if (to.path !== from.path) {
+    // Clear any existing timeout
+    if (routeLoadingTimeout) {
+      clearTimeout(routeLoadingTimeout);
+    }
+    
+    // Show loading immediately
+    isRouteLoading.value = true;
+  }
+});
+
+// Watch for route changes as backup
+watch(
+  () => route.path,
+  (toPath, fromPath) => {
+    // Only show loading if actually navigating to a different route
+    if (toPath !== fromPath && fromPath !== "/") {
+      // Clear any existing timeout
+      if (routeLoadingTimeout) {
+        clearTimeout(routeLoadingTimeout);
+      }
+      
+      // Show loading immediately (if not already shown by beforeEach)
+      if (!isRouteLoading.value) {
+        isRouteLoading.value = true;
+      }
+    }
+  },
+  { immediate: false }
+);
+
+// Hide loading when route is ready
+router.afterEach(() => {
+  // Small delay to ensure component is rendered
+  setTimeout(() => {
+    isRouteLoading.value = false;
+    if (routeLoadingTimeout) {
+      clearTimeout(routeLoadingTimeout);
+      routeLoadingTimeout = null;
+    }
+  }, 100);
+});
 
 // Hide AppBar on login page (landing page)
 const showAppBar = computed(() => {
@@ -873,6 +942,23 @@ authStore.checkAuth();
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  position: relative; /* Required for route loading overlay positioning */
+}
+
+/* Route loading overlay - Shows immediately during navigation */
+.route-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.v-theme--dark .route-loading-overlay {
+  background: rgba(30, 30, 30, 0.9);
 }
 
 /* Route fallback loader - Native Vue loader for async route loading */

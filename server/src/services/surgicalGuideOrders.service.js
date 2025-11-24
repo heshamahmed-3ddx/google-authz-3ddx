@@ -83,10 +83,17 @@ class SurgicalGuideOrdersService {
 
       return result;
     } catch (error) {
+      // Log detailed error information
       logger.error('Failed to process report request', {
         error: error.message,
+        errorCode: error.code,
+        errorName: error.name,
         params,
-        stack: error.stack
+        stack: error.stack,
+        isValidationError: error.isValidationError,
+        // Include database error details if available
+        sqlState: error.sqlState,
+        sqlMessage: error.sqlMessage
       });
       throw error;
     }
@@ -105,22 +112,37 @@ class SurgicalGuideOrdersService {
       logger.info('Processing summary request', { startDate, endDate });
 
       // Validate date range
-  surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
+      try {
+        surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
+      } catch (err) {
+        // Return a validation error object for controller to handle
+        err.isValidationError = true;
+        throw err;
+      }
 
       // Fetch summary data
-  const summary = await surgicalGuideOrdersModel.getSummary(startDate, endDate);
+      const summary = await surgicalGuideOrdersModel.getSummary(startDate, endDate);
 
       logger.info('Summary processed successfully', {
-        totalCases: summary.totalCases
+        totalCases: summary.totalOrders || summary.totalCases
       });
 
       return summary;
     } catch (error) {
+      // Log detailed error information
       logger.error('Failed to process summary request', {
         error: error.message,
+        errorCode: error.code,
+        errorName: error.name,
         startDate,
         endDate,
-        stack: error.stack
+        stack: error.stack,
+        isValidationError: error.isValidationError,
+        isDatabaseError: error.isDatabaseError,
+        // Include database error details if available
+        sqlState: error.sqlState || error.originalError?.sqlState,
+        sqlMessage: error.sqlMessage || error.originalError?.sqlMessage,
+        originalError: error.originalError?.message
       });
       throw error;
     }

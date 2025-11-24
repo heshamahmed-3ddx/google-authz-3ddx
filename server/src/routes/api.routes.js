@@ -346,6 +346,10 @@ const userDetailsCache = new Map();
 const userRightsCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
+// Cache for group roles to avoid repeated API calls (10 minutes TTL)
+const groupRolesCache = new Map();
+const GROUP_ROLES_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
 router.get('/user/details', requireAuth, async (req, res) => {
 /**
  * @swagger
@@ -353,6 +357,13 @@ router.get('/user/details', requireAuth, async (req, res) => {
  *   get:
  *     summary: Get authenticated user details
  *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: includeGroupRoles
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Whether to include detailed group roles (slower, requires additional API calls)
  *     responses:
  *       200:
  *         description: User details
@@ -362,6 +373,8 @@ router.get('/user/details', requireAuth, async (req, res) => {
  *               $ref: '#/components/schemas/UserDetails'
  */
   try {
+    // Check if group roles should be included (default: true for backward compatibility)
+    const includeGroupRoles = req.query.includeGroupRoles !== 'false';
     // Validate session user and tokens
     const { z } = await import('zod')
     const userSchema = z.object({
@@ -423,6 +436,7 @@ router.get('/user/details', requireAuth, async (req, res) => {
     let googleRoles = [];
     let userGroupRoles = []; // Declare at proper scope
     let userRes = null;
+    
     try {
       logger.info('Google Directory API sync started', { userEmail });
       
@@ -473,54 +487,96 @@ router.get('/user/details', requireAuth, async (req, res) => {
       googleGroups = Array.isArray(groupsRes.data.groups) ? groupsRes.data.groups.map(g => g?.name || null).filter(Boolean) : [];
       
       // Fetch detailed group information and find current user's role in each group
-      // userGroupRoles already declared at function scope
-      if (Array.isArray(groupsRes.data.groups)) {
-        for (const group of groupsRes.data.groups) {
-          if (group?.email) {
-            try {
-              const groupDetails = await admin.groups.get({ groupKey: group.email });
-              const members = await admin.members.list({ groupKey: group.email });
-              
-              logger.info('Group membership details retrieved', { 
-                userEmail,
-                groupName: group.name, 
-                groupEmail: group.email,
-                memberCount: members.data.members?.length || 0
-              });
-              
-              // Find current logged-in user's role in this group
-              if (members.data.members) {
-                const currentUserMember = members.data.members.find(member => 
-                  member.email && member.email.toLowerCase() === userEmail.toLowerCase()
-                );
+      // OPTIMIZED: Fetch all group members in parallel + use caching
+      // This reduces API calls from O(n) sequential to O(n) parallel
+      // Can be disabled via ?includeGroupRoles=false query parameter for faster response
+      if (includeGroupRoles && Array.isArray(groupsRes.data.groups) && groupsRes.data.groups.length > 0) {
+        // Check cache first for group roles
+        const groupRolesCacheKey = `${userEmail}:${groupsRes.data.groups.map(g => g.email).sort().join(',')}`;
+        const cachedGroupRoles = groupRolesCache.get(groupRolesCacheKey);
+        
+        if (cachedGroupRoles && (Date.now() - cachedGroupRoles.timestamp) < GROUP_ROLES_CACHE_TTL) {
+          logger.info('Using cached group roles', { 
+            userEmail, 
+            groupsCount: groupsRes.data.groups.length,
+            rolesCount: cachedGroupRoles.data.length
+          });
+          userGroupRoles = cachedGroupRoles.data;
+        } else {
+          // Fetch all group members in parallel for better performance
+          const groupMemberPromises = groupsRes.data.groups
+            .filter(group => group?.email)
+            .map(async (group) => {
+              try {
+                // Only fetch members list (we don't need group details for role lookup)
+                const members = await admin.members.list({ groupKey: group.email });
                 
-                if (currentUserMember) {
-                  const userRole = currentUserMember.role || 'MEMBER';
-                  userGroupRoles.push({
-                    groupName: group.name,
-                    groupEmail: group.email,
-                    userRole: userRole
-                  });
-                  logger.debug('User role found in group', { groupName: group.name, userRole, userEmail });
-                } else {
-                  logger.debug('User not found in group members', { groupName: group.name, userEmail });
+                logger.debug('Group membership details retrieved', { 
+                  userEmail,
+                  groupName: group.name, 
+                  groupEmail: group.email,
+                  memberCount: members.data.members?.length || 0
+                });
+                
+                // Find current logged-in user's role in this group
+                if (members.data.members) {
+                  const currentUserMember = members.data.members.find(member => 
+                    member.email && member.email.toLowerCase() === userEmail.toLowerCase()
+                  );
+                  
+                  if (currentUserMember) {
+                    const userRole = currentUserMember.role || 'MEMBER';
+                    return {
+                      groupName: group.name,
+                      groupEmail: group.email,
+                      userRole: userRole
+                    };
+                  }
                 }
+                return null;
+              } catch (groupDetailErr) {
+                logger.warn('Failed to fetch group members', { 
+                  groupName: group.name, 
+                  groupEmail: group.email,
+                  error: groupDetailErr.message 
+                });
+                return null;
               }
-            } catch (groupDetailErr) {
-              logger.warn('Failed to fetch group details', { groupName: group.name, error: groupDetailErr.message });
-            }
-          }
+            });
+          
+          // Wait for all group member fetches to complete in parallel
+          const groupRoleResults = await Promise.all(groupMemberPromises);
+          userGroupRoles = groupRoleResults.filter(Boolean); // Remove null results
+          
+          // Cache the results
+          groupRolesCache.set(groupRolesCacheKey, {
+            data: userGroupRoles,
+            timestamp: Date.now()
+          });
+          
+          logger.info('Group roles fetched in parallel and cached', {
+            userEmail,
+            totalGroups: groupsRes.data.groups.length,
+            rolesFound: userGroupRoles.length
+          });
         }
       }
       
-      // Extract roles from all groups
-      googleRoles = userGroupRoles.map(gr => gr.userRole);
-      logger.info('User roles extracted from Google groups', { 
-        userEmail, 
-        roles: googleRoles,
-        groupCount: googleGroups.length,
-        roleCount: googleRoles.length
-      });
+      // Extract roles from all groups (only if group roles were fetched)
+      if (includeGroupRoles) {
+        googleRoles = userGroupRoles.map(gr => gr.userRole);
+        logger.info('User roles extracted from Google groups', { 
+          userEmail, 
+          roles: googleRoles,
+          groupCount: googleGroups.length,
+          roleCount: googleRoles.length
+        });
+      } else {
+        logger.info('Group roles skipped for performance', { 
+          userEmail, 
+          groupCount: googleGroups.length
+        });
+      }
       
       // Sync with Casbin - update user's groups and roles
       try {
