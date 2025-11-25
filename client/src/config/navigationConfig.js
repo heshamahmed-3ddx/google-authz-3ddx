@@ -131,7 +131,6 @@ export const NAVIGATION_CONFIG = [
         icon: "mdi-file-document",
         route: "/finance/invoices",
         permissions: ["admin", "finance"],
-        badge: { text: "New", color: "error" },
       },
       {
         id: "budgets",
@@ -153,7 +152,6 @@ export const NAVIGATION_CONFIG = [
         icon: "mdi-file-chart",
         route: "/finance/surgical-guide-report",
         permissions: ["admin", "Finance22"],
-        badge: { text: "New", color: "success" },
       },
       {
         id: "approvals",
@@ -312,7 +310,7 @@ export const NAVIGATION_CONFIG = [
       {
         id: "powerbi-reporting",
         title: "PowerBI Reporting",
-        icon: "mdi-microsoft-power-bi",
+        icon: "mdi-chart-box-outline",
         route: "/reports/powerbi",
         permissions: ["*"],
       },

@@ -1,8 +1,8 @@
 <template>
   <!-- Loading Skeleton -->
-  <v-container v-if="isPageLoading" class="fill-height">
-    <v-row>
-      <v-col cols="12">
+  <v-container v-if="isPageLoading" class="fill-height dashboard-skeleton-container">
+    <v-row class="fill-height">
+      <v-col cols="12" class="d-flex flex-column">
         <v-skeleton-loader type="heading" class="mb-4"></v-skeleton-loader>
         <v-skeleton-loader type="chip" class="mb-4"></v-skeleton-loader>
         <v-row>
@@ -1256,14 +1256,19 @@ async function doLogout() {
 // Initialize dashboard
 onMounted(async () => {
   try {
-    // Check if user is authenticated
-    if (!authStore.user) {
-      router.push("/");
-      return;
-    }
-
-    // Show skeleton immediately (no delay)
+    // Ensure skeleton is showing (already set to true by default)
     isPageLoading.value = true;
+
+    // Verify authentication - if not authenticated, router guard should have handled this
+    // but double-check to prevent blank page
+    if (!authStore.user) {
+      // Wait a bit for auth to initialize (in case of race condition)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (!authStore.user) {
+        router.push("/");
+        return;
+      }
+    }
 
     // Start fetching data immediately (parallel requests)
     const promises = [];
@@ -1284,7 +1289,7 @@ onMounted(async () => {
     // If we have cached data, hide skeleton faster
     if (authStore.cachedUserDetails && authStore.cachedUserRights) {
       // Small delay to ensure smooth transition
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 150));
       isPageLoading.value = false;
     }
 
@@ -1296,11 +1301,23 @@ onMounted(async () => {
         if (isPageLoading.value) {
           isPageLoading.value = false;
         }
+      }).catch(() => {
+        // On error, still hide skeleton to show error state
+        if (isPageLoading.value) {
+          isPageLoading.value = false;
+        }
       });
       
-      // If no cached data, wait for API calls
+      // If no cached data, wait for API calls (but with timeout to prevent infinite wait)
       if (!authStore.cachedUserDetails && !authStore.cachedUserRights) {
-        await Promise.all(promises);
+        try {
+          await Promise.race([
+            Promise.all(promises),
+            new Promise((resolve) => setTimeout(resolve, 10000)), // 10s timeout
+          ]);
+        } catch (err) {
+          // Error already handled above
+        }
         isPageLoading.value = false;
       }
     } else {
@@ -1316,6 +1333,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.dashboard-skeleton-container {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-skeleton-container .fill-height {
+  min-height: 100%;
+}
+
 .simple-toast {
   position: fixed;
   bottom: 24px;

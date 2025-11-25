@@ -74,10 +74,16 @@ const handleCallback = async () => {
 
     success.value = true;
 
-    // Redirect to dashboard after a short delay
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 2000);
+    // Prefetch dashboard data before redirecting to ensure faster load
+    try {
+      await authStore.prefetchDashboardData();
+    } catch (err) {
+      // Non-blocking: continue even if prefetch fails
+    }
+
+    // Redirect to dashboard immediately after prefetch completes
+    // This ensures cached data is available when dashboard loads
+    router.push("/dashboard");
   } catch (err) {
     // console.error("Callback handling error:", err);
     error.value = err.message || "Authentication failed";

@@ -21,84 +21,66 @@
 
         <!-- Content Container -->
         <div class="overlay-content" @click.stop>
-          <!-- Header -->
-          <div class="overlay-header">
-            <div class="d-flex align-center justify-space-between pa-3">
-              <div class="d-flex align-center">
-                <img
-                  src="/logo.png"
-                  alt="App Logo"
-                  class="brand-logo mr-3"
-                />
-                <div class="text-h5 font-weight-bold company-name">
-                  App Navigation
-                </div>
-              </div>
-              <div v-if="authStore.isAuthenticated" class="user-info-display d-flex align-center">
-                <v-avatar size="48" color="secondary" class="user-avatar mr-3">
-                  <span class="text-white text-body-1 font-weight-bold">{{ getUserInitials() }}</span>
-                </v-avatar>
-                <div class="user-info-content flex-grow-1">
-                  <div class="text-body-1 font-weight-semibold user-name">
-                    {{ userInfo?.fullName || userInfo?.name || userInfo?.email || authStore.user?.email || 'User' }}
-                  </div>
-                  <div v-if="userJobTitle" class="text-caption font-weight-medium user-job-title mt-1">
-                    {{ userJobTitle }}
-                  </div>
-                  <div class="text-caption user-email mt-1">
-                    {{ userInfo?.email || authStore.user?.email || '' }}
-                  </div>
-                </div>
-              </div>
+          <!-- Minimal Header -->
+          <div class="minimal-overlay-header">
+            <div
+              class="text-subtitle-1 font-weight-medium minimal-header-title"
+            >
+              {{ $t("nav.navigation") }}
             </div>
           </div>
 
-          <!-- Icon Grid Container -->
-          <div class="icon-grid-container">
-            <div class="icon-grid-wrapper">
+          <!-- Navigation Grid Container -->
+          <div class="minimal-nav-grid-container">
+            <div class="minimal-nav-grid-wrapper">
               <!-- Flatten navigation items for grid display -->
               <template v-for="item in flattenedNavigation" :key="item.id">
-                <!-- Section Header (for groups) -->
+                <!-- Section Header (for groups) - Minimal -->
                 <div
                   v-if="item.isSectionHeader"
-                  class="section-header"
+                  class="minimal-section-header"
                   :style="{ gridColumn: '1 / -1' }"
                 >
-                  <h3 class="text-subtitle-1 font-weight-bold section-title">
+                  <span class="minimal-section-title">
                     {{ $t("navigation." + item.id) }}
-                  </h3>
+                  </span>
                 </div>
 
-                <!-- Icon Tile -->
+                <!-- Navigation Tile - Minimal -->
                 <div
                   v-else
-                  class="icon-tile"
+                  class="minimal-nav-tile"
                   :class="{ 'active-route': isActiveRoute(item.route) }"
                   @click="navigateTo(item.route)"
                 >
-                  <div class="icon-wrapper">
-                    <v-icon :icon="item.icon" size="36" class="tile-icon"></v-icon>
-                    <v-badge
-                      v-if="item.badge"
-                      :content="item.badge.text"
-                      :color="item.badge.color"
-                      class="tile-badge"
-                    ></v-badge>
-                  </div>
-                  <div class="tile-label">{{ $t("navigation." + item.id) }}</div>
+                  <v-icon
+                    :icon="item.icon"
+                    size="24"
+                    class="nav-tile-icon"
+                  ></v-icon>
+                  <span class="nav-tile-label">{{
+                    $t("navigation." + item.id)
+                  }}</span>
+                  <v-badge
+                    v-if="item.badge"
+                    :content="item.badge.text"
+                    :color="item.badge.color"
+                    class="nav-tile-badge"
+                    size="x-small"
+                  ></v-badge>
                 </div>
               </template>
             </div>
           </div>
 
-          <!-- Footer Actions -->
-          <div class="overlay-footer">
+          <!-- Minimal Footer Actions -->
+          <div class="minimal-overlay-footer">
             <v-btn
               v-if="isAdmin"
               variant="text"
-              size="large"
+              size="small"
               prepend-icon="mdi-cog"
-              class="footer-action-btn"
+              class="minimal-footer-btn"
               to="/system/settings"
               @click="onItemClick"
             >
@@ -106,10 +88,9 @@
             </v-btn>
             <v-btn
               variant="text"
-              size="large"
+              size="small"
               prepend-icon="mdi-logout"
-              color="error"
-              class="footer-action-btn"
+              class="minimal-footer-btn logout-footer-btn"
               @click="handleLogout"
             >
               {{ $t("nav.logout") }}
@@ -151,14 +132,13 @@ const devModeStore = useDevModeStore();
 const { locale } = useI18n();
 
 // State
-const userInfo = ref(null);
 const userGroups = ref([]);
 
 // Computed
 const isRTL = computed(() => checkRTL(locale.value));
 
 const isAdmin = computed(() => {
-  return userGroups.value.includes("admin") || userInfo.value?.isAdmin;
+  return userGroups.value.includes("admin");
 });
 
 // Merge actual groups with simulated groups (dev mode only)
@@ -176,7 +156,7 @@ const filteredNavigation = computed(() => {
 // Flatten navigation for grid display
 const flattenedNavigation = computed(() => {
   const flattened = [];
-  
+
   filteredNavigation.value.forEach((item) => {
     // Add section header for groups
     if (item.children && item.children.length > 0) {
@@ -184,7 +164,7 @@ const flattenedNavigation = computed(() => {
         ...item,
         isSectionHeader: true,
       });
-      
+
       // Add child items
       item.children.forEach((child) => {
         flattened.push(child);
@@ -194,28 +174,11 @@ const flattenedNavigation = computed(() => {
       flattened.push(item);
     }
   });
-  
+
   return flattened;
 });
 
-// Computed for user job title
-const userJobTitle = computed(() => {
-  return userInfo.value?.jobTitle || authStore.user?.jobTitle || null;
-});
-
 // Methods
-function getUserInitials() {
-  if (!userInfo.value) return "?";
-
-  const name = userInfo.value.fullName || userInfo.value.email || "";
-  const parts = name.split(" ");
-
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-
-  return name.substring(0, 2).toUpperCase();
-}
 
 function isActiveRoute(itemRoute) {
   if (!itemRoute) return false;
@@ -254,17 +217,9 @@ function handleEscapeKey(event) {
   }
 }
 
-async function loadUserInfo() {
+function loadUserGroups() {
   try {
-    // Try cached user details first
-    if (authStore.cachedUserDetails) {
-      userInfo.value = authStore.cachedUserDetails;
-    } else if (authStore.user) {
-      // Fallback to user from authStore
-      userInfo.value = authStore.user;
-    }
-
-    // Load user groups
+    // Load user groups for permission checks
     if (authStore.cachedUserRights) {
       userGroups.value = authStore.cachedUserRights.groups || [];
     } else if (authStore.user?.groups) {
@@ -272,13 +227,13 @@ async function loadUserInfo() {
     }
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error("Failed to load user info:", error);
+    console.error("Failed to load user groups:", error);
   }
 }
 
 // Lifecycle
 onMounted(() => {
-  loadUserInfo();
+  loadUserGroups();
   document.addEventListener("keydown", handleEscapeKey);
 });
 
@@ -287,16 +242,6 @@ onUnmounted(() => {
 });
 
 // Watch for auth store updates
-watch(
-  () => authStore.cachedUserDetails || authStore.user,
-  (newUser) => {
-    if (newUser) {
-      userInfo.value = authStore.cachedUserDetails || authStore.user;
-    }
-  },
-  { immediate: true },
-);
-
 watch(
   () => authStore.cachedUserRights || authStore.user?.groups,
   () => {
@@ -309,14 +254,13 @@ watch(
   { immediate: true },
 );
 
-// Prevent body scroll when sidebar is open and reload user info when opened
+// Prevent body scroll when sidebar is open
 watch(
   () => props.modelValue,
   (isOpen) => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      // Reload user info when sidebar opens
-      loadUserInfo();
+      loadUserGroups();
     } else {
       document.body.style.overflow = "";
     }
@@ -336,44 +280,78 @@ watch(
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(250, 250, 250, 0.98);
-  backdrop-filter: blur(20px);
+  background-color: #ffffff !important;
+  background: #ffffff !important;
   z-index: 2000;
   overflow-y: auto;
   overflow-x: hidden;
+  /* GPU acceleration for smooth scrolling */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling optimization */
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+.overlay-fullscreen::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.v-theme--light .overlay-fullscreen {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.v-theme--light .overlay-fullscreen::before {
+  background-color: #ffffff;
 }
 
 .v-theme--dark .overlay-fullscreen {
-  background: rgba(18, 18, 18, 0.98);
+  background-color: #121212 !important;
+  background: #121212 !important;
+}
+
+.v-theme--dark .overlay-fullscreen::before {
+  background-color: #121212;
 }
 
 .close-btn-top {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 10px;
+  right: 10px;
   z-index: 2001;
   background: rgba(255, 140, 0, 0.1) !important;
-  backdrop-filter: blur(10px);
-  color: #FF8C00 !important;
-  transition: all 0.2s ease;
-  min-width: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
+  color: #ff8c00 !important;
+  transition: all 0.15s ease;
+  min-width: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
   padding: 0 !important;
+  border-radius: 6px !important;
 }
 
 .v-theme--dark .close-btn-top {
   background: rgba(255, 183, 77, 0.15) !important;
-  color: #FFB74D !important;
+  color: #ffb74d !important;
 }
 
 .close-btn-top:hover {
   background: rgba(255, 140, 0, 0.2) !important;
-  transform: rotate(90deg);
+  color: #e65100 !important;
 }
 
 .v-theme--dark .close-btn-top:hover {
   background: rgba(255, 183, 77, 0.25) !important;
+  color: #ffcc80 !important;
 }
 
 .overlay-fullscreen.rtl-overlay .close-btn-top {
@@ -382,361 +360,247 @@ watch(
 }
 
 /* ========================================
-   CONTENT CONTAINER
+   MINIMAL CONTENT CONTAINER
    ======================================== */
 .overlay-content {
   min-height: 100vh;
-  padding: 50px 24px 24px;
-  max-width: 1200px;
+  padding: 40px 12px 12px;
+  max-width: 900px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 960px) {
   .overlay-content {
-    padding: 50px 16px 16px;
+    padding: 40px 10px 10px;
   }
 }
 
 /* ========================================
-   HEADER
+   MINIMAL HEADER
    ======================================== */
-.overlay-header {
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+.minimal-overlay-header {
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 140, 0, 0.2);
 }
 
-.v-theme--dark .overlay-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+.v-theme--dark .minimal-overlay-header {
+  border-bottom-color: rgba(255, 183, 77, 0.3);
 }
 
-.company-name {
-  color: #212121;
-  margin-bottom: 4px;
-}
-
-.v-theme--dark .company-name {
-  color: #FFFFFF;
-}
-
-.company-subtitle {
-  color: #616161;
-}
-
-.v-theme--dark .company-subtitle {
-  color: #B0B0B0;
-}
-
-.user-info-display {
-  padding: 8px 0;
-}
-
-.user-info-content {
-  min-width: 0; /* Allow text truncation */
-}
-
-.user-name {
-  color: #212121;
-  line-height: 1.4;
-  word-break: break-word;
-  margin-bottom: 4px;
-}
-
-.v-theme--dark .user-name {
-  color: #FFFFFF;
-}
-
-.user-job-title {
-  color: #FF8C00;
+.minimal-header-title {
+  color: #ff8c00;
+  font-size: 0.75rem;
   font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.v-theme--dark .user-job-title {
-  color: #FFB74D;
-}
-
-.user-email {
-  color: #616161;
-  line-height: 1.3;
-  word-break: break-all;
-  font-size: 0.7rem;
-}
-
-.v-theme--dark .user-email {
-  color: #B0B0B0;
-}
-
-.brand-logo {
-  height: 94px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.2s ease;
-}
-
-.brand-logo:hover {
-  transform: scale(1.05);
-}
-
-.user-avatar {
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.v-theme--dark .user-avatar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.user-avatar:hover {
-  transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.v-theme--dark .user-avatar:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+.v-theme--dark .minimal-header-title {
+  color: #ffb74d;
 }
 
 /* ========================================
-   ICON GRID
+   MINIMAL NAVIGATION GRID
    ======================================== */
-.icon-grid-container {
+.minimal-nav-grid-container {
   flex: 1;
   width: 100%;
 }
 
-.icon-grid-wrapper {
+.minimal-nav-grid-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
   padding: 0;
+  contain: layout style paint;
 }
 
 @media (min-width: 600px) {
-  .icon-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 14px;
+  .minimal-nav-grid-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
   }
 }
 
 @media (min-width: 960px) {
-  .icon-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 16px;
+  .minimal-nav-grid-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
   }
 }
 
 /* ========================================
-   SECTION HEADER
+   MINIMAL SECTION HEADER
    ======================================== */
-.section-header {
-  margin-top: 16px;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+.minimal-section-header {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 140, 0, 0.15);
 }
 
-.v-theme--dark .section-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+.v-theme--dark .minimal-section-header {
+  border-bottom-color: rgba(255, 183, 77, 0.25);
 }
 
-.section-header:first-child {
+.minimal-section-header:first-child {
   margin-top: 0;
 }
 
-.section-title {
-  color: #FF8C00;
-  font-size: 1rem;
+.minimal-section-title {
+  color: #ff8c00;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.v-theme--dark .section-title {
-  color: #FFB74D;
+.v-theme--dark .minimal-section-title {
+  color: #ffb74d;
 }
 
 /* ========================================
-   ICON TILE (Compact Style)
+   MINIMAL NAVIGATION TILE
    ======================================== */
-.icon-tile {
+.minimal-nav-tile {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 10px 6px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
   background: transparent;
-  border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 80px;
+  transition: all 0.15s ease;
   position: relative;
-  overflow: visible;
+  min-height: 36px;
+  border: 1px solid transparent;
 }
 
-.icon-tile:hover {
+.minimal-nav-tile:hover {
   background: rgba(255, 140, 0, 0.08);
-  transform: translateY(-4px);
   border-color: rgba(255, 140, 0, 0.2);
 }
 
-.v-theme--dark .icon-tile:hover {
+.v-theme--dark .minimal-nav-tile:hover {
   background: rgba(255, 183, 77, 0.1);
   border-color: rgba(255, 183, 77, 0.3);
 }
 
-.icon-tile:active {
-  transform: translateY(-2px);
-}
-
-.icon-tile.active-route {
+.minimal-nav-tile.active-route {
   background: rgba(255, 140, 0, 0.12);
-  border-color: #FF8C00;
+  border-color: #ff8c00;
 }
 
-.v-theme--dark .icon-tile.active-route {
+.v-theme--dark .minimal-nav-tile.active-route {
   background: rgba(255, 183, 77, 0.15);
-  border-color: #FFB74D;
+  border-color: #ffb74d;
 }
 
-.icon-wrapper {
-  position: relative;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  transition: all 0.2s ease;
+.nav-tile-icon {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+  font-size: 20px !important;
 }
 
-.icon-tile:hover .icon-wrapper {
-  transform: scale(1.1);
+.minimal-nav-tile:hover .nav-tile-icon {
+  color: #ff8c00;
 }
 
-.tile-icon {
-  color: #FF8C00;
-  transition: all 0.2s ease;
+.v-theme--dark .minimal-nav-tile:hover .nav-tile-icon {
+  color: #ffb74d;
 }
 
-.v-theme--dark .tile-icon {
-  color: #FFB74D;
+.minimal-nav-tile.active-route .nav-tile-icon {
+  color: #ff8c00;
 }
 
-.icon-tile:hover .tile-icon {
-  color: #E65100;
-  transform: scale(1.1);
+.v-theme--dark .minimal-nav-tile.active-route .nav-tile-icon {
+  color: #ffb74d;
 }
 
-.v-theme--dark .icon-tile:hover .tile-icon {
-  color: #FFCC80;
+.nav-tile-label {
+  color: rgba(var(--v-theme-on-surface), 0.75);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.3;
+  flex: 1;
+  text-align: left;
 }
 
-.icon-tile.active-route .tile-icon {
-  color: #E65100;
-}
-
-.v-theme--dark .icon-tile.active-route .tile-icon {
-  color: #FFCC80;
-}
-
-.tile-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-}
-
-.tile-label {
-  color: #212121;
-  font-size: 0.7rem;
+.minimal-nav-tile:hover .nav-tile-label {
+  color: #e65100;
   font-weight: 500;
-  text-align: center;
-  line-height: 1.2;
-  margin-top: 2px;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
-.v-theme--dark .tile-label {
-  color: #FFFFFF;
+.v-theme--dark .minimal-nav-tile:hover .nav-tile-label {
+  color: #ffcc80;
 }
 
-.icon-tile:hover .tile-label {
-  color: #E65100;
+.minimal-nav-tile.active-route .nav-tile-label {
+  color: #e65100;
   font-weight: 600;
 }
 
-.v-theme--dark .icon-tile:hover .tile-label {
-  color: #FFCC80;
+.v-theme--dark .minimal-nav-tile.active-route .nav-tile-label {
+  color: #ffcc80;
 }
 
-.icon-tile.active-route .tile-label {
-  color: #E65100;
-  font-weight: 600;
-}
-
-.v-theme--dark .icon-tile.active-route .tile-label {
-  color: #FFCC80;
+.nav-tile-badge {
+  flex-shrink: 0;
 }
 
 /* ========================================
-   FOOTER
+   MINIMAL FOOTER
    ======================================== */
-.overlay-footer {
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+.minimal-overlay-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 140, 0, 0.2);
   display: flex;
-  gap: 8px;
-  justify-content: center;
+  gap: 6px;
+  justify-content: flex-end;
   flex-wrap: wrap;
 }
 
-.v-theme--dark .overlay-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.v-theme--dark .minimal-overlay-footer {
+  border-top-color: rgba(255, 183, 77, 0.3);
 }
 
-.footer-action-btn {
-  color: #212121 !important;
-  background: rgba(255, 140, 0, 0.08) !important;
-  border: 1px solid rgba(255, 140, 0, 0.2);
-  padding: 8px 16px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+.minimal-footer-btn {
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
+  text-transform: none !important;
+  font-weight: 400 !important;
+  font-size: 0.8125rem !important;
+  padding: 6px 12px !important;
+  min-height: 32px !important;
+  transition: all 0.15s ease;
 }
 
-.v-theme--dark .footer-action-btn {
-  color: #FFFFFF !important;
-  background: rgba(255, 183, 77, 0.1) !important;
-  border: 1px solid rgba(255, 183, 77, 0.3);
+.minimal-footer-btn:hover {
+  color: #ff8c00 !important;
+  background: rgba(255, 140, 0, 0.1) !important;
 }
 
-.footer-action-btn:hover {
-  background: rgba(255, 140, 0, 0.15) !important;
-  border-color: #FF8C00;
-  transform: translateY(-2px);
+.v-theme--dark .minimal-footer-btn:hover {
+  color: #ffb74d !important;
+  background: rgba(255, 183, 77, 0.15) !important;
 }
 
-.v-theme--dark .footer-action-btn:hover {
-  background: rgba(255, 183, 77, 0.2) !important;
-  border-color: #FFB74D;
+.logout-footer-btn:hover {
+  color: rgba(244, 67, 54, 0.9) !important;
+  background: rgba(244, 67, 54, 0.1) !important;
 }
 
-.footer-action-btn :deep(.v-icon) {
-  color: #FF8C00 !important;
-}
-
-.v-theme--dark .footer-action-btn :deep(.v-icon) {
-  color: #FFB74D !important;
-}
-
-.footer-action-btn.v-btn--variant-text.v-theme--light {
-  color: #212121 !important;
+.minimal-footer-btn :deep(.v-icon) {
+  color: inherit !important;
+  font-size: 18px !important;
 }
 
 /* ========================================
@@ -746,54 +610,51 @@ watch(
   transition: opacity 0.3s ease;
 }
 
+.fade-enter-active .overlay-fullscreen {
+  opacity: 1 !important;
+  background-color: #ffffff !important;
+}
+
+.v-theme--dark .fade-enter-active .overlay-fullscreen {
+  background-color: #121212 !important;
+}
+
 .fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from .overlay-fullscreen,
+.fade-leave-to .overlay-fullscreen {
   opacity: 0;
+  background-color: #ffffff !important;
+}
+
+.v-theme--dark .fade-enter-from .overlay-fullscreen,
+.v-theme--dark .fade-leave-to .overlay-fullscreen {
+  background-color: #121212 !important;
 }
 
 /* ========================================
    MOBILE ADJUSTMENTS
    ======================================== */
 @media (max-width: 600px) {
-  .icon-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 10px;
+  .minimal-nav-grid-wrapper {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
-  .icon-tile {
-    min-height: 75px;
-    padding: 8px 4px;
+  .minimal-nav-tile {
+    min-height: 34px;
+    padding: 6px 8px;
+    gap: 8px;
   }
 
-  .icon-wrapper {
-    width: 40px;
-    height: 40px;
+  .nav-tile-icon {
+    font-size: 18px !important;
   }
 
-  .tile-icon {
-    font-size: 28px !important;
-  }
-
-  .tile-label {
-    font-size: 0.65rem;
-  }
-
-  .overlay-header {
-    flex-direction: column;
-    align-items: flex-start !important;
-  }
-
-  .overlay-header .d-flex {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .user-avatar {
-    margin-bottom: 12px;
+  .nav-tile-label {
+    font-size: 0.75rem;
   }
 }
 

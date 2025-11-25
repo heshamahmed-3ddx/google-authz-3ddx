@@ -80,6 +80,8 @@
       "whats-new": "What's New",
     "reportsAnalytics": "Reports & Analytics",
   "dashboards": "Dashboards",
+  "powerbiReporting": "PowerBI Reporting",
+  "powerbi-reporting": "PowerBI Reporting",
   "userActivity": "User Activity",
   "user-activity": "User Activity",
   "system": "System",
@@ -279,9 +281,16 @@
     "settings": "Settings",
     "logout": "Logout",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "navigation": "Navigation",
+    "menu": "Menu"
   },
   "reports": {
+    "powerbi": {
+      "subtitle": "Interactive analytics and business intelligence dashboards",
+      "dashboard": "PowerBI Dashboard",
+      "version": "PowerBI Reporting v1.0.0"
+    },
     "surgicalGuide": {
       "title": "Surgical Guide Report",
       "subtitle": "Comprehensive surgical guide cases and financial analytics",

@@ -9,7 +9,7 @@
 import databaseService from '../services/database.js';
 
 class SurgicalGuideOrdersModel {
-  async getReportData({ startDate, endDate, page = 1, limit = 50, searchQuery = '', orderTypeFilter = 'all' }) {
+  async getReportData({ startDate, endDate, page = 1, limit = 10, searchQuery = '', orderTypeFilter = 'all' }) {
     // Check if database is available
     if (!databaseService.isAvailable()) {
       throw new Error('Database service is not available. Please check database connection.');
@@ -20,7 +20,7 @@ class SurgicalGuideOrdersModel {
     const defaultEndDate = '2015-01-01';
     const sanitizedStartDate = typeof startDate === 'string' && startDate.length === 10 ? startDate : defaultStartDate;
     const sanitizedEndDate = typeof endDate === 'string' && endDate.length === 10 ? endDate : defaultEndDate;
-    const sanitizedLimit = Math.max(1, parseInt(limit, 10) || 50);
+    const sanitizedLimit = Math.max(1, parseInt(limit, 10) || 10);
     const sanitizedPage = Math.max(1, parseInt(page, 10) || 1);
     const offset = Math.max(0, parseInt((sanitizedPage - 1) * sanitizedLimit, 10));
     

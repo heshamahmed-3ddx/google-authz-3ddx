@@ -25,7 +25,7 @@ class SurgicalGuideOrdersService {
    * @param {string} params.startDate - Start date (YYYY-MM-DD)
    * @param {string} params.endDate - End date (YYYY-MM-DD)
    * @param {number} [params.page=1] - Page number
-   * @param {number} [params.limit=50] - Items per page
+   * @param {number} [params.limit=10] - Items per page
    * @param {string} [params.sortBy='date'] - Sort field
    * @param {string} [params.sortOrder='desc'] - Sort order
    * @param {string} [params.searchQuery=''] - Search query for ID, patient name, doctor, or scan center
@@ -53,7 +53,7 @@ class SurgicalGuideOrdersService {
 
       // Validate pagination parameters
       const page = Math.max(1, parseInt(params.page) || 1);
-      const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 50)); // Max 100 per page
+      const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 10)); // Max 100 per page, default 10
 
       // Instrument DB query timing
       const start = process.hrtime();

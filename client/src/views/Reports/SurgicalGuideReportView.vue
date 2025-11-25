@@ -443,7 +443,7 @@
               :items="filteredReportData"
               v-model:expanded="expanded"
               :items-length="pagination.total"
-              :items-per-page="10"
+              v-model:items-per-page="itemsPerPage"
               :items-per-page-options="[10, 25, 50]"
               :items-per-page-text="t('reports.surgicalGuide.table.itemsPerPage')"
               :page-text="t('reports.surgicalGuide.table.pageText')"
@@ -1012,7 +1012,7 @@ const filters = reactive({
   startDate: "2014-01-01",
   endDate: "2020-12-31",
   page: 1,
-  limit: 50,
+  limit: 10,
   sortBy: "date",
   sortOrder: "desc",
 });
@@ -1029,9 +1029,12 @@ let isInitialLoad = true; // Track if this is the first load
 let tableOptionsDisabled = false; // Flag to disable table auto-updates
 let searchTimeout = null; // Timeout for search debounce
 
+// Reactive items per page for the table (default 10)
+const itemsPerPage = ref(10);
+
 const pagination = reactive({
   page: 1,
-  limit: 50,
+  limit: 10,
   total: 0,
   totalPages: 0,
   hasNextPage: false,
@@ -1392,7 +1395,7 @@ async function fetchReportData() {
       startDate: filters.startDate || "1900-01-01",
       endDate: filters.endDate || "2100-01-01",
       page: filters.page,
-      limit: Math.min(filters.limit, 50), // Limit to 50 for better performance
+      limit: filters.limit, // Use the actual limit from filters (default 10)
       sortBy: filters.sortBy,
       sortOrder: filters.sortOrder,
       searchQuery: searchQuery.value || "", // Add search query parameter
@@ -1457,6 +1460,8 @@ async function fetchReportData() {
       // This ensures loadItems() won't trigger again when table detects pagination change
       lastTableOptions.page = serverPagination.page;
       lastTableOptions.itemsPerPage = serverPagination.limit;
+      // Sync itemsPerPage with server response to keep UI in sync
+      itemsPerPage.value = serverPagination.limit;
       const currentSortKey = filters.sortBy && filters.sortOrder
         ? `${filters.sortBy}:${filters.sortOrder}`
         : "";
@@ -1564,7 +1569,7 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
   }
 
   // Guard: Prevent initial load from triggering multiple times
-  if (isInitialLoad && page === 1 && itemsPerPage === 50 && !incomingSortKey) {
+  if (isInitialLoad && page === 1 && itemsPerPage === 10 && !incomingSortKey) {
     // This is likely the initial mount trigger, let it through once
     isInitialLoad = false;
   } else if (isInitialLoad) {
@@ -1897,7 +1902,7 @@ onMounted(async () => {
         tableOptionsDisabled = false;
     loadItems({
       page: pagination.page,
-      itemsPerPage: pagination.limit,
+      itemsPerPage: itemsPerPage.value,
       sortBy: [],
         }).catch(() => {
           isInitialLoad = true; // Reset on error

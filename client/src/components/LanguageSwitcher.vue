@@ -12,7 +12,7 @@
           variant="text"
           size="small"
           color="secondary"
-          class="language-btn"
+          class="minimal-icon-btn language-btn"
           :aria-label="`Current language: ${currentLanguage.nativeName}`"
         >
           <v-icon size="18" class="lang-icon">mdi-web</v-icon>
@@ -130,11 +130,21 @@ const changeLanguage = (languageCode) => {
 }
 
 .language-btn {
-  min-width: 56px !important;
+  min-width: 44px !important;
   height: 36px !important;
-  padding: 0 12px !important;
+  padding: 0 8px !important;
   text-transform: none !important;
   letter-spacing: normal !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.language-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+}
+
+.v-theme--dark .language-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .language-btn :deep(.v-btn__content) {
@@ -142,17 +152,20 @@ const changeLanguage = (languageCode) => {
 }
 
 .lang-icon {
-  opacity: 0.7;
-  transition: opacity 0.2s, color 0.2s;
-  color: #146e9c !important; /* Brand blue for light mode */
+  transition: all 0.15s ease;
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
 }
 
 .v-theme--dark .lang-icon {
-  color: #ef9043 !important; /* Brand orange for dark mode */
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .language-btn:hover .lang-icon {
-  opacity: 1;
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
+}
+
+.v-theme--dark .language-btn:hover .lang-icon {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .lang-code {
