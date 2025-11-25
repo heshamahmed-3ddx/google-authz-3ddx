@@ -12,10 +12,10 @@
           variant="text"
           size="small"
           color="secondary"
-          class="theme-btn"
+          class="minimal-icon-btn theme-btn"
           :aria-label="`Current theme: ${themeStore.currentTheme}`"
         >
-          <v-icon size="20" class="theme-icon">{{ currentThemeIcon }}</v-icon>
+          <v-icon size="18" class="theme-icon">{{ currentThemeIcon }}</v-icon>
         </v-btn>
       </template>
 
@@ -96,19 +96,34 @@ const setTheme = (theme) => {
   width: 36px !important;
   height: 36px !important;
   padding: 0 !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.theme-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+}
+
+.v-theme--dark .theme-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .theme-icon {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
-  color: #146e9c !important; /* Brand blue for light mode */
+  transition: all 0.15s ease;
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
 }
 
 .v-theme--dark .theme-icon {
-  color: #ef9043 !important; /* Brand orange for dark mode */
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .theme-btn:hover .theme-icon {
-  transform: rotate(20deg);
+  transform: scale(1.05);
+  color: rgba(var(--v-theme-on-surface), 0.9) !important;
+}
+
+.v-theme--dark .theme-btn:hover .theme-icon {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .theme-card {

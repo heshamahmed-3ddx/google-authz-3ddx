@@ -56,9 +56,9 @@ const router = express.Router();
  *           type: integer
  *           minimum: 1
  *           maximum: 100
- *           default: 50
- *           example: 50
- *         description: Number of records per page (max 100)
+ *           default: 10
+ *           example: 10
+ *         description: Number of records per page (max 100, default 10)
  *       - in: query
  *         name: sortBy
  *         schema:
@@ -125,7 +125,7 @@ const router = express.Router();
  *                       example: 1
  *                     limit:
  *                       type: integer
- *                       example: 50
+ *                       example: 10
  *                     total:
  *                       type: integer
  *                       example: 150

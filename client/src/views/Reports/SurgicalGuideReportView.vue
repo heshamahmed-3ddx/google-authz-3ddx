@@ -443,7 +443,7 @@
               :items="filteredReportData"
               v-model:expanded="expanded"
               :items-length="pagination.total"
-              :items-per-page="10"
+              v-model:items-per-page="itemsPerPage"
               :items-per-page-options="[10, 25, 50]"
               :items-per-page-text="t('reports.surgicalGuide.table.itemsPerPage')"
               :page-text="t('reports.surgicalGuide.table.pageText')"
@@ -975,12 +975,15 @@ function getHeaderTooltip(key) {
 import { ref, reactive, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useDevModeStore } from "@/stores/devMode";
+import { storeToRefs } from "pinia";
 import api from "@/services/api";
 import { useI18n } from "vue-i18n";
 import { isRTL } from "@/i18n";
 
 const router = useRouter();
 const devModeStore = useDevModeStore();
+// Use storeToRefs for reactive access to dev mode store values
+const { adminViewEnabled, simulatedGroups } = storeToRefs(devModeStore);
 const { t, locale } = useI18n();
 
 // Computed reactive RTL flag tied to the current i18n locale for this component
@@ -1009,7 +1012,7 @@ const filters = reactive({
   startDate: "2014-01-01",
   endDate: "2020-12-31",
   page: 1,
-  limit: 50,
+  limit: 10,
   sortBy: "date",
   sortOrder: "desc",
 });
@@ -1026,9 +1029,12 @@ let isInitialLoad = true; // Track if this is the first load
 let tableOptionsDisabled = false; // Flag to disable table auto-updates
 let searchTimeout = null; // Timeout for search debounce
 
+// Reactive items per page for the table (default 10)
+const itemsPerPage = ref(10);
+
 const pagination = reactive({
   page: 1,
-  limit: 50,
+  limit: 10,
   total: 0,
   totalPages: 0,
   hasNextPage: false,
@@ -1304,44 +1310,53 @@ function navigateToDashboard() {
   router.push("/dashboard");
 }
 
+// Store the base user groups from API (only fetched once)
+const baseUserGroups = ref([]);
+
 /**
  * Check user access permissions
+ * @param {boolean} skipApiCall - If true, skip API call and only recompute from cached data
  */
-async function checkAccess() {
+async function checkAccess(skipApiCall = false) {
   try {
-    loading.access = true;
-    const response = await api.get("/api/reports/surgical_guide/access");
+    if (!skipApiCall) {
+      loading.access = true;
+      const response = await api.get("/api/reports/surgical_guide/access");
 
-    if (response.data.success) {
-      const accessData = response.data.data;
-
-      // In development mode, merge with simulated groups
-      if (import.meta.env.DEV) {
-        const mergedGroups = devModeStore.getMergedGroups(
-          accessData.userGroups,
-        );
-
-        // Check if merged groups include required groups
-        const hasReportAccess =
-          devModeStore.adminViewEnabled ||
-          mergedGroups.includes("Finance22") ||
-          mergedGroups.includes("admin");
-
-        const hasSwaggerAccess =
-          devModeStore.adminViewEnabled ||
-          mergedGroups.includes("Developers22") ||
-          mergedGroups.includes("admin") ||
-          mergedGroups.includes("SWD") ||
-          mergedGroups.includes("developers");
-
-        Object.assign(accessInfo, {
-          hasReportAccess,
-          hasSwaggerAccess,
-          userGroups: mergedGroups,
-        });
-      } else {
-        Object.assign(accessInfo, accessData);
+      if (response.data.success) {
+        const accessData = response.data.data;
+        baseUserGroups.value = accessData.userGroups || [];
+        
+        // In production, use API data directly
+        if (!import.meta.env.DEV) {
+          Object.assign(accessInfo, accessData);
+          return;
+        }
       }
+    }
+
+    // In development mode, always recompute from base groups + dev mode
+    if (import.meta.env.DEV) {
+      const mergedGroups = devModeStore.getMergedGroups(baseUserGroups.value);
+
+      // Check if merged groups include required groups
+      const hasReportAccess =
+        devModeStore.adminViewEnabled ||
+        mergedGroups.includes("Finance22") ||
+        mergedGroups.includes("admin");
+
+      const hasSwaggerAccess =
+        devModeStore.adminViewEnabled ||
+        mergedGroups.includes("Developers22") ||
+        mergedGroups.includes("admin") ||
+        mergedGroups.includes("SWD") ||
+        mergedGroups.includes("developers");
+
+      Object.assign(accessInfo, {
+        hasReportAccess,
+        hasSwaggerAccess,
+        userGroups: mergedGroups,
+      });
     }
   } catch (error) {
     showSnackbar(
@@ -1380,7 +1395,7 @@ async function fetchReportData() {
       startDate: filters.startDate || "1900-01-01",
       endDate: filters.endDate || "2100-01-01",
       page: filters.page,
-      limit: Math.min(filters.limit, 50), // Limit to 50 for better performance
+      limit: filters.limit, // Use the actual limit from filters (default 10)
       sortBy: filters.sortBy,
       sortOrder: filters.sortOrder,
       searchQuery: searchQuery.value || "", // Add search query parameter
@@ -1445,6 +1460,8 @@ async function fetchReportData() {
       // This ensures loadItems() won't trigger again when table detects pagination change
       lastTableOptions.page = serverPagination.page;
       lastTableOptions.itemsPerPage = serverPagination.limit;
+      // Sync itemsPerPage with server response to keep UI in sync
+      itemsPerPage.value = serverPagination.limit;
       const currentSortKey = filters.sortBy && filters.sortOrder
         ? `${filters.sortBy}:${filters.sortOrder}`
         : "";
@@ -1552,7 +1569,7 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
   }
 
   // Guard: Prevent initial load from triggering multiple times
-  if (isInitialLoad && page === 1 && itemsPerPage === 50 && !incomingSortKey) {
+  if (isInitialLoad && page === 1 && itemsPerPage === 10 && !incomingSortKey) {
     // This is likely the initial mount trigger, let it through once
     isInitialLoad = false;
   } else if (isInitialLoad) {
@@ -1823,6 +1840,23 @@ function getStatusBgColor(item) {
 // =====================================
 
 /**
+ * Watch dev mode store changes to re-check access when groups change
+ * This allows the access to update immediately when user adds Finance22 via DevToolbar
+ * Skip API call since we're just recomputing from cached data + dev mode
+ */
+if (import.meta.env.DEV) {
+  watch(
+    [adminViewEnabled, simulatedGroups],
+    () => {
+      // Re-check access when dev mode changes (skip API call, use cached base groups)
+      // Always recompute in dev mode, even if baseUserGroups is empty (user might have no real groups)
+      checkAccess(true); // Skip API call, just recompute from base groups + dev mode
+    },
+    { deep: true }
+  );
+}
+
+/**
  * Watch search query with debounce
  * Automatically triggers search when query changes
  */
@@ -1868,7 +1902,7 @@ onMounted(async () => {
         tableOptionsDisabled = false;
     loadItems({
       page: pagination.page,
-      itemsPerPage: pagination.limit,
+      itemsPerPage: itemsPerPage.value,
       sortBy: [],
         }).catch(() => {
           isInitialLoad = true; // Reset on error

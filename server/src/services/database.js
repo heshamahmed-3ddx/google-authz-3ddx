@@ -27,6 +27,10 @@ const dbConfig = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  // Timeout settings to prevent hanging connections
+  connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 10000, // 10 seconds to establish connection
+  acquireTimeout: parseInt(process.env.DB_ACQUIRE_TIMEOUT) || 60000, // 60 seconds to get connection from pool
+  timeout: parseInt(process.env.DB_QUERY_TIMEOUT) || 30000, // 30 seconds for query execution
   // Security and performance settings
   multipleStatements: false, // Prevent SQL injection
   dateStrings: true, // Return dates as strings for consistent formatting
@@ -80,6 +84,14 @@ class DatabaseService {
   }
 
   /**
+   * Check if database is initialized and available
+   * @returns {boolean} True if database is available
+   */
+  isAvailable() {
+    return pool !== null;
+  }
+
+  /**
    * Get connection pool instance
    * @returns {mysql.Pool} Connection pool
    * @throws {Error} If pool is not initialized
@@ -99,13 +111,17 @@ class DatabaseService {
    * @throws {Error} If query fails
    */
   async query(sql, params = []) {
-    const connection = await this.getPool().getConnection();
+    let connection;
     try {
+      // Get connection from pool (timeout handled by acquireTimeout config)
+      connection = await this.getPool().getConnection();
+      
       logger.debug('Executing database query', {
         sql: sql.substring(0, 100) + (sql.length > 100 ? '...' : ''),
         paramsCount: params.length
       });
 
+      // Execute query (timeout handled by timeout config)
       const [rows] = await connection.execute(sql, params);
       
       logger.debug('Query executed successfully', {
@@ -114,19 +130,36 @@ class DatabaseService {
 
       return rows;
     } catch (error) {
+      // Check if it's a timeout error
+      const isTimeout = error.code === 'ETIMEDOUT' || 
+                       error.errno === -60 || // ETIMEDOUT errno on macOS/Linux
+                       error.message.includes('timeout') || 
+                       error.message.includes('Timeout');
+      
       logger.error('Database query failed', {
         error: error.message,
         code: error.code,
-        sql,
-        params,
-        stack: error.stack,
-        fullError: error
+        errno: error.errno,
+        isTimeout,
+        sql: sql.substring(0, 200),
+        paramsCount: params.length,
+        stack: error.stack
       });
-      // Print full error to console for immediate debugging
-      console.error('Database query error:', error);
+      
+      // For timeout errors, provide more helpful error message
+      if (isTimeout) {
+        const timeoutError = new Error(`Database operation timed out. This may indicate network issues or database server overload. Original error: ${error.message}`);
+        timeoutError.code = error.code || 'ETIMEDOUT';
+        timeoutError.errno = error.errno;
+        timeoutError.originalError = error;
+        throw timeoutError;
+      }
+      
       throw error;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 

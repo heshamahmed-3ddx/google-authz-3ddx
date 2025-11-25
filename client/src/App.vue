@@ -1,48 +1,28 @@
 <template>
   <v-app>
-    <!-- Navigation Sidebar (lazy-loaded, only when authenticated) -->
-    <!-- DISABLED: Sidebar temporarily disabled -->
-    <!-- <Suspense>
-      <template #default>
-        <NavigationSidebar v-if="authStore.isAuthenticated" v-model="drawer" />
-      </template>
-      <template #fallback>
-        <div
-          v-if="authStore.isAuthenticated"
-          style="width: 64px; height: 100%"
-        ></div>
-      </template>
-    </Suspense> -->
-
     <v-app-bar
       v-if="showAppBar"
       :elevation="0"
       :color="themeStore.isDark ? '#1e1e1e' : '#ffffff'"
       flat
-      height="64"
-      class="compact-appbar main-appbar sharp-appbar"
+      height="56"
+      class="minimal-appbar main-appbar sharp-appbar"
     >
       <v-app-bar-title
-        class="d-flex align-center pa-0 ml-4"
-        style="height: 100%"
+        class="d-flex align-center pa-0 minimal-logo-container"
       >
         <img
           src="/logo.png"
           alt="App Logo"
-          style="
-            height: 120px;
-            width: auto;
-            object-fit: contain;
-            padding-top: 10px;
-          "
+          class="minimal-logo"
         />
       </v-app-bar-title>
 
       <v-spacer></v-spacer>
 
-      <div class="appbar-actions">
+      <div class="minimal-appbar-actions">
         <!-- Menu button for overlay sidebar -->
-        <v-tooltip location="bottom">
+        <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-if="authStore.isAuthenticated"
@@ -50,38 +30,43 @@
               icon
               size="small"
               variant="text"
-              class="mr-2 apps-menu-btn"
+              :class="['minimal-icon-btn', 'apps-menu-btn', { active: overlaySidebarOpen }]"
               @click="overlaySidebarOpen = !overlaySidebarOpen"
             >
-              <v-icon size="small">mdi-apps</v-icon>
+              <v-icon size="20">mdi-apps</v-icon>
             </v-btn>
           </template>
           <span>App Navigation</span>
         </v-tooltip>
         <LanguageSwitcher />
         <ThemeToggle />
-        <v-btn
-          v-if="authStore.isAuthenticated"
-          variant="text"
-          size="small"
-          color="error"
-          icon
-          class="logout-btn"
-          :aria-label="$t('auth.logout')"
-          @click="handleLogout"
-        >
-          <v-icon size="20">mdi-logout</v-icon>
-        </v-btn>
+        <v-tooltip location="bottom" :disabled="false">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-if="authStore.isAuthenticated"
+              v-bind="tooltipProps"
+              variant="text"
+              size="small"
+              icon
+              class="minimal-icon-btn logout-btn"
+              :aria-label="$t('auth.logout')"
+              @click="handleLogout"
+            >
+              <v-icon size="20">mdi-logout</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ $t('auth.logout') || 'Logout' }}</span>
+        </v-tooltip>
       </div>
     </v-app-bar>
 
     <!-- Breadcrumbs Section -->
-    <div v-if="authStore.isAuthenticated && showAppBar" class="breadcrumbs-bar">
-      <v-container fluid class="py-0 px-4">
+    <div v-if="authStore.isAuthenticated && showAppBar" class="minimal-breadcrumbs-bar">
+      <v-container fluid class="py-0 px-3">
         <div class="d-flex align-center">
-          <v-breadcrumbs :items="breadcrumbItems" class="pa-0" density="compact">
+          <v-breadcrumbs :items="breadcrumbItems" class="pa-0 minimal-breadcrumbs" density="compact">
             <template #divider>
-              <v-icon size="x-small">mdi-chevron-right</v-icon>
+              <v-icon size="x-small" class="breadcrumb-divider">mdi-chevron-right</v-icon>
             </template>
           </v-breadcrumbs>
         </div>
@@ -94,8 +79,7 @@
           <router-view />
         </template>
         <template #fallback>
-          <!-- Native Vue loader for route loading -->
-          <div class="route-fallback fill-height d-flex align-center justify-center">
+          <div class="fill-height d-flex align-center justify-center">
             <div class="text-center">
               <v-progress-circular
                 indeterminate
@@ -144,6 +128,9 @@
       {{ snackbar.message }}
       <v-icon class="toast-close" size="small">mdi-close</v-icon>
     </div>
+
+    <!-- PWA Update Prompt -->
+    <PWAUpdatePrompt />
   </v-app>
 </template>
 
@@ -154,12 +141,10 @@ import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt.vue";
 import { defineAsyncComponent } from "vue";
 
 // Lazy load heavier components and use Suspense fallbacks
-const NavigationSidebar = defineAsyncComponent(
-  () => import("@/components/NavigationSidebar.vue"),
-);
 const OverlaySidebar = defineAsyncComponent(
   () => import("@/components/OverlaySidebar.vue"),
 );
@@ -169,12 +154,10 @@ const DevToolbar = defineAsyncComponent(
 import { useI18n } from "vue-i18n";
 import { useTheme, useLocale } from "vuetify";
 import { isRTL } from "@/i18n";
-import rootPkg from "../../package.json";
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
 const { locale, t } = useI18n();
-const appVersion = rootPkg.version || "";
 const vuetifyTheme = useTheme();
 const vuetifyLocale = useLocale();
 const router = useRouter();
@@ -185,27 +168,6 @@ const showAppBar = computed(() => {
   return route.name !== "Login" && route.path !== "/";
 });
 
-// Toggle language between 'en' and 'ar'
-function toggleLanguage() {
-  const current = String(locale.value || "").toLowerCase();
-  const isEnglish = current.startsWith("en");
-  locale.value = isEnglish ? "ar" : "en";
-}
-
-// Display short locale for button (EN/AR)
-const displayLocale = computed(() => {
-  const current = String(locale.value || "").toLowerCase();
-  if (current.startsWith("en")) return "EN";
-  if (current.startsWith("ar")) return "AR";
-  return "EN";
-});
-
-// Toggle theme between 'light' and 'dark'
-function toggleTheme() {
-  themeStore.currentTheme =
-    themeStore.currentTheme === "light" ? "dark" : "light";
-  vuetifyTheme.change(themeStore.currentTheme);
-}
 
 // Logout handler - robust: clear local state, attempt server logout, then redirect
 const handleLogout = async () => {
@@ -256,9 +218,6 @@ const handleLogout = async () => {
     }
   }
 };
-
-// Drawer state - hidden by default, user can open when needed
-const drawer = ref(false);
 
 // Overlay sidebar state
 const overlaySidebarOpen = ref(false);
@@ -360,18 +319,6 @@ const snackbar = reactive({
   timeout: 4000,
 });
 
-// Function to show snackbar messages (currently not used but may be needed)
-// const showMessage = (message, color = "success") => {
-//   snackbar.message = message;
-//   snackbar.color = color;
-//   snackbar.show = true;
-//
-//   // Auto-hide after timeout
-//   setTimeout(() => {
-//     snackbar.show = false;
-//   }, snackbar.timeout);
-// };
-
 // Check authentication status on app load - silently handle failures
 authStore.checkAuth();
 </script>
@@ -437,9 +384,27 @@ authStore.checkAuth();
   font-weight: 500;
 }
 
-.compact-appbar :deep(.v-toolbar__content) {
-  padding-left: 4px !important;
-  padding-right: 8px !important;
+/* Minimal Professional Appbar */
+.minimal-appbar {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.minimal-appbar :deep(.v-toolbar__content) {
+  height: 56px !important;
+}
+
+.minimal-logo-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 0 !important;
+}
+
+.minimal-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  max-width: 250px;
 }
 
 /* Main app bar without border - breadcrumbs will have the border */
@@ -477,76 +442,75 @@ authStore.checkAuth();
   border-radius: 0 !important;
 }
 
-/* Breadcrumbs bar styling */
-.breadcrumbs-bar {
-  background: #ffffff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+/* Minimal Breadcrumbs bar styling */
+.minimal-breadcrumbs-bar {
+  background: rgb(var(--v-theme-surface));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   position: sticky;
-  top: 64px;
+  top: 56px;
   z-index: 100;
-  min-height: 32px;
-  max-height: 32px;
+  min-height: 36px;
+  max-height: 36px;
 }
 
-.v-theme--dark .breadcrumbs-bar {
-  background: #1e1e1e;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.breadcrumbs-bar :deep(.v-container) {
+.minimal-breadcrumbs-bar :deep(.v-container) {
   min-height: auto !important;
   height: 100%;
   display: flex;
   align-items: center;
 }
 
-.breadcrumbs-bar :deep(.v-container > .d-flex) {
+.minimal-breadcrumbs-bar :deep(.v-container > .d-flex) {
   height: 100%;
   align-items: center;
 }
 
-.breadcrumbs-bar :deep(.v-breadcrumbs) {
+.minimal-breadcrumbs {
   padding: 0;
-  min-height: 24px;
-  height: 24px;
+  min-height: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
 }
 
-.breadcrumbs-bar :deep(.v-breadcrumbs-item) {
-  font-size: 0.75rem;
-  line-height: 1.2;
-  padding: 2px 4px;
+.minimal-breadcrumbs :deep(.v-breadcrumbs-item) {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  padding: 4px 6px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-weight: 400;
+  transition: color 0.15s ease;
 }
 
-.breadcrumbs-bar :deep(.v-breadcrumbs-divider) {
+.minimal-breadcrumbs :deep(.v-breadcrumbs-item:hover) {
+  color: rgba(var(--v-theme-on-surface), 0.9);
+}
+
+.minimal-breadcrumbs :deep(.v-breadcrumbs-item--disabled) {
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  font-weight: 500;
+}
+
+.breadcrumb-divider {
+  color: rgba(var(--v-theme-on-surface), 0.3) !important;
   margin: 0 4px;
   font-size: 0.75rem;
 }
 
-.breadcrumbs-bar :deep(.v-breadcrumbs-item--disabled) {
-  color: rgba(0, 0, 0, 0.6);
+.minimal-breadcrumbs :deep(.v-breadcrumbs-item--disabled) {
+  color: rgba(var(--v-theme-on-surface), 0.5);
 }
 
-.v-theme--dark .breadcrumbs-bar :deep(.v-breadcrumbs-item--disabled) {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-/* RTL support for breadcrumbs */
-[dir="rtl"] .breadcrumbs-bar .d-flex {
+/* RTL support for minimal breadcrumbs */
+[dir="rtl"] .minimal-breadcrumbs-bar .d-flex {
   flex-direction: row-reverse;
 }
 
-[dir="rtl"] .breadcrumbs-bar .mr-2 {
-  margin-right: 0 !important;
-  margin-left: 8px !important;
-}
-
-[dir="rtl"] .breadcrumbs-bar :deep(.v-breadcrumbs) {
+[dir="rtl"] .minimal-breadcrumbs :deep(.v-breadcrumbs) {
   direction: rtl;
 }
 
-[dir="rtl"] .breadcrumbs-bar :deep(.v-breadcrumbs-divider) {
+[dir="rtl"] .breadcrumb-divider {
   transform: scaleX(-1);
 }
 
@@ -666,12 +630,6 @@ authStore.checkAuth();
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.app-version {
-  opacity: 0.85;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.9);
 }
 
 .simple-toast {
@@ -875,73 +833,123 @@ authStore.checkAuth();
   justify-content: flex-start;
 }
 
-/* Route fallback loader - Native Vue loader for async route loading */
-.route-fallback {
-  min-height: 400px;
-  width: 100%;
-}
-
 /* Appbar actions */
-.appbar-actions {
+.minimal-appbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-right: 20px;
+  gap: 2px;
+  padding-right: 8px;
 }
 
-[dir="rtl"] .appbar-actions {
+[dir="rtl"] .minimal-appbar-actions {
   padding-right: 0;
-  padding-left: 20px;
+  padding-left: 8px;
 }
 
-/* Apps menu button */
-.apps-menu-btn {
+/* Minimal Professional Icon Button Base Styles */
+.minimal-icon-btn {
   min-width: 36px !important;
   width: 36px !important;
   height: 36px !important;
   padding: 0 !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+  position: relative;
+}
+
+.minimal-icon-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+  z-index: 0;
+}
+
+.minimal-icon-btn:hover::before {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.v-theme--dark .minimal-icon-btn:hover::before {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.minimal-icon-btn .v-icon {
+  position: relative;
+  z-index: 1;
+  transition: all 0.15s ease;
+}
+
+/* Apps Menu Button */
+.apps-menu-btn {
+  color: #ff8c00 !important;
+}
+
+.v-theme--dark .apps-menu-btn {
+  color: #ffb74d !important;
 }
 
 .apps-menu-btn .v-icon {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
-  color: #FF8C00 !important; /* Brand orange for light mode */
+  color: inherit !important;
 }
 
-.v-theme--dark .apps-menu-btn .v-icon {
-  color: #FFB74D !important; /* Brand orange for dark mode */
+.apps-menu-btn:hover {
+  background: rgba(255, 140, 0, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.v-theme--dark .apps-menu-btn:hover {
+  background: rgba(255, 183, 77, 0.15) !important;
 }
 
 .apps-menu-btn:hover .v-icon {
-  transform: scale(1.1);
-  color: #E65100 !important;
+  transform: scale(1.15) rotate(90deg);
+  color: #e65100 !important;
 }
 
 .v-theme--dark .apps-menu-btn:hover .v-icon {
-  color: #FFCC80 !important;
+  color: #ffcc80 !important;
 }
 
-/* Logout button */
+.apps-menu-btn:active {
+  transform: translateY(0);
+}
+
+/* Logout Button - Minimal */
 .logout-btn {
-  min-width: 36px !important;
-  width: 36px !important;
-  height: 36px !important;
-  padding: 0 !important;
+  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+}
+
+.v-theme--dark .logout-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .logout-btn .v-icon {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
-  color: #146e9c !important; /* Brand blue for light mode */
+  color: inherit !important;
 }
 
-.v-theme--dark .logout-btn .v-icon {
-  color: #ef9043 !important; /* Brand orange for dark mode */
+.logout-btn:hover {
+  color: rgba(244, 67, 54, 0.8) !important;
+  background: rgba(244, 67, 54, 0.08) !important;
+}
+
+.v-theme--dark .logout-btn:hover {
+  color: rgba(244, 67, 54, 0.9) !important;
+  background: rgba(244, 67, 54, 0.12) !important;
 }
 
 .logout-btn:hover .v-icon {
-  transform: translateX(3px);
+  transform: scale(1.05);
+  color: inherit !important;
 }
 
-[dir="rtl"] .logout-btn:hover .v-icon {
-  transform: translateX(-3px);
+/* Active state for menu button when sidebar is open */
+.apps-menu-btn.active {
+  background: rgba(255, 140, 0, 0.15) !important;
+}
+
+.v-theme--dark .apps-menu-btn.active {
+  background: rgba(255, 183, 77, 0.2) !important;
 }
 </style>

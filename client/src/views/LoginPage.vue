@@ -525,8 +525,6 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
-  margin-left: -30px; /* Shift slightly left */
-  margin-top: -150px; /* Shift up more */
 }
 
 .logo-wrapper {
@@ -586,8 +584,8 @@ onUnmounted(() => {
 }
 
 .login-logo {
-  max-width: 600px;
-  max-height: 300px;
+  max-width: 280px;
+  max-height: 140px;
   width: auto;
   height: auto;
   display: block;
@@ -597,8 +595,8 @@ onUnmounted(() => {
 .sign-in-btn {
   text-transform: none !important;
   border-radius: 8px !important;
-  margin-left: 60px; /* Adjust this value to align with "Insight" in logo */
-  margin-top: -90px; /* Negative gap to overlap with logo */
+  margin-left: 0;
+  margin-top: 12px; /* Spacing below logo */
   opacity: 0;
   transform: translateY(-10px);
   transition:
@@ -709,13 +707,13 @@ onUnmounted(() => {
 <style scoped>
 @media (max-width: 768px) {
   .login-logo {
-    max-width: 400px;
-    max-height: 200px;
+    max-width: 220px;
+    max-height: 110px;
   }
 
   .sign-in-btn {
-    margin-left: 40px; /* Adjusted for smaller logo */
-    margin-top: -75px; /* Negative gap for tablet */
+    margin-left: 0;
+    margin-top: 10px; /* Spacing below logo */
   }
 }
 
@@ -725,13 +723,13 @@ onUnmounted(() => {
   }
 
   .login-logo {
-    max-width: 300px;
-    max-height: 150px;
+    max-width: 180px;
+    max-height: 90px;
   }
 
   .sign-in-btn {
-    margin-left: 30px; /* Adjusted for mobile logo */
-    margin-top: -65px; /* Negative gap for mobile */
+    margin-left: 0;
+    margin-top: 8px; /* Spacing below logo */
   }
 }
 </style>

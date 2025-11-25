@@ -384,10 +384,22 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
-  // Check if user is already authenticated
+  // Fast path: if already authenticated and going to public route, allow immediately
+  if (!to.meta.requiresAuth && authStore.isAuthenticated && to.name === "Login") {
+    next({ name: "Dashboard" });
+    return;
+  }
+
+  // Fast path: if route doesn't require auth, allow immediately
+  if (!to.meta.requiresAuth) {
+    next();
+    return;
+  }
+
+  // Check if user is already authenticated (use cached value first)
   let isAuthenticated = authStore.isAuthenticated;
   
-  // If not cached, check with server
+  // Only check with server if not already authenticated (avoid unnecessary API calls)
   if (!isAuthenticated) {
     isAuthenticated = await authStore.checkAuth();
   }
@@ -398,62 +410,58 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  if (to.meta.requiresAuth) {
-    if (!isAuthenticated) {
-      next({ name: "Login" });
-      return;
-    }
+  if (!isAuthenticated) {
+    next({ name: "Login" });
+    return;
+  }
 
-    // Check group-based permissions
-    if (to.meta.requiredGroups) {
-      // Get user groups from auth store
-      const userRights = authStore.cachedUserRights;
-      let userGroups = userRights?.groups || [];
+  // Check group-based permissions (only if required)
+  if (to.meta.requiredGroups) {
+    // Get user groups from auth store (use cached value)
+    const userRights = authStore.cachedUserRights;
+    let userGroups = userRights?.groups || [];
 
-      // In development mode, merge with simulated groups
-      if (import.meta.env.DEV) {
-        const { useDevModeStore } = await import("@/stores/devMode");
-        const devModeStore = useDevModeStore();
+    // In development mode, merge with simulated groups
+    if (import.meta.env.DEV) {
+      const { useDevModeStore } = await import("@/stores/devMode");
+      const devModeStore = useDevModeStore();
 
-        // If admin view is enabled, grant access to all routes
-        if (devModeStore.adminViewEnabled) {
-          next();
-          return;
-        }
-
-        // Merge actual groups with simulated groups
-        userGroups = devModeStore.getMergedGroups(userGroups);
-      }
-
-      // Check if user has required access
-      const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
-
-      if (!hasAccess) {
-        // Redirect to unauthorized page with context
-        if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Access denied to ${to.path}. Required groups:`,
-            to.meta.requiredGroups,
-          );
-          // eslint-disable-next-line no-console
-          console.warn(`User groups:`, userGroups);
-        }
-        next({
-          name: "Unauthorized",
-          query: {
-            from: to.path,
-            requiredGroups: to.meta.requiredGroups.join(", "),
-          },
-        });
+      // If admin view is enabled, grant access to all routes
+      if (devModeStore.adminViewEnabled) {
+        next();
         return;
       }
+
+      // Merge actual groups with simulated groups
+      userGroups = devModeStore.getMergedGroups(userGroups);
     }
 
-    next();
-  } else {
-    next();
+    // Check if user has required access
+    const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
+
+    if (!hasAccess) {
+      // Redirect to unauthorized page with context
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Access denied to ${to.path}. Required groups:`,
+          to.meta.requiredGroups,
+        );
+        // eslint-disable-next-line no-console
+        console.warn(`User groups:`, userGroups);
+      }
+      next({
+        name: "Unauthorized",
+        query: {
+          from: to.path,
+          requiredGroups: to.meta.requiredGroups.join(", "),
+        },
+      });
+      return;
+    }
   }
+
+  next();
 });
 
 export default router;

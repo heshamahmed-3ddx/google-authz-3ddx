@@ -88,13 +88,14 @@ export const useAuthStore = defineStore("auth", () => {
         } catch (err) {
           // ignore
         }
-        // Prefetch dashboard data in background (non-blocking)
+        // Prefetch dashboard data - will be awaited in CallbackView if needed
+        // Don't await here to avoid blocking, but allow caller to await if needed
         prefetchDashboardData().catch(() => {});
         return { success: true, user: data.user };
       } else {
         // Fallback: check auth status
         await checkAuth();
-        // Prefetch dashboard data in background (non-blocking)
+        // Prefetch dashboard data - will be awaited in CallbackView if needed
         prefetchDashboardData().catch(() => {});
         return { success: true };
       }

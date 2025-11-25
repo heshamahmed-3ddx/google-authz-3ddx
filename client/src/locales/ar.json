@@ -43,6 +43,8 @@
     "contactSupport": "اتصل بالدعم",
     "whatsNew": "ما الجديد",
     "dashboards": "لوحات المعلومات",
+    "powerbiReporting": "تقارير PowerBI",
+    "powerbi-reporting": "تقارير PowerBI",
   "userActivity": "نشاط المستخدم",
   "system": "النظام",
   "settings": "إعدادات النظام",
@@ -271,9 +273,16 @@
     "settings": "الإعدادات",
     "logout": "تسجيل الخروج",
     "expand": "توسيع",
-    "collapse": "طي"
+    "collapse": "طي",
+    "navigation": "التنقل",
+    "menu": "القائمة"
   },
   "reports": {
+    "powerbi": {
+      "subtitle": "لوحات تحليلات وذكاء أعمال تفاعلية",
+      "dashboard": "لوحة PowerBI",
+      "version": "تقارير PowerBI الإصدار 1.0.0"
+    },
     "surgicalGuide": {
       "title": "تقرير الدليل الجراحي",
       "subtitle": "تحليلات شاملة لحالات الدليل الجراحي والمالية",
