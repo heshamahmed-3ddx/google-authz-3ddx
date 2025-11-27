@@ -235,6 +235,12 @@ const routes = [
     meta: { requiresAuth: true, requiredGroups: ["*"] },
   },
   {
+    path: "/reports/grafana",
+    name: "GrafanaMonitoring",
+    component: () => import("@/views/Reports/GrafanaView.vue"),
+    meta: { requiresAuth: true, requiredGroups: ["admin", "SWD"] },
+  },
+  {
     path: "/reports/user-activity",
     name: "UserActivity",
     component: () => import("@/views/Reports/UserActivityView.vue"),

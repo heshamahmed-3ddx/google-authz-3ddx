@@ -1,0 +1,45 @@
+# Prometheus Scrape Configuration for InsightHub
+# Add this to your prometheus.yml scrape_configs section
+
+scrape_configs:
+  # InsightHub Surgical Guide Report Metrics
+  - job_name: 'insighthub-sg-report'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    
+    # Update these targets with your actual server hostname and port
+    static_configs:
+      - targets:
+          # Development
+          - 'localhost:3001'
+          # Production (update with actual hostname)
+          # - 'insighthub-prod.example.com:3001'
+        labels:
+          environment: 'development'  # Change to 'production' for prod
+          service: 'insighthub'
+          component: 'surgical-guide-report'
+          team: 'engineering'
+    
+    # Optional: Relabeling configuration
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [environment]
+        target_label: env
+    
+    # Optional: Basic authentication (if metrics endpoint is secured)
+    # basic_auth:
+    #   username: 'prometheus'
+    #   password: '<secure-password>'
+    
+    # Optional: Bearer token authentication
+    # bearer_token: '<bearer-token>'
+    
+    # Optional: TLS configuration
+    # tls_config:
+    #   insecure_skip_verify: false
+    #   ca_file: '/path/to/ca.crt'
+    #   cert_file: '/path/to/client.crt'
+    #   key_file: '/path/to/client.key'
+

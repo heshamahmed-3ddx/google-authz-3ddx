@@ -29,7 +29,7 @@ The backend exposes detailed performance and usage metrics for Prometheus and Gr
 
 ### Metrics Endpoint
 
-- **URL:** `http://localhost:3000/metrics`
+- **URL:** `http://localhost:3001/metrics` (or your configured API port)
 - **Format:** Prometheus exposition format (compatible with prom-client)
 
 ### Key Metrics
@@ -47,13 +47,41 @@ The backend exposes detailed performance and usage metrics for Prometheus and Gr
 scrape_configs:
   - job_name: 'sg_report_backend'
     static_configs:
-      - targets: ['localhost:3000']
+      - targets: ['localhost:3001']  # Update with your actual server host and port
     metrics_path: /metrics
 ```
 
+### Metrics Details
+
+**Phase 1 Metrics (Implemented):**
+- `sg_report_db_query_duration_seconds` - Histogram tracking database query execution time
+  - Labels: `user_email`, `user_username`
+  - Measured in seconds
+  - Tracks only the time spent executing database queries
+
+- `sg_report_api_fulfillment_duration_seconds` - Histogram tracking end-to-end API latency
+  - Labels: `user_email`, `user_username`
+  - Measured in seconds
+  - Tracks complete request lifecycle: DB time, processing, and response generation
+  - Only tracked for `/api/reports/surgical_guide/*` endpoints
+
+**User Context:**
+- Metrics are labeled with the authenticated user's email and username
+- Unauthenticated requests are labeled as `unknown` for both fields
+
 ### Notes
-- Metrics are updated on every report API request.
-- For deployment, coordinate with your DevOps team for Prometheus/Grafana access and scraping setup.
+- Metrics are updated on every surgical guide report API request
+- Default Node.js metrics (CPU, memory, etc.) are also exposed via `prom-client`
+- For deployment, coordinate with your DevOps team for Prometheus/Grafana access and scraping setup
+- The `/metrics` endpoint is publicly accessible (no authentication required) for Prometheus scraping
+
+### DevOps Coordination
+See [DEVOPS_COORDINATION.md](./docs/DEVOPS_COORDINATION.md) for detailed instructions on:
+- Prometheus scrape configuration
+- Grafana dashboard setup
+- Alerting rules
+- Testing checklist
+- Deployment steps
 
 ## 🚀 Quick Start
 

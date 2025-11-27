@@ -45,6 +45,8 @@
     "dashboards": "لوحات المعلومات",
     "powerbiReporting": "تقارير PowerBI",
     "powerbi-reporting": "تقارير PowerBI",
+    "grafana": "مراقبة Grafana",
+    "grafana-monitoring": "مراقبة Grafana",
   "userActivity": "نشاط المستخدم",
   "system": "النظام",
   "settings": "إعدادات النظام",
@@ -278,6 +280,14 @@
     "menu": "القائمة"
   },
   "reports": {
+    "grafana": {
+      "subtitle": "لوحات مراقبة ومقاييس النظام المدعومة من Prometheus",
+      "dashboard": "لوحة Grafana",
+      "version": "مراقبة Grafana الإصدار 1.0.0",
+      "openInNewTab": "فتح في تبويب جديد",
+      "infoTitle": "حول Grafana",
+      "infoMessage": "يوفر Grafana مراقبة وتصورًا في الوقت الفعلي لمقاييس النظام التي يجمعها Prometheus."
+    },
     "powerbi": {
       "subtitle": "لوحات تحليلات وذكاء أعمال تفاعلية",
       "dashboard": "لوحة PowerBI",

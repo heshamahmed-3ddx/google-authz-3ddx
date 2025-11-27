@@ -93,22 +93,37 @@ register.registerMetric(apiFulfillmentDuration)
 // Expose dbQueryDuration globally for service instrumentation
 global.dbQueryDuration = dbQueryDuration;
 
-// Instrument API fulfillment timing for all requests
+// Export metrics for use in controllers if needed
+export { dbQueryDuration, apiFulfillmentDuration, register };
+
+// Instrument API fulfillment timing for surgical guide report endpoints only
+// This middleware tracks end-to-end latency for report API requests
 app.use((req, res, next) => {
-  const start = process.hrtime();
-  res.on('finish', () => {
-    const duration = process.hrtime(start);
-    const seconds = duration[0] + duration[1] / 1e9;
-    // Replace with actual user context if available
-    const userEmail = req.user?.email || 'unknown';
-    const userUsername = req.user?.username || 'unknown';
-    apiFulfillmentDuration.labels(userEmail, userUsername).observe(seconds);
-  });
+  // Only track metrics for surgical guide report endpoints
+  if (req.path.startsWith('/api/reports/surgical_guide')) {
+    const start = process.hrtime();
+    res.on('finish', () => {
+      const duration = process.hrtime(start);
+      const seconds = duration[0] + duration[1] / 1e9;
+      // Get user context from session (set by auth middleware)
+      const userEmail = req.session?.user?.email || req.user?.email || 'unknown';
+      const userUsername = req.session?.user?.name || req.session?.user?.username || req.user?.username || 'unknown';
+      apiFulfillmentDuration.labels(userEmail, userUsername).observe(seconds);
+    });
+  }
   next();
 });
 
 // /metrics endpoint
 app.get('/metrics', async (req, res) => {
+  // Optional: Add authentication for production
+  if (process.env.PROMETHEUS_BEARER_TOKEN) {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== `Bearer ${process.env.PROMETHEUS_BEARER_TOKEN}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+  
   res.set('Content-Type', register.contentType)
   res.end(await register.metrics())
 })

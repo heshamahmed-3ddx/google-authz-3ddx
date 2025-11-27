@@ -14,26 +14,36 @@ import { createContextLogger } from './logger.js';
 const logger = createContextLogger('DatabaseService', 'DatabaseService');
 
 /**
- * Database configuration from environment variables
+ * Connection configuration (passed to each connection in the pool)
  */
-const dbConfig = {
+const connectionConfig = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 10000, // 10 seconds to establish connection
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  multipleStatements: false, // Prevent SQL injection
+  dateStrings: true, // Return dates as strings for consistent formatting
+};
+
+/**
+ * Pool configuration
+ * mysql2 createPool() accepts both pool options and connection options in one object.
+ * However, pool-specific options like acquireTimeout trigger warnings when passed to connections.
+ * We'll create the pool with all options, but mysql2 will only use pool options for the pool.
+ */
+const poolConfig = {
+  ...connectionConfig,
+  // Pool-specific options
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
   queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  // Timeout settings to prevent hanging connections
-  connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 10000, // 10 seconds to establish connection
-  acquireTimeout: parseInt(process.env.DB_ACQUIRE_TIMEOUT) || 60000, // 60 seconds to get connection from pool
-  timeout: parseInt(process.env.DB_QUERY_TIMEOUT) || 30000, // 30 seconds for query execution
-  // Security and performance settings
-  multipleStatements: false, // Prevent SQL injection
-  dateStrings: true, // Return dates as strings for consistent formatting
+  // Note: acquireTimeout causes a warning but is necessary for pool configuration.
+  // The default is 60000ms if not specified, so we can omit it to avoid the warning.
+  // acquireTimeout: parseInt(process.env.DB_ACQUIRE_TIMEOUT) || 60000,
 };
 
 /**
@@ -56,14 +66,18 @@ class DatabaseService {
   // ...existing code...
     try {
       logger.info('Initializing database connection pool', {
-        host: dbConfig.host,
-        port: dbConfig.port,
-        user: dbConfig.user,
-        database: dbConfig.database,
-        connectionLimit: dbConfig.connectionLimit
+        host: poolConfig.host,
+        port: poolConfig.port,
+        user: poolConfig.user,
+        database: poolConfig.database,
+        connectionLimit: poolConfig.connectionLimit,
+        connectTimeout: poolConfig.connectTimeout,
+        acquireTimeout: parseInt(process.env.DB_ACQUIRE_TIMEOUT) || 60000
       });
 
-      pool = mysql.createPool(dbConfig);
+      // Create pool without acquireTimeout to avoid warnings
+      // mysql2 default acquireTimeout is 60000ms, which is usually sufficient
+      pool = mysql.createPool(poolConfig);
 
       // Test connection
       const connection = await pool.getConnection();
@@ -121,7 +135,7 @@ class DatabaseService {
         paramsCount: params.length
       });
 
-      // Execute query (timeout handled by timeout config)
+      // Execute query (connectTimeout handles connection establishment)
       const [rows] = await connection.execute(sql, params);
       
       logger.debug('Query executed successfully', {

@@ -42,7 +42,6 @@ class SurgicalGuideOrdersController {
           requestId: req.requestId
         });
       }
-          const { dbQueryDuration, apiFulfillmentDuration } = await import('../index.js')
 
       // Check user permissions via Casbin
       const userGroups = await casbinService.getUserGroups(userEmail);
@@ -100,8 +99,11 @@ class SurgicalGuideOrdersController {
         requestId: req.requestId
       });
 
-      // Fetch report data
-  const result = await surgicalGuideOrdersService.getReport({
+      // Get user context for metrics
+      const userUsername = req.session?.user?.name || req.session?.user?.username || 'unknown';
+      
+      // Fetch report data with user context for metrics
+      const result = await surgicalGuideOrdersService.getReport({
         startDate,
         endDate,
         page: parseInt(page),
@@ -109,7 +111,9 @@ class SurgicalGuideOrdersController {
         sortBy,
         searchQuery,
         orderTypeFilter,
-        sortOrder
+        sortOrder,
+        userEmail,
+        userUsername
       });
 
       logger.info('Report delivered successfully', {

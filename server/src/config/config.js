@@ -156,6 +156,18 @@ export const CONFIG = {
     enableRealTimeSync: false
   },
 
+  // Prometheus Metrics Configuration
+  prometheus: {
+    enabled: process.env.PROMETHEUS_ENABLED !== 'false',
+    metricsPath: process.env.PROMETHEUS_METRICS_PATH || '/metrics',
+    metricsPort: parseInt(process.env.PROMETHEUS_METRICS_PORT) || process.env.PORT || 3001,
+    instanceName: process.env.PROMETHEUS_INSTANCE_NAME || `insighthub-backend-${process.env.NODE_ENV || 'development'}`,
+    jobName: process.env.PROMETHEUS_JOB_NAME || 'insighthub-sg-report',
+    environment: process.env.PROMETHEUS_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    scrapeInterval: process.env.PROMETHEUS_SCRAPE_INTERVAL || '15s',
+    scrapeTimeout: process.env.PROMETHEUS_SCRAPE_TIMEOUT || '10s'
+  },
+
   // Localization
   i18n: {
     defaultLanguage: 'en',

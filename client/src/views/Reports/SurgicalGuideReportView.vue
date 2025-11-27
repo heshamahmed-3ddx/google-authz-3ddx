@@ -443,10 +443,10 @@
               :items="filteredReportData"
               v-model:expanded="expanded"
               :items-length="pagination.total"
+              v-model:page="currentPage"
               v-model:items-per-page="itemsPerPage"
               :items-per-page-options="[10, 25, 50]"
               :items-per-page-text="t('reports.surgicalGuide.table.itemsPerPage')"
-              :page-text="t('reports.surgicalGuide.table.pageText')"
               :class="[
                 'elevation-1',
 
@@ -458,7 +458,6 @@
               fixed-header
               fixed-footer
               height="450"
-              show-current-page
               :mobile-breakpoint="0"
               show-expand
               item-value="orderSGID"
@@ -466,6 +465,25 @@
               @update:options="loadItems"
               @update:expanded="handleExpandedChange"
             >
+              <!-- Custom Footer with Page Display (replaces default page text) -->
+              <template #footer.page-text="{ pageStart, pageStop, itemsLength }">
+                <span class="text-caption text-medium-emphasis">
+                  <template v-if="pagination.total > 0 && pagination.totalPages">
+                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} {{ currentPage || pagination.page || 1 }} 
+                    {{ t('reports.surgicalGuide.table.of') || 'of' }} 
+                    {{ pagination.totalPages }}
+                  </template>
+                  <template v-else-if="pagination.total > 0">
+                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} {{ currentPage || pagination.page || 1 }} 
+                    {{ t('reports.surgicalGuide.table.of') || 'of' }} 
+                    {{ Math.ceil(pagination.total / itemsPerPage) }}
+                  </template>
+                  <template v-else>
+                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} - {{ t('reports.surgicalGuide.table.of') || 'of' }} -
+                  </template>
+                </span>
+              </template>
+
               <!-- No Data State -->
               <template #no-data>
                 <div class="text-center py-8">
@@ -1032,6 +1050,9 @@ let searchTimeout = null; // Timeout for search debounce
 // Reactive items per page for the table (default 10)
 const itemsPerPage = ref(10);
 
+// Reactive current page for the table (default 1)
+const currentPage = ref(1);
+
 const pagination = reactive({
   page: 1,
   limit: 10,
@@ -1069,6 +1090,16 @@ const isDateRangeValid = computed(() => {
   const end = new Date(filters.endDate);
   if (start > end) return false;
   return true;
+});
+
+// Computed property for page text display (e.g., "Page 2 of 5000")
+const pageTextDisplay = computed(() => {
+  if (!pagination.total || pagination.total === 0) {
+    return t('reports.surgicalGuide.table.pageText') || '{0}-{1} of {2}';
+  }
+  const totalPages = pagination.totalPages || Math.ceil(pagination.total / itemsPerPage.value);
+  const currentPageNum = currentPage.value || pagination.page || 1;
+  return `${t('reports.surgicalGuide.table.page') || 'Page'} ${currentPageNum} ${t('reports.surgicalGuide.table.of') || 'of'} ${totalPages}`;
 });
 
 const isDevelopment = computed(() => {
@@ -1377,6 +1408,36 @@ async function fetchReport() {
 }
 
 /**
+ * Format date to YYYY-MM-DD format
+ * Handles various date formats from v-date-picker
+ */
+function formatDateToYYYYMMDD(dateValue) {
+  if (!dateValue) return null;
+  
+  // If already in YYYY-MM-DD format, return as is
+  if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // If it's a Date object or ISO string, format it
+  try {
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) {
+      return null; // Invalid date
+    }
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return null;
+  }
+}
+
+/**
  * Internal function to fetch report data
  * Uses full-page skeleton loaders for loading states
  * Has guard to prevent multiple simultaneous calls
@@ -1391,9 +1452,13 @@ async function fetchReportData() {
     isFetching = true;
     loading.table = true;
 
+    // Format dates to YYYY-MM-DD before sending to API
+    const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
+    const formattedEndDate = formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
+
     const params = {
-      startDate: filters.startDate || "1900-01-01",
-      endDate: filters.endDate || "2100-01-01",
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
       page: filters.page,
       limit: filters.limit, // Use the actual limit from filters (default 10)
       sortBy: filters.sortBy,
@@ -1417,7 +1482,7 @@ async function fetchReportData() {
     if (filters.page === 1) {
       promises.push(
         api.get("/api/reports/surgical_guide/summary", {
-          params: { startDate: filters.startDate, endDate: filters.endDate },
+          params: { startDate: formattedStartDate, endDate: formattedEndDate },
         }),
       );
     }
@@ -1460,8 +1525,9 @@ async function fetchReportData() {
       // This ensures loadItems() won't trigger again when table detects pagination change
       lastTableOptions.page = serverPagination.page;
       lastTableOptions.itemsPerPage = serverPagination.limit;
-      // Sync itemsPerPage with server response to keep UI in sync
+      // Sync itemsPerPage and currentPage with server response to keep UI in sync
       itemsPerPage.value = serverPagination.limit;
+      currentPage.value = serverPagination.page;
       const currentSortKey = filters.sortBy && filters.sortOrder
         ? `${filters.sortBy}:${filters.sortOrder}`
         : "";
@@ -1505,6 +1571,7 @@ async function fetchReportData() {
 async function applySearchFilter() {
   // Reset to page 1 when searching
   filters.page = 1;
+  currentPage.value = 1;
   // Fetch data with search query from server
   await fetchReportData();
 }
@@ -1520,6 +1587,7 @@ async function clearSearch() {
   }
   searchQuery.value = "";
   filters.page = 1;
+  currentPage.value = 1;
   await fetchReportData();
 }
 
@@ -1532,6 +1600,7 @@ async function filterByOrderType(type) {
 
   // Reset to page 1 and fetch filtered data from server
   filters.page = 1;
+  currentPage.value = 1;
 
   // Note: Backend should handle these new filter types (vouchers, rush, onHold, confirmed, active)
   // If backend doesn't support them yet, they will default to 'all' and show all records
@@ -1582,9 +1651,10 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
   lastTableOptions.itemsPerPage = itemsPerPage;
   lastTableOptions.sortKey = incomingSortKey;
 
-  // Update filters
+  // Update filters and current page
   filters.page = page;
   filters.limit = itemsPerPage;
+  currentPage.value = page;
 
   // Handle sorting
   if (sortBy && sortBy.length > 0) {
@@ -1602,10 +1672,13 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
  */
 async function exportToCSV() {
   try {
+    // Format dates to YYYY-MM-DD before sending to API
+    const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
+    const formattedEndDate = formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
 
     const params = new URLSearchParams({
-      startDate: filters.startDate,
-      endDate: filters.endDate,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
     });
 
     const response = await fetch(
@@ -1901,7 +1974,7 @@ onMounted(async () => {
         // Temporarily enable table options for the initial load
         tableOptionsDisabled = false;
     loadItems({
-      page: pagination.page,
+      page: currentPage.value || pagination.page,
       itemsPerPage: itemsPerPage.value,
       sortBy: [],
         }).catch(() => {

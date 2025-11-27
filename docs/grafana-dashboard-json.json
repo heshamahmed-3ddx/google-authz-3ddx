@@ -1,0 +1,115 @@
+{
+  "dashboard": {
+    "title": "InsightHub - Surgical Guide Report Metrics",
+    "tags": ["insighthub", "surgical-guide", "prometheus"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Latency (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(sg_report_api_fulfillment_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 Latency"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency (seconds)"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "API Latency Percentiles",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(sg_report_api_fulfillment_duration_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(sg_report_api_fulfillment_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(sg_report_api_fulfillment_duration_seconds_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Database Query Duration (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(sg_report_db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 DB Query Duration"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Duration (seconds)"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sg_report_api_fulfillment_duration_seconds_count[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "reqps"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Requests by User",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "sum(rate(sg_report_api_fulfillment_duration_seconds_count[5m])) by (user_email)",
+            "format": "table",
+            "instant": true
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Average API Latency by User",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sg_report_api_fulfillment_duration_seconds_sum[5m]) / rate(sg_report_api_fulfillment_duration_seconds_count[5m])",
+            "legendFormat": "{{user_email}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      }
+    ]
+  }
+}
+
