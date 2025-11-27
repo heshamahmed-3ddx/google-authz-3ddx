@@ -405,6 +405,7 @@ authStore.checkAuth();
   width: auto;
   object-fit: contain;
   max-width: 250px;
+  margin-top: 4px; /* Move logo down slightly */
 }
 
 /* Main app bar without border - breadcrumbs will have the border */

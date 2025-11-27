@@ -315,6 +315,13 @@ export const NAVIGATION_CONFIG = [
         permissions: ["*"],
       },
       {
+        id: "grafana-monitoring",
+        title: "Grafana Monitoring",
+        icon: "mdi-chart-timeline-variant",
+        route: "/reports/grafana",
+        permissions: ["admin", "SWD"],
+      },
+      {
         id: "user-activity",
         title: "User Activity",
         icon: "mdi-account-clock",

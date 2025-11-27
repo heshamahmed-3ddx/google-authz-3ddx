@@ -1,0 +1,99 @@
+# Prometheus Alert Rules for InsightHub Surgical Guide Report
+# Add this to your Prometheus alerts configuration
+
+groups:
+  - name: insighthub_sg_report
+    interval: 30s
+    rules:
+      # Alert on high API latency (P95 > 5 seconds)
+      - alert: InsightHubHighAPILatency
+        expr: |
+          histogram_quantile(0.95, 
+            rate(sg_report_api_fulfillment_duration_seconds_bucket[5m])
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: insighthub
+          component: surgical-guide-report
+        annotations:
+          summary: "High API latency detected in InsightHub"
+          description: "P95 API latency is {{ $value }}s (threshold: 5s) for {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/high-api-latency"
+
+      # Alert on very high API latency (P95 > 10 seconds)
+      - alert: InsightHubCriticalAPILatency
+        expr: |
+          histogram_quantile(0.95, 
+            rate(sg_report_api_fulfillment_duration_seconds_bucket[5m])
+          ) > 10
+        for: 2m
+        labels:
+          severity: critical
+          service: insighthub
+          component: surgical-guide-report
+        annotations:
+          summary: "Critical API latency in InsightHub"
+          description: "P95 API latency is {{ $value }}s (threshold: 10s) for {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-api-latency"
+
+      # Alert on slow database queries (P95 > 2 seconds)
+      - alert: InsightHubSlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95, 
+            rate(sg_report_db_query_duration_seconds_bucket[5m])
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: insighthub
+          component: surgical-guide-report
+          database: mysql
+        annotations:
+          summary: "Slow database queries detected in InsightHub"
+          description: "P95 DB query duration is {{ $value }}s (threshold: 2s) for {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/slow-db-queries"
+
+      # Alert on very slow database queries (P95 > 5 seconds)
+      - alert: InsightHubCriticalDatabaseQueries
+        expr: |
+          histogram_quantile(0.95, 
+            rate(sg_report_db_query_duration_seconds_bucket[5m])
+          ) > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: insighthub
+          component: surgical-guide-report
+          database: mysql
+        annotations:
+          summary: "Critical database query performance in InsightHub"
+          description: "P95 DB query duration is {{ $value }}s (threshold: 5s) for {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/critical-db-queries"
+
+      # Alert on high request rate (optional - adjust threshold as needed)
+      - alert: InsightHubHighRequestRate
+        expr: |
+          rate(sg_report_api_fulfillment_duration_seconds_count[5m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          service: insighthub
+          component: surgical-guide-report
+        annotations:
+          summary: "High request rate in InsightHub"
+          description: "Request rate is {{ $value }} req/s for {{ $labels.instance }}"
+
+      # Alert when metrics endpoint is down
+      - alert: InsightHubMetricsDown
+        expr: up{job="insighthub-sg-report"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: insighthub
+          component: metrics
+        annotations:
+          summary: "InsightHub metrics endpoint is down"
+          description: "Prometheus cannot scrape metrics from {{ $labels.instance }}"
+          runbook_url: "https://docs.example.com/runbooks/metrics-endpoint-down"
+

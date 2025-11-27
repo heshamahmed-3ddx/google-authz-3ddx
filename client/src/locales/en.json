@@ -1,6 +1,7 @@
 {
   "common": {
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "reload": "Reload"
   },
   "app": {
     "title": "InsightHub",
@@ -82,6 +83,8 @@
   "dashboards": "Dashboards",
   "powerbiReporting": "PowerBI Reporting",
   "powerbi-reporting": "PowerBI Reporting",
+  "grafana": "Grafana Monitoring",
+  "grafana-monitoring": "Grafana Monitoring",
   "userActivity": "User Activity",
   "user-activity": "User Activity",
   "system": "System",
@@ -286,6 +289,14 @@
     "menu": "Menu"
   },
   "reports": {
+    "grafana": {
+      "subtitle": "System monitoring and metrics dashboards powered by Prometheus",
+      "dashboard": "Grafana Dashboard",
+      "version": "Grafana Monitoring v1.0.0",
+      "openInNewTab": "Open in New Tab",
+      "infoTitle": "About Grafana",
+      "infoMessage": "Grafana provides real-time monitoring and visualization of system metrics collected by Prometheus."
+    },
     "powerbi": {
       "subtitle": "Interactive analytics and business intelligence dashboards",
       "dashboard": "PowerBI Dashboard",
