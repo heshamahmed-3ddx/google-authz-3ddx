@@ -24,6 +24,16 @@ module.exports = [
     ]
   },
   {
+    text: 'Monitoring & Observability',
+    collapsible: true,
+    items: [
+      { text: 'Monitoring Guide', link: '/monitoring' },
+      { text: 'DevOps Coordination', link: '/DEVOPS_COORDINATION' },
+      { text: 'DevOps Deployment Briefing', link: '/DEVOPS_DEPLOYMENT_BRIEFING' },
+      { text: 'Deployment Environment Config', link: '/DEPLOYMENT_ENVIRONMENT_CONFIG' },
+    ]
+  },
+  {
     text: 'Architecture & Technical',
     collapsible: true,
     items: [

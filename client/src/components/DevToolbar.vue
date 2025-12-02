@@ -8,121 +8,135 @@
           color="warning"
           class="dev-toggle-btn"
           size="small"
-          elevation="4"
+          elevation="6"
         >
-          <v-icon>mdi-code-tags</v-icon>
+          <v-icon size="20">mdi-code-tags</v-icon>
           <v-tooltip activator="parent" location="left">
-            Development Mode Settings
+            <div class="tooltip-content">
+              <div class="font-weight-bold">Development Mode</div>
+              <div class="text-caption">Settings & Tools</div>
+            </div>
           </v-tooltip>
         </v-btn>
       </template>
 
-      <v-card min-width="400" max-width="500">
-        <v-card-title class="bg-grey-darken-4 text-warning">
-          <v-icon class="mr-2">mdi-code-tags</v-icon>
-          Development Mode
+      <v-card min-width="360" max-width="420" class="dev-toolbar-card" elevation="8">
+        <v-card-title class="dev-toolbar-header pa-3">
+          <div class="d-flex align-center">
+            <v-avatar size="28" color="warning" class="mr-2">
+              <v-icon color="white" size="16">mdi-code-tags</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold">Development Mode</div>
+              <div class="text-caption text-medium-emphasis" style="line-height: 1.2">Testing Tools</div>
+            </div>
+          </div>
         </v-card-title>
 
-        <v-divider></v-divider>
+        <v-divider class="dev-divider"></v-divider>
 
-        <v-card-text class="pa-4">
-          <v-alert
-            type="info"
-            variant="tonal"
-            density="compact"
-            class="mb-4"
-            icon="mdi-information"
-          >
-            This mode is only available in development and will be disabled in
-            production.
-          </v-alert>
-
-          <!-- Dev Mode Status Info (migrated from DashboardView) -->
-          <div class="dev-mode-content mb-2">
+        <v-card-text class="pa-3">
+          <!-- Dev Mode Status Info -->
+          <div class="dev-mode-content mb-3">
             <div
               v-if="devModeStore.adminViewEnabled"
-              class="mb-2 d-flex align-center"
+              class="mb-2 status-indicator status-active"
             >
-              <v-icon color="success" size="18" class="mr-2"
-                >mdi-check-circle</v-icon
-              >
-              <span class="text-body-2">
-                <strong>Admin View Enabled:</strong>
-                <span class="text-medium-emphasis ml-1"
-                  >All dashboard sections are visible</span
-                >
-              </span>
+              <div class="d-flex align-center">
+                <v-icon color="success" size="16" class="mr-2">mdi-check-circle</v-icon>
+                <div class="text-caption font-weight-medium">Admin View Enabled</div>
+              </div>
             </div>
 
-            <div v-if="devModeStore.simulatedGroups.length > 0" class="mb-2">
-              <div class="d-flex align-center mb-1">
-                <v-icon color="info" size="18" class="mr-2"
-                  >mdi-account-group</v-icon
-                >
-                <span class="text-body-2 font-weight-bold"
-                  >Simulated Groups:</span
-                >
+            <div v-if="devModeStore.simulatedGroups.length > 0" class="mb-2 status-indicator groups-status">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div class="d-flex align-center">
+                  <v-icon color="info" size="18" class="mr-2">mdi-account-group</v-icon>
+                  <div class="text-caption font-weight-bold">
+                    Simulated Groups
+                  </div>
+                </div>
+                <v-chip size="x-small" color="primary" variant="flat" class="count-chip">
+                  {{ devModeStore.simulatedGroups.length }}
+                </v-chip>
               </div>
-              <div class="ml-6">
+              <div class="groups-container">
                 <v-chip
                   v-for="group in devModeStore.simulatedGroups"
                   :key="group"
-                  size="x-small"
+                  size="small"
                   color="primary"
                   variant="flat"
-                  class="mr-2 mb-1"
+                  class="group-chip"
+                  prepend-icon="mdi-account-circle"
                 >
-                  {{ group }}
+                  <span class="font-weight-medium">{{ group }}</span>
                 </v-chip>
               </div>
             </div>
           </div>
 
-          <!-- Admin View Toggle -->
-          <v-chip
-            :color="devModeStore.adminViewEnabled ? 'success' : 'grey'"
-            variant="flat"
-            size="small"
-            prepend-icon="mdi-shield-crown"
-            class="cursor-pointer mr-2"
-            @click="devModeStore.toggleAdminView"
-          >
-            <v-icon start size="16">{{
-              devModeStore.adminViewEnabled ? "mdi-eye" : "mdi-eye-off"
-            }}</v-icon>
-            Admin
-            <v-tooltip activator="parent" location="top">
-              {{ devModeStore.adminViewEnabled ? "Disable" : "Enable" }} admin
-              view
-            </v-tooltip>
-          </v-chip>
-
-          <!-- Group Simulator -->
-          <v-menu offset-y :close-on-content-click="false" location="top">
-            <template #activator="{ props }">
-              <v-chip
-                v-bind="props"
-                :color="
-                  devModeStore.simulatedGroups.length > 0 ? 'primary' : 'grey'
-                "
+          <!-- Control Buttons -->
+          <div class="controls-section mb-2">
+            <div class="control-buttons-wrapper">
+              <!-- Admin View Toggle -->
+              <v-btn
+                :color="devModeStore.adminViewEnabled ? 'success' : 'grey-darken-1'"
                 variant="flat"
                 size="small"
-                prepend-icon="mdi-account-group"
-                class="cursor-pointer"
+                prepend-icon="mdi-shield-crown"
+                class="control-btn"
+                :class="{ 'btn-active': devModeStore.adminViewEnabled }"
+                @click="devModeStore.toggleAdminView"
               >
-                <v-icon start size="16">mdi-tune</v-icon>
-                Groups ({{ devModeStore.simulatedGroups.length }})
+                <v-icon start size="16">{{
+                  devModeStore.adminViewEnabled ? "mdi-eye" : "mdi-eye-off"
+                }}</v-icon>
+                <span class="font-weight-medium">Admin View</span>
                 <v-tooltip activator="parent" location="top">
-                  Simulate group memberships
+                  {{ devModeStore.adminViewEnabled ? "Disable" : "Enable" }} admin view
                 </v-tooltip>
-              </v-chip>
-            </template>
+              </v-btn>
 
-            <v-card min-width="300" max-width="400">
+              <!-- Group Simulator -->
+              <v-menu offset-y :close-on-content-click="false" location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    :color="
+                      devModeStore.simulatedGroups.length > 0 ? 'primary' : 'grey-darken-1'
+                    "
+                    variant="flat"
+                    size="small"
+                    prepend-icon="mdi-account-group"
+                    class="control-btn"
+                    :class="{ 'btn-active': devModeStore.simulatedGroups.length > 0 }"
+                  >
+                    <v-icon start size="16">mdi-tune</v-icon>
+                    <span class="font-weight-medium">Groups</span>
+                    <v-chip
+                      v-if="devModeStore.simulatedGroups.length > 0"
+                      size="x-small"
+                      color="white"
+                      variant="flat"
+                      class="ml-2 count-badge"
+                    >
+                      {{ devModeStore.simulatedGroups.length }}
+                    </v-chip>
+                    <v-tooltip activator="parent" location="top">
+                      Simulate group memberships
+                    </v-tooltip>
+                  </v-btn>
+                </template>
+
+            <v-card min-width="300" max-width="380" class="groups-menu-card" elevation="6">
               <v-card-title
-                class="d-flex align-center justify-space-between pa-3"
+                class="d-flex align-center justify-space-between pa-2 groups-menu-header"
               >
-                <span class="text-subtitle-2">Simulate Groups</span>
+                <div class="d-flex align-center">
+                  <v-icon color="primary" size="18" class="mr-2">mdi-account-group</v-icon>
+                  <span class="text-subtitle-2 font-weight-bold">Simulate Groups</span>
+                </div>
                 <v-btn
                   v-if="devModeStore.simulatedGroups.length > 0"
                   icon="mdi-close-circle"
@@ -136,10 +150,10 @@
                   </v-tooltip>
                 </v-btn>
               </v-card-title>
-              <v-divider></v-divider>
+              <v-divider class="dev-divider"></v-divider>
               <v-card-text
                 class="pa-0"
-                style="max-height: 400px; overflow-y: auto"
+                style="max-height: 300px; overflow-y: auto"
               >
                 <v-list density="compact">
                   <v-list-item
@@ -169,102 +183,116 @@
               <v-divider></v-divider>
               <v-card-actions class="justify-space-between pa-2">
                 <v-btn
-                  size="small"
-                  variant="text"
+                  size="x-small"
+                  variant="outlined"
                   prepend-icon="mdi-refresh"
+                  color="grey"
                   @click="devModeStore.clearSimulatedGroups"
                 >
                   Reset
                 </v-btn>
-                <v-chip size="small" color="info" variant="flat">
+                <v-chip size="x-small" color="primary" variant="flat">
                   {{ devModeStore.simulatedGroups.length }} selected
                 </v-chip>
               </v-card-actions>
             </v-card>
           </v-menu>
+            </div>
+          </div>
 
-          <!-- Divider -->
-          <v-divider vertical class="mx-1"></v-divider>
+          <!-- Page Info & Actions -->
+          <v-divider class="my-2 dev-divider"></v-divider>
+          <div class="d-flex align-center justify-space-between">
+            <v-chip
+              size="x-small"
+              variant="tonal"
+              color="info"
+              prepend-icon="mdi-map-marker"
+              class="page-info-chip"
+            >
+              <span class="text-caption">{{ currentRouteName }}</span>
+            </v-chip>
 
-          <!-- Current Page Info -->
-          <v-chip
-            size="small"
-            variant="text"
-            prepend-icon="mdi-map-marker"
-            class="text-caption"
-          >
-            {{ currentRouteName }}
-          </v-chip>
-
-          <!-- Reset All Button -->
-          <v-btn
-            v-if="devModeStore.isActive"
-            icon="mdi-close"
-            size="x-small"
-            variant="text"
-            color="error"
-            @click="devModeStore.reset"
-          >
-            <v-tooltip activator="parent" location="top">
-              Reset all dev mode settings
-            </v-tooltip>
-          </v-btn>
+            <v-btn
+              v-if="devModeStore.isActive"
+              icon="mdi-refresh"
+              size="x-small"
+              variant="text"
+              color="error"
+              @click="devModeStore.reset"
+            >
+              <v-tooltip activator="parent" location="top">
+                Reset all dev mode settings
+              </v-tooltip>
+            </v-btn>
+          </div>
         </v-card-text>
 
-        <v-divider></v-divider>
+        <v-divider class="dev-divider"></v-divider>
 
         <!-- Documentation Links -->
-        <v-card-actions class="pa-3 d-flex flex-column" style="gap: 8px">
-          <v-btn
-            variant="tonal"
-            color="primary"
-            prepend-icon="mdi-book-open-variant"
-            size="small"
-            href="http://localhost:5173"
-            target="_blank"
-            rel="noopener noreferrer"
-            block
-          >
-            VitePress Docs
-            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Open VitePress documentation (localhost:5173)
-            </v-tooltip>
-          </v-btn>
+        <v-card-actions class="pa-3 docs-section">
+          <div class="w-100">
+            <div class="text-caption text-medium-emphasis mb-2 font-weight-medium d-flex align-center">
+              <v-icon size="14" class="mr-1">mdi-book-open-page-variant</v-icon>
+              Documentation
+            </div>
+            <div class="doc-buttons-wrapper">
+              <v-btn
+                variant="elevated"
+                color="primary"
+                prepend-icon="mdi-book-open-variant"
+                size="small"
+                :href="vitepressUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                block
+                class="doc-btn"
+              >
+                <span class="font-weight-medium">VitePress Docs</span>
+                <v-icon size="14" class="ml-2">mdi-open-in-new</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Open VitePress documentation ({{ vitepressUrl }})
+                </v-tooltip>
+              </v-btn>
 
-          <v-btn
-            variant="tonal"
-            color="success"
-            prepend-icon="mdi-api"
-            size="small"
-            href="http://localhost:3001/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            block
-          >
-            Swagger API
-            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Open Swagger API documentation (localhost:3001/docs)
-            </v-tooltip>
-          </v-btn>
+              <v-btn
+                variant="elevated"
+                color="success"
+                prepend-icon="mdi-api"
+                size="small"
+                href="http://localhost:3001/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                block
+                class="doc-btn"
+              >
+                <span class="font-weight-medium">Swagger API</span>
+                <v-icon size="14" class="ml-2">mdi-open-in-new</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Open Swagger API documentation (localhost:3001/docs)
+                </v-tooltip>
+              </v-btn>
 
-          <v-btn
-            variant="tonal"
-            color="info"
-            prepend-icon="mdi-code-json"
-            size="small"
-            href="/docs/jsdoc/index.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            block
-          >
-            JSDoc
-            <v-icon size="small" class="ml-2">mdi-open-in-new</v-icon>
-            <v-tooltip activator="parent" location="top">
-              Open JSDoc code documentation (/docs/jsdoc)
-            </v-tooltip>
-          </v-btn>
+              <v-btn
+                variant="elevated"
+                color="info"
+                prepend-icon="mdi-code-json"
+                size="small"
+                href="/docs/jsdoc/index.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                block
+                class="doc-btn"
+              >
+                <span class="font-weight-medium">JSDoc</span>
+                <v-icon size="14" class="ml-2">mdi-open-in-new</v-icon>
+                <v-tooltip activator="parent" location="top">
+                  Open JSDoc code documentation (/docs/jsdoc)
+                </v-tooltip>
+              </v-btn>
+            </div>
+          </div>
         </v-card-actions>
       </v-card>
     </v-menu>
@@ -283,6 +311,13 @@ const currentRouteName = computed(() => {
   return route.name || route.path;
 });
 
+// VitePress URL - defaults to 5173, but VitePress will use next available port if taken
+const vitepressUrl = computed(() => {
+  // Check if VitePress port is configured in environment
+  const port = import.meta.env.VITE_VITEPRESS_PORT || "5173";
+  return `http://localhost:${port}`;
+});
+
 function toggleGroup(group) {
   if (devModeStore.hasSimulatedGroup(group)) {
     devModeStore.removeSimulatedGroup(group);
@@ -293,51 +328,292 @@ function toggleGroup(group) {
 </script>
 
 <style scoped>
+/* Main Toolbar Container */
 .dev-toolbar {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 1000;
+  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Toggle Button */
 .dev-toggle-btn {
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4) !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, 
+    rgba(255, 152, 0, 1) 0%, 
+    rgba(255, 167, 38, 1) 50%,
+    rgba(255, 152, 0, 1) 100%) !important;
+  box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
+              0 3px 8px rgba(255, 152, 0, 0.3),
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dev-toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+.dev-toggle-btn:hover::before {
+  left: 100%;
 }
 
 .dev-toggle-btn:hover {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
+  transform: scale(1.08) translateY(-3px) rotate(5deg);
+  box-shadow: 0 8px 24px rgba(255, 152, 0, 0.5),
+              0 4px 12px rgba(255, 152, 0, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
+  background: linear-gradient(135deg, 
+    rgba(255, 167, 38, 1) 0%, 
+    rgba(255, 152, 0, 1) 50%,
+    rgba(255, 167, 38, 1) 100%) !important;
 }
 
-/* Enhanced spacing for dev-mode controls */
-.dev-toolbar .v-chip,
-.dev-toolbar .v-btn {
-  margin-right: 12px;
-  margin-bottom: 10px;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  /* Add extra separation for clarity */
-}
-.dev-toolbar .v-chip:last-child,
-.dev-toolbar .v-btn:last-child {
-  margin-right: 0;
+.dev-toggle-btn:active {
+  transform: scale(1.03) translateY(-1px) rotate(0deg);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4),
+              0 2px 6px rgba(255, 152, 0, 0.3) !important;
 }
 
-/* Add vertical spacing between rows if controls wrap */
-.dev-toolbar {
-  row-gap: 8px;
-  column-gap: 0;
+.dev-toggle-btn :deep(.v-icon) {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.dev-toggle-btn:hover :deep(.v-icon) {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
+                0 3px 8px rgba(255, 152, 0, 0.3),
+                0 0 0 0 rgba(255, 152, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
+                0 3px 8px rgba(255, 152, 0, 0.3),
+                0 0 0 6px rgba(255, 152, 0, 0);
+  }
+}
+
+.dev-toggle-btn {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.tooltip-content {
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Card Styling */
+.dev-toolbar-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  background: rgba(var(--v-theme-surface), 0.98) !important;
+}
+
+.dev-toolbar-header {
+  background: linear-gradient(135deg, 
+    rgba(255, 152, 0, 0.1) 0%, 
+    rgba(255, 152, 0, 0.05) 100%);
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.dev-divider {
+  opacity: 0.3;
+}
+
+/* Alert Styling */
+.dev-alert {
+  border-radius: 12px;
+  border-left-width: 4px !important;
+}
+
+/* Status Indicators */
+.status-indicator {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-surface), 0.5);
+  border: 1px solid rgba(var(--v-theme-border), 0.2);
+  transition: all 0.3s ease;
+}
+
+.status-indicator.status-active {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.status-indicator:hover {
+  background: rgba(var(--v-theme-surface), 0.7);
+  transform: translateX(2px);
+}
+
+/* Groups Container */
+.groups-status {
+  background: rgba(25, 118, 210, 0.08) !important;
+  border-color: rgba(25, 118, 210, 0.25) !important;
+}
+
+.groups-container {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  gap: 6px;
 }
 
+.group-chip {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.group-chip:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.count-chip {
+  font-weight: 600;
+  min-width: 24px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Controls Section */
+.controls-section {
+  padding: 10px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.4) 0%, 
+    rgba(var(--v-theme-surface), 0.2) 100%);
+  border: 1px solid rgba(var(--v-theme-border), 0.15);
+}
+
+.control-buttons-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.control-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: auto;
+  padding: 0 16px;
+  flex: 1 1 auto;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn.btn-active {
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.4);
+}
+
+.control-btn.btn-active:hover {
+  box-shadow: 0 6px 18px rgba(var(--v-theme-primary), 0.5);
+}
+
+.count-badge {
+  font-weight: 600;
+  min-width: 20px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  margin-left: 6px;
+}
+
+/* Groups Menu Card */
+.groups-menu-card {
+  border-radius: 12px !important;
+}
+
+.groups-menu-header {
+  background: linear-gradient(135deg, 
+    rgba(25, 118, 210, 0.1) 0%, 
+    rgba(25, 118, 210, 0.05) 100%);
+}
+
+/* Page Info Chip */
+.page-info-chip {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Documentation Section */
+.docs-section {
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.5) 0%, 
+    rgba(var(--v-theme-surface), 0.3) 100%);
+}
+
+.doc-buttons-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doc-btn {
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: none;
+  letter-spacing: 0.3px;
+  font-size: 0.8125rem;
+  min-height: 36px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.doc-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.doc-btn:active {
+  transform: translateY(0);
+}
+
+.doc-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.doc-btn:active {
+  transform: translateY(0);
+}
+
+/* Cursor Pointer */
 .cursor-pointer {
   cursor: pointer;
   user-select: none;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .cursor-pointer:hover {
@@ -349,19 +625,40 @@ function toggleGroup(group) {
   transform: translateY(0);
 }
 
-/* Smooth entrance animation */
-.dev-toolbar {
-  animation: slideUp 0.3s ease-out;
-}
-
+/* Animations */
 @keyframes slideUp {
   from {
-    transform: translateY(100%);
+    transform: translateY(100%) scale(0.9);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+/* List Item Enhancements */
+:deep(.v-list-item) {
+  border-radius: 8px;
+  margin: 4px 0;
+  transition: all 0.2s ease;
+}
+
+:deep(.v-list-item:hover) {
+  background: rgba(var(--v-theme-primary), 0.1);
+  transform: translateX(4px);
+}
+
+:deep(.v-list-item--active) {
+  background: rgba(var(--v-theme-primary), 0.15);
+  border-left: 3px solid rgb(var(--v-theme-primary));
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .dev-toolbar-card {
+    min-width: 90vw;
+    max-width: 95vw;
   }
 }
 </style>

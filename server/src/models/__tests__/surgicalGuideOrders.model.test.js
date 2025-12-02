@@ -9,10 +9,6 @@ describe('SurgicalGuideOrdersModel', () => {
   expect(typeof SurgicalGuideOrdersModel.getSummary).toBe('function');
   });
 
-  it('should have getDoctorBreakdown method', () => {
-  expect(typeof SurgicalGuideOrdersModel.getDoctorBreakdown).toBe('function');
-  });
-
   it('should have exportToCSV method', () => {
   expect(typeof SurgicalGuideOrdersModel.exportToCSV).toBe('function');
   });

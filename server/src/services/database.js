@@ -1,10 +1,10 @@
 /**
  * @file database.js
  * @description MySQL database connection service with connection pooling
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 import dotenv from 'dotenv';
 dotenv.config();
@@ -14,7 +14,23 @@ import { createContextLogger } from './logger.js';
 const logger = createContextLogger('DatabaseService', 'DatabaseService');
 
 /**
+ * Connection configuration object for MySQL connections
+ * @typedef {Object} ConnectionConfig
+ * @property {string} host - Database host address
+ * @property {number} port - Database port number
+ * @property {string} user - Database username
+ * @property {string} password - Database password
+ * @property {string} database - Database name
+ * @property {number} connectTimeout - Connection timeout in milliseconds (default: 10000)
+ * @property {boolean} enableKeepAlive - Enable keep-alive for connections
+ * @property {number} keepAliveInitialDelay - Initial delay for keep-alive
+ * @property {boolean} multipleStatements - Allow multiple statements (disabled for security)
+ * @property {boolean} dateStrings - Return dates as strings instead of Date objects
+ */
+
+/**
  * Connection configuration (passed to each connection in the pool)
+ * @type {ConnectionConfig}
  */
 const connectionConfig = {
   host: process.env.DB_HOST,
@@ -30,10 +46,19 @@ const connectionConfig = {
 };
 
 /**
+ * Pool configuration object extending connection config with pool-specific options
+ * @typedef {ConnectionConfig} PoolConfig
+ * @property {boolean} waitForConnections - Wait for available connections when pool is full
+ * @property {number} connectionLimit - Maximum number of connections in pool (default: 10)
+ * @property {number} queueLimit - Maximum number of queued connection requests (0 = unlimited)
+ */
+
+/**
  * Pool configuration
  * mysql2 createPool() accepts both pool options and connection options in one object.
  * However, pool-specific options like acquireTimeout trigger warnings when passed to connections.
  * We'll create the pool with all options, but mysql2 will only use pool options for the pool.
+ * @type {PoolConfig}
  */
 const poolConfig = {
   ...connectionConfig,
@@ -179,9 +204,16 @@ class DatabaseService {
 
   /**
    * Execute a transaction with automatic rollback on error
-   * @param {Function} callback - Async function that receives connection
-   * @returns {Promise<any>} Transaction result
-   * @throws {Error} If transaction fails
+   * @param {Function} callback - Async function that receives connection and performs operations
+   * @param {mysql.PoolConnection} callback.connection - Database connection for transaction
+   * @returns {Promise<any>} Transaction result from callback
+   * @throws {Error} If transaction fails (automatic rollback performed)
+   * @example
+   * await databaseService.transaction(async (connection) => {
+   *   await connection.execute('INSERT INTO users ...', [name, email]);
+   *   await connection.execute('INSERT INTO profiles ...', [userId, bio]);
+   *   return { success: true };
+   * });
    */
   async transaction(callback) {
     const connection = await this.getPool().getConnection();

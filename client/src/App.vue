@@ -36,7 +36,7 @@
               <v-icon size="20">mdi-apps</v-icon>
             </v-btn>
           </template>
-          <span>App Navigation</span>
+          <span>{{ t('app.navigation') || 'App Navigation' }}</span>
         </v-tooltip>
         <LanguageSwitcher />
         <ThemeToggle />

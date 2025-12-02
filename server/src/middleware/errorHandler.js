@@ -1,14 +1,19 @@
 /**
  * @file errorHandler.js
  * @description Centralized error handling middleware with standardized responses
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 
 /**
- * Map common errors to HTTP status codes and error codes
+ * Map common error types to HTTP status codes and standardized error codes
+ * 
+ * This mapping ensures consistent error responses across the application.
+ * 
+ * @type {Object.<string, {code: string, http: number}>}
+ * @private
  */
 const errorMappings = {
   'CastError': { code: 'VALIDATION_ERROR', http: 400 },
@@ -22,9 +27,14 @@ const errorMappings = {
 };
 
 /**
- * Get error code from HTTP status
- * @param {number} status - HTTP status code
- * @returns {string} - Error code
+ * Get standardized error code from HTTP status code
+ * 
+ * Maps HTTP status codes to application-specific error codes for consistent
+ * error handling across the API.
+ * 
+ * @param {number} status - HTTP status code (400, 401, 403, 404, etc.)
+ * @returns {string} Standardized error code (e.g., 'VALIDATION_ERROR', 'AUTH_REQUIRED')
+ * @private
  */
 function getErrorCodeFromStatus(status) {
   const statusMappings = {

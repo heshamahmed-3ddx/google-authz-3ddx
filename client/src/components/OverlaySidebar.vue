@@ -1,12 +1,17 @@
 <template>
   <Teleport to="body">
-    <!-- Full Screen Overlay -->
-    <Transition name="fade">
-      <div
-        v-if="modelValue"
-        class="overlay-fullscreen"
-        :class="{ 'rtl-overlay': isRTL }"
-        @click="closeSidebar"
+    <v-overlay
+      :model-value="modelValue"
+      class="overlay-fullscreen"
+      :class="{ 'rtl-overlay': isRTL }"
+      scrim="rgba(0, 0, 0, 0.5)"
+      persistent
+      @click:outside="closeSidebar"
+    >
+      <v-card
+        class="overlay-card"
+        :class="{ 'rtl-card': isRTL }"
+        @click.stop.prevent
       >
         <!-- Close button -->
         <v-btn
@@ -14,91 +19,151 @@
           variant="text"
           size="small"
           class="close-btn-top"
-          @click.stop="closeSidebar"
+          @click="handleCloseClick"
         >
-          <v-icon size="20">mdi-close</v-icon>
+          <v-icon size="18">mdi-close</v-icon>
         </v-btn>
 
         <!-- Content Container -->
-        <div class="overlay-content" @click.stop>
-          <!-- Minimal Header -->
-          <div class="minimal-overlay-header">
-            <div
-              class="text-subtitle-1 font-weight-medium minimal-header-title"
-            >
-              {{ $t("nav.navigation") }}
-            </div>
-          </div>
+        <div class="overlay-content" @click.stop.prevent>
+          <div class="overlay-content-wrapper" @click.stop.prevent>
+          <!-- User Profile Section with Logout -->
+          <v-list-item
+            v-if="userProfile"
+            class="user-profile-section"
+            :title="userProfile.name"
+            :subtitle="userProfile.jobTitle"
+          >
+            <template #prepend>
+              <v-avatar size="40" class="profile-avatar" color="primary">
+                <img
+                  v-if="userProfile.picture && !imageError"
+                  :src="userProfile.picture"
+                  :alt="userProfile.name"
+                  class="profile-image"
+                  @error="imageError = true"
+                  @load="imageError = false"
+                />
+                <span v-else class="profile-initials">{{ getInitials(userProfile.name) }}</span>
+              </v-avatar>
+            </template>
+            <template #append>
+              <v-btn
+                variant="text"
+                size="small"
+                prepend-icon="mdi-logout"
+                class="profile-logout-btn"
+                @click="handleLogout"
+              >
+                {{ $t("nav.logout") }}
+              </v-btn>
+            </template>
+          </v-list-item>
+
+          <v-divider v-if="userProfile" class="profile-divider"></v-divider>
+
+          <!-- Search Filter -->
+          <v-text-field
+            v-model="searchQuery"
+            :placeholder="t('nav.searchPlaceholder') || 'Search navigation...'"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
+            class="search-input"
+            @click.stop
+          ></v-text-field>
 
           <!-- Navigation Grid Container -->
-          <div class="minimal-nav-grid-container">
-            <div class="minimal-nav-grid-wrapper">
-              <!-- Flatten navigation items for grid display -->
+          <div class="navigation-grid-container">
+            <!-- No Results Message -->
+            <div
+              v-if="searchQuery && flattenedNavigation.length === 0"
+              class="no-results-message"
+            >
+              <v-icon size="48" class="no-results-icon">mdi-magnify</v-icon>
+              <div class="no-results-text">
+                <div class="no-results-title">{{ $t("nav.noResults") || "No results found" }}</div>
+                <div class="no-results-subtitle">
+                  {{ $t("nav.noResultsSubtitle") || "Try adjusting your search terms" }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation Items -->
+            <div v-else class="navigation-grid-wrapper">
               <template v-for="item in flattenedNavigation" :key="item.id">
-                <!-- Section Header (for groups) - Minimal -->
-                <div
+                <!-- Section Header -->
+                <v-list-subheader
                   v-if="item.isSectionHeader"
-                  class="minimal-section-header"
+                  class="section-header"
                   :style="{ gridColumn: '1 / -1' }"
                 >
-                  <span class="minimal-section-title">
+                  <v-icon size="16" class="section-icon">{{ item.icon }}</v-icon>
+                  <span class="section-title">
                     {{ $t("navigation." + item.id) }}
                   </span>
-                </div>
+                  <v-divider class="section-separator-line"></v-divider>
+                </v-list-subheader>
 
-                <!-- Navigation Tile - Minimal -->
-                <div
+                <!-- Navigation Item -->
+                <v-list-item
                   v-else
-                  class="minimal-nav-tile"
-                  :class="{ 'active-route': isActiveRoute(item.route) }"
+                  :to="item.route"
+                  :active="isActiveRoute(item.route)"
+                  class="nav-list-item"
                   @click="navigateTo(item.route)"
                 >
-                  <v-icon
-                    :icon="item.icon"
-                    size="24"
-                    class="nav-tile-icon"
-                  ></v-icon>
-                  <span class="nav-tile-label">{{
-                    $t("navigation." + item.id)
-                  }}</span>
-                  <v-badge
-                    v-if="item.badge"
-                    :content="item.badge.text"
-                    :color="item.badge.color"
-                    class="nav-tile-badge"
-                    size="x-small"
-                  ></v-badge>
-                </div>
+                  <template #prepend>
+                    <v-avatar
+                      size="32"
+                      class="tile-icon-wrapper"
+                    >
+                      <v-icon
+                        :icon="item.icon"
+                        size="20"
+                        class="nav-tile-icon"
+                      ></v-icon>
+                    </v-avatar>
+                  </template>
+                  <v-list-item-title class="nav-tile-label">
+                    {{ $t("navigation." + item.id) }}
+                  </v-list-item-title>
+                  <template #append>
+                    <v-badge
+                      v-if="item.badge"
+                      :content="item.badge.text"
+                      :color="item.badge.color"
+                      size="x-small"
+                    ></v-badge>
+                  </template>
+                </v-list-item>
               </template>
             </div>
           </div>
 
-          <!-- Minimal Footer Actions -->
-          <div class="minimal-overlay-footer">
-            <v-btn
-              v-if="isAdmin"
-              variant="text"
-              size="small"
-              prepend-icon="mdi-cog"
-              class="minimal-footer-btn"
+          <!-- Footer Actions -->
+          <v-divider v-if="isAdmin" class="footer-divider-top"></v-divider>
+          <v-list v-if="isAdmin" class="footer-list">
+            <v-list-item
               to="/system/settings"
+              class="footer-list-item"
               @click="onItemClick"
             >
-              {{ $t("nav.settings") }}
-            </v-btn>
-            <v-btn
-              variant="text"
-              size="small"
-              prepend-icon="mdi-logout"
-              class="minimal-footer-btn logout-footer-btn"
-              @click="handleLogout"
-            >
-              {{ $t("nav.logout") }}
-            </v-btn>
+              <template #prepend>
+                <v-icon>mdi-cog</v-icon>
+              </template>
+              <v-list-item-title>{{ $t("nav.settings") }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+          
+          <!-- Bottom safe space -->
+          <div class="bottom-safe-space"></div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </v-card>
+    </v-overlay>
   </Teleport>
 </template>
 
@@ -129,13 +194,65 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const devModeStore = useDevModeStore();
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 // State
 const userGroups = ref([]);
+const searchQuery = ref("");
+const imageError = ref(false);
 
 // Computed
 const isRTL = computed(() => checkRTL(locale.value));
+
+const userProfile = computed(() => {
+  const details = authStore.cachedUserDetails || authStore.user;
+  if (!details) return null;
+  
+  // Try multiple possible picture fields
+  let picture = null;
+  
+  // Priority 1: Check session user picture (from OAuth - this is the most reliable)
+  if (authStore.user?.picture) {
+    picture = authStore.user.picture;
+  }
+  // Priority 2: Check cached details picture field
+  else if (details.picture) {
+    picture = details.picture;
+  }
+  // Priority 3: Check photos array
+  else if (details.photos && Array.isArray(details.photos) && details.photos.length > 0) {
+    const photo = details.photos.find(p => p.primary) || details.photos[0];
+    picture = photo?.value || photo?.url;
+  }
+  // Priority 4: Check thumbnailPhotoUrl (from Google Directory API - might be base64)
+  else if (details.thumbnailPhotoUrl) {
+    const thumb = details.thumbnailPhotoUrl;
+    // If it's already a data URL
+    if (thumb.startsWith('data:')) {
+      picture = thumb;
+    }
+    // If it's a regular URL
+    else if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+      picture = thumb;
+    }
+    // If it's base64 encoded (common for Google Directory API)
+    else {
+      // Convert base64 to data URL
+      picture = `data:image/jpeg;base64,${thumb}`;
+    }
+  }
+  // Priority 5: Check photoUrl
+  else if (details.photoUrl) {
+    picture = details.photoUrl;
+  }
+  
+  return {
+    name: details.fullName || details.name || "",
+    picture: picture,
+    jobTitle: details.jobTitle || details.title || null,
+    email: details.email || details.primaryEmail || ""
+  };
+});
 
 const isAdmin = computed(() => {
   return userGroups.value.includes("admin");
@@ -156,22 +273,47 @@ const filteredNavigation = computed(() => {
 // Flatten navigation for grid display
 const flattenedNavigation = computed(() => {
   const flattened = [];
+  const query = searchQuery.value.toLowerCase().trim();
 
   filteredNavigation.value.forEach((item) => {
     // Add section header for groups
     if (item.children && item.children.length > 0) {
-      flattened.push({
-        ...item,
-        isSectionHeader: true,
+      // Filter children based on search query
+      const filteredChildren = item.children.filter((child) => {
+        if (!query) return true;
+        const childTitle = t("navigation." + child.id).toLowerCase();
+        const childRoute = (child.route || "").toLowerCase();
+        return childTitle.includes(query) || childRoute.includes(query);
       });
 
-      // Add child items
-      item.children.forEach((child) => {
-        flattened.push(child);
-      });
+      // Only show section header if it has matching children or matches search
+      const sectionTitle = t("navigation." + item.id).toLowerCase();
+      const sectionMatches = !query || sectionTitle.includes(query);
+
+      if (filteredChildren.length > 0 || sectionMatches) {
+        if (sectionMatches || filteredChildren.length > 0) {
+          flattened.push({
+            ...item,
+            isSectionHeader: true,
+          });
+        }
+
+        // Add filtered child items
+        filteredChildren.forEach((child) => {
+          flattened.push(child);
+        });
+      }
     } else {
-      // Add standalone items
-      flattened.push(item);
+      // Filter standalone items
+      if (!query) {
+        flattened.push(item);
+      } else {
+        const itemTitle = t("navigation." + item.id).toLowerCase();
+        const itemRoute = (item.route || "").toLowerCase();
+        if (itemTitle.includes(query) || itemRoute.includes(query)) {
+          flattened.push(item);
+        }
+      }
     }
   });
 
@@ -185,8 +327,31 @@ function isActiveRoute(itemRoute) {
   return route.path === itemRoute || route.path.startsWith(`${itemRoute}/`);
 }
 
-function closeSidebar() {
+function handleCloseClick() {
+  // Always close when clicking the close button
   emit("update:modelValue", false);
+}
+
+function closeSidebar(event) {
+  // Prevent closing if user is selecting text
+  if (event && window.getSelection && window.getSelection().toString().length > 0) {
+    return;
+  }
+  // Only close if clicking directly on overlay scrim/background, not on card or content
+  if (event) {
+    const target = event.target;
+    const card = event.currentTarget?.querySelector?.('.overlay-card');
+    // Only close if clicking on the scrim/overlay itself, not on the card or its children
+    if (target && card && !card.contains(target) && target.classList.contains('v-overlay__scrim')) {
+      emit("update:modelValue", false);
+    } else if (!card) {
+      // Fallback if card not found
+      emit("update:modelValue", false);
+    }
+  } else {
+    // Called from @click:outside or other non-event source
+    emit("update:modelValue", false);
+  }
 }
 
 function navigateTo(routePath) {
@@ -231,6 +396,15 @@ function loadUserGroups() {
   }
 }
 
+function getInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
 // Lifecycle
 onMounted(() => {
   loadUserGroups();
@@ -254,6 +428,14 @@ watch(
   { immediate: true },
 );
 
+// Reset image error when profile changes
+watch(
+  () => userProfile.value?.picture,
+  () => {
+    imageError.value = false;
+  }
+);
+
 // Prevent body scroll when sidebar is open
 watch(
   () => props.modelValue,
@@ -270,391 +452,634 @@ watch(
 
 <style scoped>
 /* ========================================
-   FULL SCREEN OVERLAY
+   FULL SCREEN OVERLAY (Vuetify v-overlay)
    ======================================== */
 .overlay-fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.overlay-fullscreen :deep(.v-overlay__scrim) {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  cursor: pointer;
+}
+
+.overlay-card {
+  cursor: default;
+  pointer-events: auto;
+}
+
+.overlay-fullscreen :deep(.v-overlay__content) {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.overlay-card {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border-radius: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.overlay-card :deep(.v-card-text) {
+  display: none;
+}
+
+.v-theme--light .overlay-card {
   background-color: #ffffff !important;
-  background: #ffffff !important;
-  z-index: 2000;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* GPU acceleration for smooth scrolling */
-  will-change: scroll-position;
-  transform: translateZ(0);
-  -webkit-overflow-scrolling: touch;
-  /* Smooth scrolling optimization */
-  scroll-behavior: smooth;
-  overscroll-behavior: contain;
 }
 
-.overlay-fullscreen::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ffffff;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.v-theme--light .overlay-fullscreen {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-}
-
-.v-theme--light .overlay-fullscreen::before {
-  background-color: #ffffff;
-}
-
-.v-theme--dark .overlay-fullscreen {
+.v-theme--dark .overlay-card {
   background-color: #121212 !important;
-  background: #121212 !important;
-}
-
-.v-theme--dark .overlay-fullscreen::before {
-  background-color: #121212;
 }
 
 .close-btn-top {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 2001;
-  background: rgba(255, 140, 0, 0.1) !important;
-  color: #ff8c00 !important;
-  transition: all 0.15s ease;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
   min-width: 28px !important;
   width: 28px !important;
   height: 28px !important;
-  padding: 0 !important;
-  border-radius: 6px !important;
+  min-height: 28px !important;
+  border-radius: 4px !important;
 }
 
-.v-theme--dark .close-btn-top {
-  background: rgba(255, 183, 77, 0.15) !important;
-  color: #ffb74d !important;
-}
 
-.close-btn-top:hover {
-  background: rgba(255, 140, 0, 0.2) !important;
-  color: #e65100 !important;
-}
-
-.v-theme--dark .close-btn-top:hover {
-  background: rgba(255, 183, 77, 0.25) !important;
-  color: #ffcc80 !important;
-}
-
-.overlay-fullscreen.rtl-overlay .close-btn-top {
+.overlay-card.rtl-card .close-btn-top {
   right: auto;
-  left: 16px;
+  left: 8px;
+}
+
+/* RTL Support */
+.overlay-card.rtl-card {
+  direction: rtl;
+}
+
+.overlay-card.rtl-card .overlay-content {
+  direction: rtl;
+}
+
+.overlay-card.rtl-card .navigation-grid-wrapper {
+  direction: ltr;
+}
+
+.overlay-card.rtl-card .section-header {
+  direction: rtl;
+}
+
+.overlay-card.rtl-card .nav-list-item {
+  direction: rtl;
 }
 
 /* ========================================
-   MINIMAL CONTENT CONTAINER
+   CONTENT CONTAINER
    ======================================== */
 .overlay-content {
-  min-height: 100vh;
-  padding: 40px 12px 12px;
-  max-width: 900px;
-  margin: 0 auto;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-surface), 0.3) transparent;
+}
+
+.overlay-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overlay-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overlay-content::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--v-theme-on-surface), 0.3);
+  border-radius: 4px;
+}
+
+
+.overlay-content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 16px 0;
+  min-height: 100%;
+}
+
+.bottom-safe-space {
+  height: max(48px, calc(env(safe-area-inset-bottom, 0px) + 32px));
+  flex-shrink: 0;
 }
 
 @media (max-width: 960px) {
-  .overlay-content {
-    padding: 40px 10px 10px;
+  .overlay-content-wrapper {
+    padding: 45px 14px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .overlay-content-wrapper {
+    padding: 45px 12px 0;
   }
 }
 
 /* ========================================
-   MINIMAL HEADER
+   USER PROFILE SECTION (Vuetify v-list-item)
    ======================================== */
-.minimal-overlay-header {
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 140, 0, 0.2);
+.user-profile-section {
+  padding: 10px 0 !important;
+  margin-bottom: 0 !important;
+  min-height: auto !important;
 }
 
-.v-theme--dark .minimal-overlay-header {
-  border-bottom-color: rgba(255, 183, 77, 0.3);
+.user-profile-section :deep(.v-list-item__prepend) {
+  align-self: center;
+  margin-inline-end: 12px;
 }
 
-.minimal-header-title {
-  color: #ff8c00;
-  font-size: 0.75rem;
+.user-profile-section :deep(.v-list-item__content) {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-profile-section :deep(.v-list-item__append) {
+  margin-inline-start: 12px;
+}
+
+.profile-avatar {
+  background: rgba(255, 111, 0, 0.1) !important;
+  border: 1px solid rgba(255, 111, 0, 0.2);
+}
+
+.v-theme--dark .profile-avatar {
+  background: rgba(255, 183, 77, 0.15) !important;
+  border-color: rgba(255, 183, 77, 0.25);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-initials {
+  font-size: 0.875rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #ff6f00;
 }
 
-.v-theme--dark .minimal-header-title {
+.v-theme--dark .profile-initials {
   color: #ffb74d;
 }
 
-/* ========================================
-   MINIMAL NAVIGATION GRID
-   ======================================== */
-.minimal-nav-grid-container {
-  flex: 1;
-  width: 100%;
+.user-profile-section :deep(.v-list-item-title) {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  line-height: 1.3;
+  margin-bottom: 2px;
 }
 
-.minimal-nav-grid-wrapper {
+.user-profile-section :deep(.v-list-item-subtitle) {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  line-height: 1.2;
+  opacity: 1;
+}
+
+.profile-logout-btn {
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
+  font-size: 0.75rem !important;
+  min-height: 28px !important;
+}
+
+
+.profile-divider {
+  margin: 16px 0;
+}
+
+/* ========================================
+   SEARCH FILTER
+   ======================================== */
+.search-input {
+  margin-bottom: 16px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.search-input :deep(.v-field) {
+  border-radius: 8px;
+  background: rgba(var(--v-theme-surface), 1);
+  border-color: rgba(var(--v-theme-on-surface), 0.12);
+  min-height: 40px;
+  max-height: 40px;
+  height: 40px;
+}
+
+.v-theme--dark .search-input :deep(.v-field) {
+  background: rgba(var(--v-theme-surface), 0.8);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+
+.search-input :deep(.v-field--focused) {
+  border-color: rgba(255, 111, 0, 0.5);
+  min-height: 40px;
+  max-height: 40px;
+  height: 40px;
+}
+
+.v-theme--dark .search-input :deep(.v-field--focused) {
+  border-color: rgba(255, 183, 77, 0.6);
+}
+
+.search-input :deep(.v-field__input) {
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  min-height: 40px;
+  max-height: 40px;
+  height: 40px;
+}
+
+.search-input :deep(.v-field__prepend-inner) {
+  padding-inline-start: 12px;
+  padding-inline-end: 8px;
+}
+
+.search-input :deep(.v-field__append-inner) {
+  padding-inline-start: 8px;
+  padding-inline-end: 12px;
+}
+
+.search-input :deep(.v-icon) {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.search-input :deep(.v-field--focused .v-icon) {
+  color: #ff6f00;
+}
+
+.v-theme--dark .search-input :deep(.v-field--focused .v-icon) {
+  color: #ffb74d;
+}
+
+.search-input :deep(.v-field__clearable) {
+  margin: 0;
+  padding: 0;
+}
+
+/* ========================================
+   NAVIGATION GRID CONTAINER
+   ======================================== */
+.navigation-grid-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========================================
+   NO RESULTS MESSAGE
+   ======================================== */
+.no-results-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  flex: 1;
+  min-height: 200px;
+}
+
+.no-results-icon {
+  color: rgba(var(--v-theme-on-surface), 0.3);
+  margin-bottom: 16px;
+}
+
+.v-theme--dark .no-results-icon {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.no-results-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-results-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  line-height: 1.4;
+}
+
+.v-theme--dark .no-results-title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.no-results-subtitle {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  line-height: 1.4;
+}
+
+.v-theme--dark .no-results-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.navigation-grid-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 6px;
   padding: 0;
-  contain: layout style paint;
 }
 
 @media (min-width: 600px) {
-  .minimal-nav-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  .navigation-grid-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 8px;
   }
 }
 
 @media (min-width: 960px) {
-  .minimal-nav-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  .navigation-grid-wrapper {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
   }
 }
 
 /* ========================================
-   MINIMAL SECTION HEADER
+   SECTION HEADER (Vuetify v-list-subheader)
    ======================================== */
-.minimal-section-header {
-  margin-top: 10px;
-  margin-bottom: 4px;
-  padding-bottom: 3px;
-  border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+.section-header {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  padding: 0 4px !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: auto !important;
+  min-height: auto !important;
+  background: transparent !important;
 }
 
-.v-theme--dark .minimal-section-header {
-  border-bottom-color: rgba(255, 183, 77, 0.25);
-}
-
-.minimal-section-header:first-child {
+.section-header:first-child {
   margin-top: 0;
 }
 
-.minimal-section-title {
-  color: #ff8c00;
-  font-size: 0.7rem;
+.section-icon {
+  color: rgba(var(--v-theme-on-surface), 0.55);
+  flex-shrink: 0;
+  font-size: 15px !important;
+}
+
+.v-theme--dark .section-icon {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.section-title {
+  color: rgba(var(--v-theme-on-surface), 0.65);
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.v-theme--dark .minimal-section-title {
-  color: #ffb74d;
-}
-
-/* ========================================
-   MINIMAL NAVIGATION TILE
-   ======================================== */
-.minimal-nav-tile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  position: relative;
-  min-height: 36px;
-  border: 1px solid transparent;
-}
-
-.minimal-nav-tile:hover {
-  background: rgba(255, 140, 0, 0.08);
-  border-color: rgba(255, 140, 0, 0.2);
-}
-
-.v-theme--dark .minimal-nav-tile:hover {
-  background: rgba(255, 183, 77, 0.1);
-  border-color: rgba(255, 183, 77, 0.3);
-}
-
-.minimal-nav-tile.active-route {
-  background: rgba(255, 140, 0, 0.12);
-  border-color: #ff8c00;
-}
-
-.v-theme--dark .minimal-nav-tile.active-route {
-  background: rgba(255, 183, 77, 0.15);
-  border-color: #ffb74d;
-}
-
-.nav-tile-icon {
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  transition: color 0.15s ease;
-  flex-shrink: 0;
-  font-size: 20px !important;
-}
-
-.minimal-nav-tile:hover .nav-tile-icon {
-  color: #ff8c00;
-}
-
-.v-theme--dark .minimal-nav-tile:hover .nav-tile-icon {
-  color: #ffb74d;
-}
-
-.minimal-nav-tile.active-route .nav-tile-icon {
-  color: #ff8c00;
-}
-
-.v-theme--dark .minimal-nav-tile.active-route .nav-tile-icon {
-  color: #ffb74d;
-}
-
-.nav-tile-label {
-  color: rgba(var(--v-theme-on-surface), 0.75);
-  font-size: 0.8125rem;
-  font-weight: 400;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
   line-height: 1.3;
+}
+
+.v-theme--dark .section-title {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.section-separator-line {
   flex: 1;
-  text-align: left;
+  margin-left: 0;
+  border-color: rgba(var(--v-theme-on-surface), 0.2) !important;
 }
 
-.minimal-nav-tile:hover .nav-tile-label {
-  color: #e65100;
-  font-weight: 500;
-}
-
-.v-theme--dark .minimal-nav-tile:hover .nav-tile-label {
-  color: #ffcc80;
-}
-
-.minimal-nav-tile.active-route .nav-tile-label {
-  color: #e65100;
-  font-weight: 600;
-}
-
-.v-theme--dark .minimal-nav-tile.active-route .nav-tile-label {
-  color: #ffcc80;
-}
-
-.nav-tile-badge {
-  flex-shrink: 0;
+.v-theme--dark .section-separator-line {
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* ========================================
-   MINIMAL FOOTER
+   NAVIGATION ITEM (Vuetify v-list-item)
    ======================================== */
-.minimal-overlay-footer {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 140, 0, 0.2);
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
+.nav-list-item {
+  margin-bottom: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-surface), 1);
+  min-height: 36px;
+  padding: 8px 10px !important;
+  cursor: pointer;
+  width: 100%;
+  align-items: flex-start;
+  box-sizing: border-box;
 }
 
-.v-theme--dark .minimal-overlay-footer {
-  border-top-color: rgba(255, 183, 77, 0.3);
+.nav-list-item :deep(.v-list-item) {
+  padding: 0;
+  min-height: auto;
 }
 
-.minimal-footer-btn {
-  color: rgba(var(--v-theme-on-surface), 0.7) !important;
-  text-transform: none !important;
-  font-weight: 400 !important;
-  font-size: 0.8125rem !important;
-  padding: 6px 12px !important;
-  min-height: 32px !important;
-  transition: all 0.15s ease;
+.v-theme--dark .nav-list-item {
+  background: rgba(var(--v-theme-surface), 0.8);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.minimal-footer-btn:hover {
-  color: #ff8c00 !important;
-  background: rgba(255, 140, 0, 0.1) !important;
+
+.nav-list-item.v-list-item--active {
+  background: rgba(255, 111, 0, 0.15) !important;
+  border-color: rgba(255, 111, 0, 0.5);
+  border-width: 1px;
 }
 
-.v-theme--dark .minimal-footer-btn:hover {
-  color: #ffb74d !important;
+.v-theme--dark .nav-list-item.v-list-item--active {
+  background: rgba(255, 183, 77, 0.18) !important;
+  border-color: rgba(255, 183, 77, 0.55);
+  border-width: 1px;
+}
+
+.tile-icon-wrapper {
+  background: rgba(255, 111, 0, 0.12) !important;
+  border-radius: 5px;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+}
+
+.v-theme--dark .tile-icon-wrapper {
   background: rgba(255, 183, 77, 0.15) !important;
 }
 
-.logout-footer-btn:hover {
-  color: rgba(244, 67, 54, 0.9) !important;
-  background: rgba(244, 67, 54, 0.1) !important;
+
+.nav-list-item.v-list-item--active .tile-icon-wrapper {
+  background: rgba(255, 111, 0, 0.2) !important;
 }
 
-.minimal-footer-btn :deep(.v-icon) {
-  color: inherit !important;
+.v-theme--dark .nav-list-item.v-list-item--active .tile-icon-wrapper {
+  background: rgba(255, 183, 77, 0.25) !important;
+}
+
+.nav-tile-icon {
+  color: #ff6f00;
   font-size: 18px !important;
 }
 
+.v-theme--dark .nav-tile-icon {
+  color: #ffb74d;
+}
+
+
+.nav-list-item.v-list-item--active .nav-tile-icon {
+  color: #e65100;
+}
+
+.v-theme--dark .nav-list-item.v-list-item--active .nav-tile-icon {
+  color: #ffcc80;
+}
+
+.nav-list-item :deep(.v-list-item__prepend) {
+  margin-inline-end: 8px;
+}
+
+.nav-list-item :deep(.v-list-item__content) {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.nav-list-item :deep(.v-list-item__append) {
+  margin-inline-start: 6px;
+}
+
+.nav-tile-label {
+  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: visible;
+  word-wrap: break-word;
+  letter-spacing: 0.01em;
+}
+
+.v-theme--dark .nav-tile-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+
+.nav-list-item.v-list-item--active .nav-tile-label {
+  color: #e65100;
+  font-weight: 600;
+}
+
+.v-theme--dark .nav-list-item.v-list-item--active .nav-tile-label {
+  color: #ffcc80;
+}
+
 /* ========================================
-   TRANSITIONS
+   FOOTER (Vuetify v-list)
    ======================================== */
-.fade-enter-active {
-  transition: opacity 0.3s ease;
+.footer-divider-top {
+  margin-top: 24px;
+  margin-bottom: 0;
+  border-color: rgba(var(--v-theme-on-surface), 0.12) !important;
 }
 
-.fade-enter-active .overlay-fullscreen {
-  opacity: 1 !important;
-  background-color: #ffffff !important;
+.v-theme--dark .footer-divider-top {
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-.v-theme--dark .fade-enter-active .overlay-fullscreen {
-  background-color: #121212 !important;
+.footer-list {
+  background: transparent;
+  padding: 0;
 }
 
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.footer-list-item {
+  padding: 8px 12px !important;
+  min-height: 36px !important;
+  border-radius: 4px;
 }
 
-.fade-enter-from .overlay-fullscreen,
-.fade-leave-to .overlay-fullscreen {
-  opacity: 0;
-  background-color: #ffffff !important;
+
+.footer-list-item :deep(.v-list-item-title) {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
-.v-theme--dark .fade-enter-from .overlay-fullscreen,
-.v-theme--dark .fade-leave-to .overlay-fullscreen {
-  background-color: #121212 !important;
+
+.footer-list-item :deep(.v-icon) {
+  color: inherit;
+  font-size: 18px;
 }
 
 /* ========================================
-   MOBILE ADJUSTMENTS
+   RESPONSIVE ADJUSTMENTS
    ======================================== */
 @media (max-width: 600px) {
-  .minimal-nav-grid-wrapper {
+  .navigation-grid-wrapper {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 6px;
   }
 
-  .minimal-nav-tile {
-    min-height: 34px;
-    padding: 6px 8px;
-    gap: 8px;
+  .nav-list-item {
+    min-height: 36px;
+    padding: 8px 10px !important;
+  }
+
+  .tile-icon-wrapper {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
   }
 
   .nav-tile-icon {
-    font-size: 18px !important;
+    font-size: 16px !important;
   }
 
   .nav-tile-label {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .section-header {
+    padding: 0 4px !important;
+    margin-top: 10px;
+    margin-bottom: 5px;
   }
 }
 
@@ -666,12 +1091,4 @@ watch(
   outline-offset: 4px;
 }
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 </style>

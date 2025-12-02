@@ -1,7 +1,7 @@
 /**
  * @file swagger.config.js
  * @description Enhanced Swagger/OpenAPI configuration with security and comprehensive documentation
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-20
  * @version 1.2.0
  */

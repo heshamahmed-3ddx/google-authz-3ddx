@@ -295,7 +295,7 @@ export const NAVIGATION_CONFIG = [
   // REPORTS & ANALYTICS
   // ========================================
   {
-    id: "reports",
+    id: "reportsAnalytics",
     title: "Reports & Analytics",
     icon: "mdi-chart-box",
     permissions: ["admin", "SWD", "finance"],

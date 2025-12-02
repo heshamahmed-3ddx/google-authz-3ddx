@@ -6,15 +6,15 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Client Application                       │
 │                                                                   │
-│  ┌────────────────┐                  ┌────────────────────────┐  │
-│  │    App.vue     │                  │   NavigationSidebar    │  │
-│  │                │◄─────────────────┤      Component         │  │
-│  │  - AppBar      │                  │                        │  │
-│  │  - Drawer      │                  │  - User Profile        │  │
-│  │  - Main        │                  │  - Hierarchical Menu   │  │
-│  └────────┬───────┘                  │  - Rail Mode           │  │
-│           │                          │  - Active Highlighting │  │
-│           │                          └──────────┬─────────────┘  │
+│  ┌────────────────┐     ┌────────────────────────┐  ┌──────────────┐  │
+│  │    App.vue     │     │   NavigationSidebar    │  │ OverlaySidebar│ │
+│  │                │◄────┤      Component         │  │  Component   │  │
+│  │  - AppBar      │     │                        │  │              │  │
+│  │  - Drawer      │     │  - User Profile        │  │  - Full Screen│ │
+│  │  - Main        │     │  - Hierarchical Menu   │  │  - Search     │  │
+│  └────────┬───────┘     │  - Rail Mode           │  │  - Grid Layout│ │
+│           │             │  - Active Highlighting │  │  - Profile    │  │
+│           │             └──────────┬─────────────┘  └──────┬───────┘  │
 │           │                                     │                │
 │           │                          ┌──────────▼─────────────┐  │
 │           │                          │  navigationConfig.js   │  │
@@ -92,11 +92,19 @@ User Logs In
            │
            ▼
 ┌────────────────────────────────────────┐
-│  NavigationSidebar Component Loads     │
+│  Navigation Components Load            │
 │                                        │
+│  NavigationSidebar (Desktop):          │
 │  1. Read NAVIGATION_CONFIG             │
 │  2. Get user groups from Auth Store    │
 │  3. Call filterNavigationByPermissions()│
+│                                        │
+│  OverlaySidebar (Mobile/Tablet):       │
+│  1. Read NAVIGATION_CONFIG             │
+│  2. Get user groups from Auth Store    │
+│  3. Call filterNavigationByPermissions()│
+│  4. Flatten navigation for grid layout │
+│  5. Enable search functionality        │
 └──────────┬─────────────────────────────┘
            │
            ▼

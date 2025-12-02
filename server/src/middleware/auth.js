@@ -1,10 +1,10 @@
 /**
  * @file auth.js
  * @description Authentication middleware for protected routes
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import { createContextLogger } from '../services/logger.js';
@@ -52,10 +52,22 @@ export const requireAuth = async (req, res, next) => {
 
 /**
  * Group-based authorization middleware factory
- * Creates a middleware that checks if user belongs to any of the specified groups
- *
- * @param {string[]} allowedGroups - Array of group names that have access
+ * 
+ * Creates a middleware function that checks if the authenticated user belongs to
+ * any of the specified groups. If the user is not in any of the allowed groups,
+ * the middleware responds with HTTP 403 and does not call `next()`.
+ * 
+ * @param {string[]} allowedGroups - Array of group names that have access to the route
  * @returns {Function} Express middleware function
+ * @returns {Function} returns.middleware - Express middleware (req, res, next)
+ * 
+ * @example
+ * // Protect a route to only allow Finance22 and admin groups
+ * router.get('/reports', requireGroups(['Finance22', 'admin']), getReports);
+ * 
+ * @example
+ * // Protect a route to only allow Developers22 group
+ * router.get('/api-docs', requireGroups(['Developers22', 'admin']), showApiDocs);
  */
 export const requireGroups = (allowedGroups) => {
   return async (req, res, next) => {

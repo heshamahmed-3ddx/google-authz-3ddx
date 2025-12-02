@@ -1,9 +1,10 @@
 /**
  * @file casbin.js
  * @description Casbin authorization service for policy-based access control with enhanced logging
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @version 1.2.0
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 

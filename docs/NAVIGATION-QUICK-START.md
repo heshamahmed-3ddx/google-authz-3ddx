@@ -37,8 +37,15 @@ Click the menu icon (≡ ☰) in the sidebar header to toggle between:
 - Automatically closes after selecting a menu item
 
 ### Active Route Highlighting
-- Current page is highlighted with blue accent
+- Current page is highlighted with brand orange accent (#ff6f00)
 - Parent menu items automatically expand when child is active
+
+### OverlaySidebar (Mobile/Tablet)
+- Full-screen overlay navigation
+- Search functionality to filter navigation items
+- Grid-based layout (1-4 columns based on screen size)
+- User profile with avatar, name, and job title
+- RTL support for right-to-left languages
 
 ---
 

@@ -20,19 +20,22 @@ This project now includes a comprehensive sidebar navigation system inspired by 
 - Dynamic menu generation based on user roles
 - Integration with existing Casbin policies
 
-### 3. **Oracle Fusion Design Patterns**
-- Modern dark theme with gradients
-- Smooth animations and transitions
-- Rail mode (collapsed sidebar)
-- Responsive mobile drawer
-- Hover effects and active state indicators
+### 3. **Static Design Patterns**
+- Modern theme support (light/dark)
+- Static design (no animations or hover effects)
+- Rail mode (collapsed sidebar) - NavigationSidebar
+- Responsive mobile drawer - NavigationSidebar
+- Full-screen overlay - OverlaySidebar
+- Clean active state indicators
 
 ### 4. **User Experience**
-- User profile section in sidebar
+- User profile section in sidebar (both components)
 - Quick access to logout
 - Badge notifications (e.g., "New", "2 pending")
-- Tooltips in rail mode
-- Version information in footer
+- Tooltips in rail mode (NavigationSidebar)
+- Search functionality (OverlaySidebar)
+- Grid-based navigation layout (OverlaySidebar)
+- Version information in footer (NavigationSidebar)
 
 ---
 
@@ -41,7 +44,8 @@ This project now includes a comprehensive sidebar navigation system inspired by 
 ```
 client/src/
 ├── components/
-│   └── NavigationSidebar.vue      # Main sidebar component
+│   ├── NavigationSidebar.vue      # Desktop sidebar component
+│   └── OverlaySidebar.vue         # Mobile/tablet overlay navigation
 ├── config/
 │   ├── navigationConfig.js         # Navigation structure & utilities
 │   └── dashboardAccess.js          # Dashboard section permissions
@@ -295,6 +299,91 @@ The sidebar component is automatically shown when users are authenticated:
 3. **Hierarchical Menu**: Nested items with expand/collapse
 4. **Active Route Highlighting**: Current page highlighted
 5. **Footer Actions**: Logout, settings (admin only)
+
+---
+
+### OverlaySidebar Component
+
+The overlay sidebar component provides a full-screen navigation experience optimized for mobile and tablet devices:
+
+```vue
+<template>
+  <v-app>
+    <!-- App Bar with Navigation Button -->
+    <v-app-bar>
+      <v-app-bar-nav-icon 
+        v-if="authStore.isAuthenticated"
+        @click="showOverlay = true"
+      ></v-app-bar-nav-icon>
+      <!-- ... -->
+    </v-app-bar>
+    
+    <!-- Overlay Sidebar -->
+    <OverlaySidebar 
+      v-if="authStore.isAuthenticated" 
+      v-model="showOverlay"
+    />
+    
+    <v-main>
+      <router-view />
+    </v-main>
+  </v-app>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import OverlaySidebar from '@/components/OverlaySidebar.vue';
+
+const showOverlay = ref(false);
+</script>
+```
+
+### OverlaySidebar Features
+
+1. **Full-Screen Overlay**: Covers entire viewport with backdrop
+2. **User Profile Section**: Shows avatar, name, job title, and logout button
+3. **Search Functionality**: Filter navigation items by route name or title
+4. **Grid-Based Layout**: Responsive grid (1-4 columns based on screen size)
+5. **Section Headers**: Organized navigation groups
+6. **RTL Support**: Full right-to-left language support
+7. **Safe Area Support**: Handles mobile notches and home indicators
+8. **Text Selection Protection**: Doesn't close when selecting text
+9. **Static Design**: No animations or hover effects
+
+### OverlaySidebar Usage
+
+```vue
+<template>
+  <OverlaySidebar v-model="showOverlay" />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import OverlaySidebar from '@/components/OverlaySidebar.vue';
+
+const showOverlay = ref(false);
+
+// Open overlay
+const openNavigation = () => {
+  showOverlay.value = true;
+};
+
+// Close overlay (also closes on backdrop click or close button)
+const closeNavigation = () => {
+  showOverlay.value = false;
+};
+</script>
+```
+
+### Search Functionality
+
+The OverlaySidebar includes a search feature that filters navigation items:
+
+- **Search by route**: Matches route paths (e.g., "dashboard", "reports")
+- **Search by title**: Matches localized navigation titles
+- **Real-time filtering**: Updates as you type
+- **Smart section headers**: Only shows sections with matching items
+- **No results message**: User-friendly message when no matches found
 6. **Responsive**: Mobile drawer behavior
 
 ---
@@ -403,19 +492,20 @@ node demo-access-control.js
 ## 📱 Responsive Behavior
 
 ### Desktop (> 960px)
-- Sidebar permanently visible
-- Can toggle rail mode
+- **NavigationSidebar**: Permanently visible, can toggle rail mode
+- **OverlaySidebar**: Full-screen overlay, 3-4 column grid layout
 - Full navigation labels
 
 ### Tablet (600-960px)
-- Sidebar drawer (overlay)
-- Toggle via hamburger button
+- **NavigationSidebar**: Drawer overlay, toggle via hamburger button
+- **OverlaySidebar**: Full-screen overlay, 2-3 column grid layout
 - Full navigation labels
 
 ### Mobile (< 600px)
-- Sidebar drawer (overlay)
-- Auto-closes after navigation
+- **NavigationSidebar**: Drawer overlay, auto-closes after navigation
+- **OverlaySidebar**: Full-screen overlay, 1 column grid layout
 - Optimized for touch
+- Safe area support for notches and home indicators
 
 ---
 
@@ -423,15 +513,16 @@ node demo-access-control.js
 
 ### Theme Colors
 
-The sidebar automatically adapts to the current theme:
+Both navigation components automatically adapt to the current theme:
 
-```javascript
-// Dark theme (default)
-background: linear-gradient(180deg, #1e1e1e 0%, #2d2d2d 100%);
+**NavigationSidebar:**
+- Dark theme: Theme-aware dark backgrounds
+- Light theme: Theme-aware light backgrounds
 
-// Light theme
-background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
-```
+**OverlaySidebar:**
+- Dark theme: Theme-aware dark backgrounds
+- Light theme: Theme-aware light backgrounds
+- Brand orange accent: `#ff6f00` for active states and profile
 
 ### Icon Library
 
@@ -442,9 +533,22 @@ Uses Material Design Icons (MDI):
 
 ### Active Route Styling
 
+**NavigationSidebar:**
 ```css
 .navigation-item.active-route {
-  background: linear-gradient(90deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.1) 100%);
+  border-left: 2px solid #ff6f00; /* Brand orange */
+}
+```
+
+**OverlaySidebar:**
+```css
+.nav-list-item.v-list-item--active {
+  border: 1px solid #ff6f00; /* Brand orange */
+  background-color: rgba(255, 111, 0, 0.1);
+}
+```
+
+**Note:** Both components use static design with no animations or hover effects.
   color: #ffffff;
   border-left: 3px solid #1976d2;
 }
@@ -518,6 +622,17 @@ For questions or issues with the navigation system:
 
 ---
 
-**Last Updated**: October 27, 2025  
-**Version**: 1.0.0  
+---
+
+## 📚 Related Documentation
+
+- [Navigation UI Enhancements](./NAVIGATION-UI-ENHANCEMENTS.md) - UI/UX design guide
+- [Vue Components Reference](../vitepress/vue-components.md) - Component documentation
+- [Usage Guides](../vitepress/usage-guides.md) - Usage examples and patterns
+- [Compact UI Style Guide](../vitepress/compact-ui-style-guide.md) - Design system
+
+---
+
+**Last Updated**: January 2025  
+**Version**: 2.0.0 (Added OverlaySidebar)  
 **Author**: Development Team

@@ -560,6 +560,6 @@ The Surgical Guide Report is production-ready with:
 
 ---
 
-**Built with ❤️ by 3D Diagnostix Development Team**
+**Built with ❤️ by InsightHub Development Team**
 **Version: 1.0.0**
 **Date: October 27, 2025**

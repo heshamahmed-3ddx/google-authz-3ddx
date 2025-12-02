@@ -1,14 +1,58 @@
 /**
  * @file surgicalGuideOrders.model.js
  * @description Surgical Guide Report data model with queries for PowerBI CP database
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 import databaseService from '../services/database.js';
 
+/**
+ * Surgical Guide Orders Model
+ * 
+ * Handles database queries for surgical guide report data, including pagination,
+ * filtering, searching, and summary statistics. Uses optimized queries with
+ * subqueries for voucher transactions to improve performance.
+ * 
+ * @class SurgicalGuideOrdersModel
+ */
 class SurgicalGuideOrdersModel {
+  /**
+   * Get paginated surgical guide report data
+   * 
+   * Retrieves surgical guide orders with filtering, sorting, and search capabilities.
+   * Uses optimized queries with pre-aggregated voucher amounts to avoid expensive joins.
+   * 
+   * @param {Object} params - Query parameters
+   * @param {string} params.startDate - Start date in YYYY-MM-DD format (defaults to '2014-01-01' if invalid)
+   * @param {string} params.endDate - End date in YYYY-MM-DD format (defaults to '2015-01-01' if invalid)
+   * @param {number} [params.page=1] - Page number (minimum: 1)
+   * @param {number} [params.limit=10] - Items per page (minimum: 1)
+   * @param {string} [params.searchQuery=''] - Search query for ID, patient name, doctor, or scan center
+   * @param {string} [params.orderTypeFilter='all'] - Filter by order type
+   *   - 'all': All orders
+   *   - 'free': Orders with cost = 0
+   *   - 'postpaid': Orders with cost > 0
+   *   - 'fullyPrepaid': Orders fully paid by vouchers
+   *   - 'fullyPostpaid': Orders with no voucher payment
+   *   - 'partiallyPostpaid': Orders with partial voucher payment
+   *   - 'vouchers': Orders that used vouchers (fully or partially)
+   *   - 'rush': Rush orders (isRush = 1)
+   *   - 'onHold': On-hold orders (not rush, Q11_Val_4 set)
+   *   - 'confirmed': Confirmed orders (not rush/on-hold, Q11_Val_2 set)
+   *   - 'active': Active orders (not rush/on-hold/confirmed, Q11_Val_1 set)
+   * @returns {Promise<Object>} Report data with pagination metadata
+   * @returns {Array} returns.data - Array of order objects
+   * @returns {Object} returns.pagination - Pagination information
+   * @returns {number} returns.pagination.total - Total number of records
+   * @returns {number} returns.pagination.page - Current page number
+   * @returns {number} returns.pagination.limit - Items per page
+   * @returns {number} returns.pagination.totalPages - Total number of pages
+   * @returns {Object} returns.sort - Sort information
+   * @throws {Error} If database service is not available
+   * @throws {Error} If query execution fails
+   */
   async getReportData({ startDate, endDate, page = 1, limit = 10, searchQuery = '', orderTypeFilter = 'all' }) {
     // Check if database is available
     if (!databaseService.isAvailable()) {
@@ -267,6 +311,18 @@ class SurgicalGuideOrdersModel {
 
   /**
    * Validate date range for queries
+   * 
+   * Ensures that both dates are valid and that the start date is not after the end date.
+   * 
+   * @param {string} startDate - Start date in YYYY-MM-DD format
+   * @param {string} endDate - End date in YYYY-MM-DD format
+   * @returns {boolean} True if date range is valid
+   * @throws {Error} If date format is invalid (must be YYYY-MM-DD)
+   * @throws {Error} If start date is after end date
+   * 
+   * @example
+   * validateDateRange('2024-01-01', '2024-12-31'); // Returns true
+   * validateDateRange('2024-12-31', '2024-01-01'); // Throws Error
    */
   validateDateRange(startDate, endDate) {
     const start = new Date(startDate);
@@ -285,6 +341,37 @@ class SurgicalGuideOrdersModel {
 
   /**
    * Get summary statistics with order type breakdown using voucher data
+   * 
+   * Retrieves aggregated statistics for the specified date range including:
+   * - Total orders count
+   * - Postpaid orders (cost > 0)
+   * - Fully prepaid orders (voucher amount >= cost)
+   * - Free orders (cost = 0)
+   * - Fully postpaid orders (cost > 0, no vouchers)
+   * - Partially postpaid orders (0 < voucher amount < cost)
+   * - Rush orders (isRush = 1)
+   * - On-hold orders (not rush, Q11_Val_4 set)
+   * - Confirmed orders (not rush/on-hold, Q11_Val_2 set)
+   * - Active orders (not rush/on-hold/confirmed, Q11_Val_1 set)
+   * 
+   * Uses optimized query with pre-aggregated voucher amounts for performance.
+   * 
+   * @param {string} startDate - Start date in YYYY-MM-DD format
+   * @param {string} endDate - End date in YYYY-MM-DD format
+   * @returns {Promise<Object>} Summary statistics object
+   * @returns {number} returns.totalOrders - Total number of orders
+   * @returns {number} returns.postpaidOrders - Number of orders with cost > 0
+   * @returns {number} returns.fullyPrepaidOrders - Number of fully prepaid orders
+   * @returns {number} returns.freeOrders - Number of free orders
+   * @returns {number} returns.fullyPostpaidOrders - Number of fully postpaid orders
+   * @returns {number} returns.partiallyPostpaidOrders - Number of partially postpaid orders
+   * @returns {number} returns.rushOrders - Number of rush orders
+   * @returns {number} returns.onHoldOrders - Number of on-hold orders
+   * @returns {number} returns.confirmedOrders - Number of confirmed orders
+   * @returns {number} returns.activeOrders - Number of active orders
+   * @throws {Error} If database service is not available
+   * @throws {Error} If dates are missing or invalid
+   * @throws {Error} If query execution fails
    */
   async getSummary(startDate, endDate) {
     try {
@@ -375,6 +462,24 @@ class SurgicalGuideOrdersModel {
 
   /**
    * Export report data to CSV format with all lookup values
+   * 
+   * Generates a CSV string containing all report data for the specified date range.
+   * Includes all order details, payment information, status labels, and timestamps.
+   * The CSV is formatted with proper escaping for Excel compatibility.
+   * 
+   * Note: This method fetches all records (up to 100,000) for the date range,
+   * so it may be memory-intensive for large date ranges.
+   * 
+   * @param {string} startDate - Start date in YYYY-MM-DD format
+   * @param {string} endDate - End date in YYYY-MM-DD format
+   * @returns {Promise<string>} CSV formatted string with headers and data rows
+   * @throws {Error} If database service is not available
+   * @throws {Error} If dates are invalid
+   * @throws {Error} If query execution fails
+   * 
+   * @example
+   * const csv = await model.exportToCSV('2024-01-01', '2024-12-31');
+   * // Returns: "ID,Cost,Amount Paid,...\n1,100.00,50.00,...\n..."
    */
   async exportToCSV(startDate, endDate) {
     const data = await this.getReportData({

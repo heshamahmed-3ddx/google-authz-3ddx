@@ -1,7 +1,7 @@
 
-# 3DDX Documentation Portal
+# InsightHub Documentation Portal
 
-> **Welcome!** This is the official documentation hub for the Google AuthZ 3DDX platform. Use the sidebar to navigate, or start with the sections below:
+> **Welcome!** This is the official documentation hub for the InsightHub platform. Use the sidebar to navigate, or start with the sections below:
 
 ---
 
@@ -24,7 +24,7 @@
 ### 🏗️ Architecture & Technical
 - [System Architecture](./architecture.md): High-level design and diagrams
 - [Technical Specifications](./technical-specifications.md): Requirements and implementation status
-- [Reuse Guide](./reuse-guide.md): Adapting AuthZ 3DDX for other projects
+- [Reuse Guide](./reuse-guide.md): Adapting InsightHub for other projects
 
 ### 🔒 Security
 - [Security Overview](./security.md): Security features and best practices
@@ -59,4 +59,4 @@
 
 ---
 
-_For feedback or contributions, contact the 3DDX development team._
+_For feedback or contributions, contact the InsightHub development team._

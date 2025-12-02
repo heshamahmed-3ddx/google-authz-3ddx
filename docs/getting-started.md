@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide will help you set up and run the Google AuthZ 3DDX project locally.
+This guide will help you set up and run the InsightHub project locally.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide will help you set up and run the Google AuthZ 3DDX project locally.
 
 ```bash
 git clone <repository-url>
-cd google-authz-3ddx
+cd InsightHub
 ```
 
 ### 2. Install Dependencies
@@ -55,7 +55,7 @@ cp .env.example .env
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
-3. Enable Google+ API and any other required APIs
+3. Enable required Google APIs (OAuth 2.0, Google Admin SDK if needed)
 4. Create OAuth 2.0 credentials:
    - Application type: Web application
    - Authorized redirect URIs: `http://localhost:3001/auth/google/callback`
@@ -78,13 +78,18 @@ npm run dev
 ```
 
 The application will be available at:
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5173 (Vite default)
 - Backend: http://localhost:3001
+
+**Optional: Monitoring Setup**
+- Prometheus: http://localhost:9090 (if running locally)
+- Grafana: http://localhost:3000 (if running locally)
+- Metrics endpoint: http://localhost:3001/metrics
 
 ## Project Structure
 
 ```
-google-authz-3ddx/
+InsightHub/
 ├── server/          # Node.js + Express backend
 ├── client/          # Vue 3 + Vuetify frontend
 ├── tests/           # Test suites

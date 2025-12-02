@@ -1,5 +1,5 @@
 # Code Review & Release Checklist
-## 3D Diagnostix - Google OAuth & Casbin RBAC Integration
+## InsightHub - Google OAuth & Casbin RBAC Integration
 
 **Version:** 1.2.0  
 **Date:** 20/10/2025  

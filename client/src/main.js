@@ -12,6 +12,44 @@ import router from "./router";
 import { themeConfig } from "./stores/theme.js";
 import { i18n, isRTL } from "./i18n";
 
+// Suppress workbox console logs
+if (typeof window !== "undefined") {
+  const originalConsoleLog = console.log;
+  const originalConsoleWarn = console.warn;
+  const originalConsoleError = console.error;
+  const originalConsoleDebug = console.debug;
+  const originalConsoleInfo = console.info;
+
+  const suppressWorkbox = (originalMethod) => {
+    return function (...args) {
+      const message = args[0]?.toString() || "";
+      // Filter out workbox-related console messages
+      if (
+        message.includes("workbox") ||
+        message.includes("Workbox") ||
+        message.includes("WORKBOX") ||
+        args.some((arg) => {
+          const str = String(arg || "");
+          return (
+            str.includes("workbox") ||
+            str.includes("Workbox") ||
+            str.includes("WORKBOX")
+          );
+        })
+      ) {
+        return; // Suppress workbox logs
+      }
+      originalMethod.apply(console, args);
+    };
+  };
+
+  console.log = suppressWorkbox(originalConsoleLog);
+  console.warn = suppressWorkbox(originalConsoleWarn);
+  console.error = suppressWorkbox(originalConsoleError);
+  console.debug = suppressWorkbox(originalConsoleDebug);
+  console.info = suppressWorkbox(originalConsoleInfo);
+}
+
 // Import custom theme styles
 import "./styles/theme.css";
 // Import compact UI global styles

@@ -1,10 +1,10 @@
 /**
  * @file casbin-mysql-adapter-enhanced.js
  * @description Enhanced MySQL adapter for Casbin with caching, batch operations, and performance optimizations
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-01-XX
  * @version 2.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import databaseService from '../services/database.js';

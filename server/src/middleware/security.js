@@ -1,9 +1,9 @@
 /**
  * @file security.js
  * @description Security middleware and configuration for production-ready deployment
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-08
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import helmet from 'helmet'
@@ -17,10 +17,23 @@ const logger = createContextLogger('/server/src/middleware/security.js', 'Securi
 
 /**
  * Security Headers Configuration using Helmet
- * Implements OWASP security best practices
- *
+ * 
+ * Implements OWASP security best practices including:
+ * - Content Security Policy (CSP) to prevent XSS attacks
+ * - HTTP Strict Transport Security (HSTS) to enforce HTTPS
+ * - X-Frame-Options to prevent clickjacking
+ * - X-Content-Type-Options to prevent MIME sniffing
+ * - X-XSS-Protection for legacy browser support
+ * - Referrer Policy for privacy
+ * - Permissions Policy to restrict browser features
+ * 
  * @module securityHeaders
+ * @type {import('express').RequestHandler}
  * @see https://helmetjs.github.io/
+ * 
+ * @example
+ * // Mount as first middleware in Express app
+ * app.use(securityHeaders);
  */
 export const securityHeaders = helmet({
   // Content Security Policy
@@ -113,13 +126,22 @@ export const securityHeaders = helmet({
 // General API rate limiting
 /**
  * General API rate limiter middleware
- * Limits requests per IP to prevent abuse and brute-force attacks.
- *
+ * 
+ * Limits requests per IP address to prevent abuse and brute-force attacks.
+ * Configuration: 100 requests per 15 minutes per IP address.
+ * 
+ * When the limit is exceeded, returns HTTP 429 (Too Many Requests) with
+ * a standardized error response. Rate limit information is included in
+ * response headers (RateLimit-*).
+ * 
  * @name generalRateLimit
  * @type {import('express').RequestHandler}
+ * 
  * @example
- * // Mount as global middleware
- * app.use(generalRateLimit)
+ * // Mount as global middleware (after security headers, before routes)
+ * app.use(securityHeaders);
+ * app.use(generalRateLimit);
+ * app.use('/api', apiRoutes);
  */
 export const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

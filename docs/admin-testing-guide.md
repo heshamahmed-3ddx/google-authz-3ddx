@@ -105,7 +105,7 @@ server/src/config/casbin/users.json
 
 ## Restart After Changes
 ```bash
-cd /Users/heshamahmed/google-authz-3ddx
+cd /path/to/InsightHub
 npm run dev:server
 ```
 

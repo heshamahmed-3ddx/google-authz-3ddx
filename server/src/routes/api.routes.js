@@ -2,9 +2,9 @@
 /**
  * @file api.routes.js
  * @description Express router for user data, Google OAuth, Casbin RBAC, and health endpoints with enhanced logging.
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  *
  * This file defines all /api/* routes for the backend, including authentication, user details,
  * authorization, Google API integration, and system health. All endpoints use Zod validation and
@@ -445,7 +445,46 @@ router.get('/user/details', requireAuth, async (req, res) => {
       const admin = google.admin({ version: 'directory_v1', auth: client });
       
       // Get user details using admin.users.get
-      userRes = await admin.users.get({ userKey: userEmail });
+      // Note: This requires admin privileges or domain-wide delegation
+      try {
+        userRes = await admin.users.get({ userKey: userEmail });
+      } catch (adminError) {
+        // If Admin SDK fails (e.g., insufficient permissions), fall back to userinfo API
+        if (adminError.code === 400 || adminError.message?.includes('invalid_request') || 
+            adminError.code === 403 || adminError.message?.includes('insufficient')) {
+          logger.warn('Admin SDK access failed, falling back to userinfo API', {
+            userEmail,
+            error: adminError.message,
+            code: adminError.code
+          });
+          
+          // Fallback to userinfo API
+          const oauth2 = google.oauth2({ version: 'v2', auth: client });
+          const userInfoRes = await oauth2.userinfo.get();
+          
+          // Create a minimal userRes structure compatible with the rest of the code
+          userRes = {
+            data: {
+              primaryEmail: userInfoRes.data.email,
+              name: {
+                fullName: userInfoRes.data.name,
+                givenName: userInfoRes.data.given_name,
+                familyName: userInfoRes.data.family_name
+              },
+              emails: [{ address: userInfoRes.data.email, primary: true }],
+              photos: userInfoRes.data.picture ? [{ value: userInfoRes.data.picture }] : [],
+              orgUnitPath: '',
+              suspended: false,
+              archived: false
+            }
+          };
+          
+          logger.info('Using userinfo API fallback', { userEmail });
+        } else {
+          // Re-throw if it's a different error
+          throw adminError;
+        }
+      }
       
       // Log the full user response to see what's available
       logger.info('Google user data retrieved', {
@@ -613,6 +652,7 @@ router.get('/user/details', requireAuth, async (req, res) => {
         userEmail, 
         error: err.message,
         errorCode: err.code,
+        errorDetails: err.response?.data,
         stack: err.stack
       });
       
@@ -637,12 +677,27 @@ router.get('/user/details', requireAuth, async (req, res) => {
         });
       }
       
+      // Check if it's an invalid_request error (usually means insufficient permissions or wrong request format)
+      if (err.code === 400 || err.message?.includes('invalid_request')) {
+        const errorDetails = err.response?.data?.error?.message || err.message;
+        return res.status(400).json({
+          error: {
+            code: 'GOOGLE_API_ERROR',
+            http: 400,
+            message: 'Failed to fetch user details from Google Directory API',
+            details: errorDetails || 'Invalid request. This may be due to insufficient permissions. The Admin Directory API requires admin privileges or domain-wide delegation to be configured.',
+            hint: 'If you are not a Google Workspace admin, the application may need to be configured with domain-wide delegation to access user directory information.'
+          },
+          requestId: req.requestId || 'unknown'
+        });
+      }
+      
       return res.status(500).json({
         error: {
           code: 'GOOGLE_API_ERROR',
           http: 500,
           message: 'Failed to fetch user details from Google Directory API',
-          details: err.message
+          details: err.message || 'An unexpected error occurred while fetching user details'
         },
         requestId: req.requestId || 'unknown'
       });

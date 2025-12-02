@@ -688,11 +688,11 @@
 
               <!-- Created Time Column -->
               <template #[`item.createdTime`]="{ item }">
-                <div class="d-flex align-center">
+                <div class="d-flex align-center date-cell-content">
                   <v-icon size="x-small" class="mr-1" color="grey"
                     >mdi-calendar-outline</v-icon
                   >
-                  <span class="text-body-2">{{ item.createdTime }}</span>
+                  <span class="text-body-2 date-text">{{ item.createdTime }}</span>
                 </div>
               </template>
 
@@ -1170,70 +1170,70 @@ const compactStats = computed(() => {
   return [
     {
       key: 'all',
-      label: 'Total',
+      label: t('reports.surgicalGuide.summaryCards.total'),
       value: formatNumber(summary.value.totalOrders || 0),
       icon: 'mdi-cart-outline',
       color: 'primary'
     },
     {
       key: 'free',
-      label: 'Free',
+      label: t('reports.surgicalGuide.summaryCards.free'),
       value: formatNumber(summary.value.freeOrders || 0),
       icon: 'mdi-gift-outline',
       color: 'success'
     },
     {
       key: 'fullyPrepaid',
-      label: 'Prepaid',
+      label: t('reports.surgicalGuide.summaryCards.prepaid'),
       value: formatNumber(summary.value.fullyPrepaidOrders || 0),
       icon: 'mdi-ticket-confirmation-outline',
       color: 'info'
     },
     {
       key: 'fullyPostpaid',
-      label: 'Postpaid',
+      label: t('reports.surgicalGuide.summaryCards.postpaid'),
       value: formatNumber(summary.value.fullyPostpaidOrders || 0),
       icon: 'mdi-clock-outline',
       color: 'error'
     },
     {
       key: 'partiallyPostpaid',
-      label: 'Partial',
+      label: t('reports.surgicalGuide.summaryCards.partial'),
       value: formatNumber(summary.value.partiallyPostpaidOrders || 0),
       icon: 'mdi-cash-multiple',
       color: 'purple'
     },
     {
       key: 'vouchers',
-      label: 'Vouchers',
+      label: t('reports.surgicalGuide.summaryCards.vouchers'),
       value: formatNumber(vouchersUsedCount.value),
       icon: 'mdi-ticket-percent-outline',
       color: 'cyan'
     },
     {
       key: 'rush',
-      label: 'Rush',
+      label: t('reports.surgicalGuide.summaryCards.rush'),
       value: formatNumber(summary.value.rushOrders || 0),
       icon: 'mdi-fire',
       color: 'orange'
     },
     {
       key: 'onHold',
-      label: 'On Hold',
+      label: t('reports.surgicalGuide.summaryCards.onHold'),
       value: formatNumber(summary.value.onHoldOrders || 0),
       icon: 'mdi-pause-circle-outline',
       color: 'error'
     },
     {
       key: 'confirmed',
-      label: 'Confirmed',
+      label: t('reports.surgicalGuide.summaryCards.confirmed'),
       value: formatNumber(summary.value.confirmedOrders || 0),
       icon: 'mdi-check-circle-outline',
       color: 'grey'
     },
     {
       key: 'active',
-      label: 'Active',
+      label: t('reports.surgicalGuide.summaryCards.active'),
       value: formatNumber(summary.value.activeOrders || 0),
       icon: 'mdi-play-circle-outline',
       color: 'success'
@@ -1303,7 +1303,8 @@ const computedTableHeaders = computed(() => [
     key: "createdTime",
     value: "createdTime",
     sortable: true,
-    width: "130px",
+    width: "180px",
+    minWidth: "160px",
   },
 ]);
 
@@ -3398,6 +3399,27 @@ onMounted(async () => {
   font-size: 0.8rem !important;
   height: 32px !important;
   line-height: 1.2;
+}
+
+/* Date column - prevent text wrapping */
+.ultra-compact-table :deep(tbody td:nth-child(8)),
+.ultra-compact-table :deep(.v-data-table__td[data-column-key="createdTime"]),
+.ultra-compact-table :deep(thead th:nth-child(8)) {
+  white-space: nowrap !important;
+  min-width: 160px !important;
+  width: 180px !important;
+}
+
+.date-cell-content {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  min-width: 0;
+}
+
+.date-text {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 /* Compact Icons in Table */

@@ -1,8 +1,8 @@
-# 3D Diagnostix Authorization API Documentation
+# InsightHub Authorization API Documentation
 
 ## Overview
 
-The 3D Diagnostix Authorization API provides enterprise-grade authentication and authorization services for the platform. It integrates Google Workspace SSO with Casbin-based RBAC (Role-Based Access Control) to deliver comprehensive security and audit capabilities.
+The InsightHub Authorization API provides enterprise-grade authentication and authorization services for the platform. It integrates Google Workspace SSO with Casbin-based RBAC (Role-Based Access Control) to deliver comprehensive security and audit capabilities.
 
 ## Table of Contents
 
