@@ -171,7 +171,7 @@ cd tests && node demo-access-control.js
 
 ### Navigation Structure
 ```
-📁 3D Diagnostix Authorization System
+📁 InsightHub Authorization System
 ├── 🏠 Home
 ├── 👥 User Management
 │   ├── Users

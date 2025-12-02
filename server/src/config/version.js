@@ -1,10 +1,10 @@
 /**
  * @file version.js
  * @description Application version management and tracking
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-20
  * @version 1.2.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 /**

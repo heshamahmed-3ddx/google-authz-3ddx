@@ -58,6 +58,10 @@ export default defineConfig({
         link: '/deployment',
       },
       {
+        text: 'Monitoring & Observability',
+        link: '/monitoring',
+      },
+      {
         text: 'Security',
         collapsed: false,
         items: [

@@ -35,9 +35,9 @@ export default {
   templates: {
     cleverLinks: false,
     monospaceLinks: false,
-    systemName: '3D Diagnostix Google OAuth & Casbin RBAC',
-    footer: '© 2025 3D Diagnostix, Inc. All rights reserved.',
-    copyright: '3D Diagnostix Development Team',
+    systemName: 'InsightHub - Authorization & Analytics Platform',
+    footer: '© 2025 InsightHub. All rights reserved.',
+    copyright: 'InsightHub Development Team',
     includeDate: true,
     navType: 'vertical',
     theme: 'default',
@@ -68,16 +68,16 @@ export default {
     ],
     disqus: false,
     openGraph: {
-      title: '3D Diagnostix API Documentation',
+      title: 'InsightHub API Documentation',
       type: 'website',
       image: './docs/assets/logo.png',
-      site_name: '3D Diagnostix',
-      url: 'https://docs.3ddiagnostix.com'
+      site_name: 'InsightHub',
+      url: 'https://docs.insighthub.com'
     },
     meta: {
-      title: '3D Diagnostix Google OAuth & Casbin RBAC API',
-      description: 'Comprehensive API documentation for Google OAuth integration with Casbin RBAC system',
-      keyword: 'API, OAuth, Google, Casbin, RBAC, Authentication, Authorization'
+      title: 'InsightHub - Authorization & Analytics Platform API',
+      description: 'Comprehensive API documentation for InsightHub authorization and analytics platform with Google OAuth and Casbin RBAC',
+      keyword: 'API, OAuth, Google, Casbin, RBAC, Authentication, Authorization, Analytics, InsightHub'
     },
     search: true,
     collapse: false,

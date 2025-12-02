@@ -5,6 +5,7 @@
   },
   "app": {
     "title": "InsightHub",
+    "navigation": "App Navigation",
     "apiResponse": "API Response",
     "apiError": "API Error",
     "copyUserIdSuccess": "User ID copied to clipboard",
@@ -276,6 +277,11 @@
     "roles": "Roles"
   },
   "nav": {
+    "navigation": "Navigation",
+    "quickAccess": "Quick access to all features",
+    "searchPlaceholder": "Search navigation...",
+    "noResults": "No results found",
+    "noResultsSubtitle": "Try adjusting your search terms",
     "home": "Home",
     "dashboard": "Dashboard",
     "profile": "Profile",
@@ -308,6 +314,18 @@
       "verifyingAccess": "Verifying Access",
       "checkingPermissions": "Checking your permissions...",
       "summary": "Summary",
+      "summaryCards": {
+        "total": "Total",
+        "free": "Free",
+        "prepaid": "Prepaid",
+        "postpaid": "Postpaid",
+        "partial": "Partial",
+        "vouchers": "Vouchers",
+        "rush": "Rush",
+        "onHold": "On Hold",
+        "confirmed": "Confirmed",
+        "active": "Active"
+      },
   "apiDocs": "API Documentation",
   "reportFeatureDoc": "Report Feature Doc",
   "accessDenied": "Access Denied",

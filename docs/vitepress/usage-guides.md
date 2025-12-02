@@ -118,7 +118,10 @@ const handleLogout = async () => {
 
 ### 1. Understanding the Navigation
 
-The application uses a hierarchical navigation system inspired by Oracle Fusion.
+The application uses a hierarchical navigation system inspired by Oracle Fusion. The system supports two navigation components:
+
+- **NavigationSidebar** - Traditional sidebar navigation (desktop)
+- **OverlaySidebar** - Full-screen overlay navigation (mobile/tablet)
 
 **Navigation Structure:**
 
@@ -139,6 +142,52 @@ The application uses a hierarchical navigation system inspired by Oracle Fusion.
 └── System
     ├── Settings
     └── Logs
+```
+
+### 1.1 OverlaySidebar Navigation
+
+The `OverlaySidebar` component provides a full-screen navigation experience:
+
+**Features:**
+- Full-screen overlay with backdrop
+- User profile display (avatar, name, job title)
+- Search functionality to filter navigation items
+- Grid-based layout for navigation items
+- Section headers for navigation groups
+- RTL support
+- Mobile-optimized with safe area support
+
+**Opening the Overlay:**
+```vue
+<template>
+  <v-btn @click="showOverlay = true">
+    Open Navigation
+  </v-btn>
+  <OverlaySidebar v-model="showOverlay" />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import OverlaySidebar from '@/components/OverlaySidebar.vue';
+
+const showOverlay = ref(false);
+</script>
+```
+
+**Search Functionality:**
+- Search by route name (e.g., "dashboard", "reports")
+- Search by localized navigation title
+- Real-time filtering as you type
+- Shows "No results found" message when empty
+- Smart section header display (only shows if section or children match)
+
+**Example:**
+```javascript
+// User types "report" in search
+// Shows:
+// - Reports → Surgical Guide Report
+// - Financial Reports
+// - All items with "report" in route or title
 ```
 
 ### 2. Adding New Routes
@@ -183,7 +232,7 @@ const data = ref([]);
 
 ### 3. Permission-Based Navigation
 
-Routes are automatically filtered based on user groups:
+Routes are automatically filtered based on user groups. Both `NavigationSidebar` and `OverlaySidebar` use the same permission system:
 
 ```javascript
 // User with ['Finance22'] group sees:
@@ -195,6 +244,12 @@ Routes are automatically filtered based on user groups:
 // User with ['admin'] group sees:
 - Everything (admin has access to all routes)
 ```
+
+**Navigation Filtering:**
+- Navigation items are filtered based on user groups
+- Section headers only appear if they have visible children
+- Search respects permission filtering
+- Empty sections are automatically hidden
 
 ### 4. Programmatic Navigation
 
@@ -511,16 +566,24 @@ See [Dev Mode Guide](./DEV_MODE_GUIDE.md) for detailed documentation.
 ### 2. Filtering Reports
 
 **Date Range:**
+- Dates must be in `YYYY-MM-DD` format
+- Date picker automatically formats dates correctly
+- Both start and end dates are required
+
 ```vue
 <v-date-picker
   v-model="startDate"
   label="Start Date"
+  format="YYYY-MM-DD"
 />
 <v-date-picker
   v-model="endDate"
   label="End Date"
+  format="YYYY-MM-DD"
 />
 ```
+
+**Note:** The application automatically formats dates to `YYYY-MM-DD` format before sending API requests to ensure compatibility.
 
 **Order Type:**
 ```vue
@@ -544,17 +607,33 @@ See [Dev Mode Guide](./DEV_MODE_GUIDE.md) for detailed documentation.
 
 Reports use server-side pagination for performance:
 
+**Default Settings:**
+- **Items per page**: 10 (default)
+- **Page display**: Shows "Page X of Y" format
+- **Server-side**: All pagination is handled server-side for optimal performance
+
+**Features:**
+- Change items per page using the dropdown (10, 25, 50, 100)
+- Navigate between pages using pagination controls
+- Current page and total pages are displayed in the footer
+- Pagination resets to page 1 when filters change
+
 ```javascript
 // Default: 10 items per page
 const itemsPerPage = ref(10);
-const page = ref(1);
+const currentPage = ref(1);
 
-// Change items per page
+// Change items per page (resets to page 1)
 itemsPerPage.value = 25;
 
-// Go to specific page
-page.value = 3;
+// Navigate to specific page
+currentPage.value = 3;
 ```
+
+**Pagination Display:**
+- Footer shows: "Page X of Y" where X is current page and Y is total pages
+- Total items count is also displayed
+- Pagination controls include first, previous, next, and last page buttons
 
 ### 4. Exporting Data
 
@@ -923,9 +1002,32 @@ locale.value = 'en';
   "dashboard": {
     "title": "Dashboard",
     "greeting": "Hello, {name}"
+  },
+  "nav": {
+    "navigation": "Navigation",
+    "searchPlaceholder": "Search navigation...",
+    "noResults": "No results found",
+    "noResultsSubtitle": "Try adjusting your search terms",
+    "logout": "Logout",
+    "settings": "Settings"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "reports": "Reports"
   }
 }
 ```
+
+**New Navigation Translation Keys:**
+- `nav.navigation` - "Navigation" title
+- `nav.searchPlaceholder` - Search input placeholder
+- `nav.noResults` - "No results found" message
+- `nav.noResultsSubtitle` - "Try adjusting your search terms"
+- `nav.logout` - Logout button text
+- `nav.settings` - Settings button text
+- `navigation.*` - All navigation item titles (e.g., `navigation.home`, `navigation.dashboard`)
 
 **Use in Components:**
 ```vue
@@ -949,14 +1051,50 @@ const { t } = useI18n();
 ```javascript
 import { useI18n } from 'vue-i18n';
 import { watch } from 'vue';
+import { isRTL as checkRTL } from '@/i18n';
 
 const { locale } = useI18n();
 
+// Check if current locale is RTL
+const isRTL = computed(() => checkRTL(locale.value));
+
 watch(locale, (newLocale) => {
-  const isRTL = newLocale === 'ar';
+  const isRTL = checkRTL(newLocale);
   document.dir = isRTL ? 'rtl' : 'ltr';
 });
 ```
+
+**RTL Support in Components:**
+
+**OverlaySidebar RTL:**
+- Automatic direction switching
+- Close button positioned on left in RTL mode
+- Text alignment adjusts automatically
+- Navigation grid maintains proper layout
+- Profile section and footer adapt to RTL
+
+```vue
+<template>
+  <OverlaySidebar 
+    v-model="showOverlay"
+    :class="{ 'rtl-overlay': isRTL }"
+  />
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { isRTL as checkRTL } from '@/i18n';
+
+const { locale } = useI18n();
+const isRTL = computed(() => checkRTL(locale.value));
+</script>
+```
+
+**RTL Text Alignment:**
+- Use `text-align: start` instead of `left` or `right`
+- Use `margin-inline-start` and `margin-inline-end` instead of `margin-left` and `margin-right`
+- Use `padding-inline-start` and `padding-inline-end` for padding
 
 ---
 

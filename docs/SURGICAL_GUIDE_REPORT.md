@@ -6,7 +6,7 @@ The Surgical Guide Report is a comprehensive, modern reporting interface that co
 
 ### Key Features
 - ✅ **Date Range Filtering**: Select custom date ranges (up to 1 year)
-- ✅ **Responsive Data Table**: Sortable columns with pagination
+- ✅ **Responsive Data Table**: Sortable columns with pagination (default: 10 items per page)
 - ✅ **Summary Statistics**: Total cases, costs, averages, doctor counts
 - ✅ **Doctor Breakdown**: Per-doctor analytics and performance metrics
 - ✅ **CSV Export**: Download report data for external analysis
@@ -14,6 +14,11 @@ The Surgical Guide Report is a comprehensive, modern reporting interface that co
 - ✅ **API Documentation**: Swagger docs for Developers22 group
 - ✅ **Mobile Responsive**: Works on all screen sizes
 - ✅ **Version Tracking**: v1.1.0 displayed in footer
+- ✅ **Localized Summary Cards**: All summary card labels use i18n
+- ✅ **Date Column Width**: Optimized width (180px) to prevent text wrapping
+- ✅ **Custom Pagination Display**: "Page X of Y" format
+- ✅ **Date Format Validation**: Automatic YYYY-MM-DD formatting
+- ✅ **Prometheus Metrics**: Performance monitoring integration
 
 ---
 
@@ -223,7 +228,7 @@ GET /surgical_guide
 | startDate | string | Yes | Start date (YYYY-MM-DD) |
 | endDate | string | Yes | End date (YYYY-MM-DD) |
 | page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 50, max: 100) |
+| limit | integer | No | Items per page (default: 10, max: 100) |
 | sortBy | string | No | Sort field (default: 'date') |
 | sortOrder | string | No | Sort order: 'asc' or 'desc' (default: 'desc') |
 
@@ -245,7 +250,7 @@ GET /surgical_guide
   ],
   "pagination": {
     "page": 1,
-    "limit": 50,
+    "limit": 10,
     "total": 150,
     "totalPages": 3,
     "hasNextPage": true,
@@ -576,7 +581,7 @@ For questions or issues:
 1. Check the troubleshooting section above
 2. Review server logs: `server/logs/`
 3. Check browser console for frontend errors
-4. Contact the 3D Diagnostix development team
+4. Contact the InsightHub development team
 
 ---
 
@@ -605,4 +610,4 @@ For questions or issues:
 
 ---
 
-**Built with ❤️ by 3D Diagnostix Development Team**
+**Built with ❤️ by InsightHub Development Team**

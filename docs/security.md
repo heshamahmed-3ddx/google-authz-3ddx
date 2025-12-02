@@ -1,7 +1,7 @@
 # Security Considerations
 
 ## Overview
-This document summarizes the security measures and best practices implemented in the Google AuthZ 3DDX platform.
+This document summarizes the security measures and best practices implemented in the InsightHub platform.
 
 ---
 

@@ -1,8 +1,8 @@
-# Google AuthZ 3DDX Documentation
+# InsightHub Documentation
 
 ## Overview
 
-This directory contains comprehensive documentation for the Google AuthZ 3DDX project, a full-stack demonstration of Google OAuth 2.0 authorization flows.
+This directory contains comprehensive documentation for the InsightHub project, a full-stack enterprise platform with Google OAuth 2.0 authorization flows.
 
 ## Documentation Structure
 

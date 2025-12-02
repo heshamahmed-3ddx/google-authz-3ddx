@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the comprehensive security measures implemented in the 3D Diagnostix Authorization System for production deployment.
+This document outlines the comprehensive security measures implemented in the InsightHub Authorization System for production deployment.
 
 ## Security Features
 

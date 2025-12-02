@@ -20,27 +20,31 @@ You now have a **complete, production-ready sidebar navigation system** inspired
 - **6 user types tested**: Admin, SWD, Regular, Finance, Contractor, Suspended
 - **Seamless integration** with existing Casbin policies
 
-### 3. **Oracle Fusion Design** ✅
-- **Modern dark theme** with smooth gradients
-- **Rail mode** - collapsible to icon-only view
-- **Active route highlighting** with blue accent
-- **Smooth animations** and transitions
+### 3. **Static Design Philosophy** ✅
+- **Modern theme support** (light/dark) with static styling
+- **Rail mode** - collapsible to icon-only view (NavigationSidebar)
+- **Active route highlighting** with brand orange accent
+- **Static design** - No animations or hover effects
 - **Responsive design** - works on desktop, tablet, mobile
+- **OverlaySidebar** - Full-screen overlay navigation for mobile/tablet
 
 ### 4. **User Experience** ✅
-- **User profile section** with avatar and role badge
+- **User profile section** with avatar, name, and job title
 - **Badge notifications** (e.g., "New", "5 pending")
 - **Breadcrumb navigation** for context
-- **Tooltips in rail mode**
+- **Tooltips in rail mode** (NavigationSidebar)
+- **Search functionality** (OverlaySidebar) - Filter navigation items
+- **Grid-based layout** (OverlaySidebar) - Responsive navigation grid
 - **Quick logout access**
 
 ---
 
 ## 📁 Files Created/Modified
 
-### New Files (7)
-1. `client/src/components/NavigationSidebar.vue` - Main sidebar component (450+ lines)
-2. `client/src/config/navigationConfig.js` - Navigation structure & utilities (600+ lines)
+### New Files (8)
+1. `client/src/components/NavigationSidebar.vue` - Desktop sidebar component (450+ lines)
+2. `client/src/components/OverlaySidebar.vue` - Mobile/tablet overlay navigation (1000+ lines)
+3. `client/src/config/navigationConfig.js` - Navigation structure & utilities (600+ lines)
 3. `client/src/views/PlaceholderView.vue` - Generic placeholder template (250+ lines)
 4. `client/scripts/create-views.sh` - Script to generate view files
 5. `docs/NAVIGATION-SYSTEM.md` - Comprehensive documentation (600+ lines)
@@ -126,7 +130,7 @@ node demo-access-control.js
 Click the menu button in the sidebar header to toggle between full and icon-only modes.
 
 ### 2. Active Route Highlighting
-Current page is highlighted with a blue accent on the left border.
+Current page is highlighted with a brand orange accent (#ff6f00) on the left border.
 
 ### 3. Hierarchical Menus
 Click on any menu group to expand/collapse child items.
@@ -287,9 +291,10 @@ node demo-access-control.js
 
 ### 🚀 Performance
 - Fast permission filtering (cached)
-- Smooth animations (60fps)
+- Static design (no animations, optimized rendering)
 - Lazy-loaded routes (code splitting)
 - Optimized bundle size
+- Efficient search filtering (OverlaySidebar)
 
 ---
 

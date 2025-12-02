@@ -1,10 +1,10 @@
 /**
  * @file surgicalGuideOrders.service.js
  * @description Business logic service for surgical guide reports
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import surgicalGuideOrdersModel from '../models/surgicalGuideOrders.model.js';
@@ -102,10 +102,23 @@ class SurgicalGuideOrdersService {
   /**
    * Get report summary statistics
    * 
-   * @param {string} startDate - Start date (YYYY-MM-DD)
-   * @param {string} endDate - End date (YYYY-MM-DD)
-   * @returns {Promise<Object>} Summary statistics
+   * Retrieves aggregated statistics for the specified date range including:
+   * total orders, postpaid orders, fully prepaid orders, free orders, rush orders,
+   * on-hold orders, confirmed orders, and active orders.
+   * 
+   * @param {string} startDate - Start date in YYYY-MM-DD format
+   * @param {string} endDate - End date in YYYY-MM-DD format
+   * @returns {Promise<Object>} Summary statistics object
+   * @returns {number} returns.totalOrders - Total number of orders
+   * @returns {number} returns.postpaidOrders - Number of postpaid orders
+   * @returns {number} returns.fullyPrepaidOrders - Number of fully prepaid orders
+   * @returns {number} returns.freeOrders - Number of free orders
+   * @returns {number} returns.rushOrders - Number of rush orders
+   * @returns {number} returns.onHoldOrders - Number of on-hold orders
+   * @returns {number} returns.confirmedOrders - Number of confirmed orders
+   * @returns {number} returns.activeOrders - Number of active orders
    * @throws {Error} If dates are invalid or query fails
+   * @throws {Error} If date range validation fails
    */
   async getSummary(startDate, endDate) {
     try {
@@ -151,8 +164,24 @@ class SurgicalGuideOrdersService {
   /**
    * Get complete report with all data (main report + summary)
    * 
+   * Fetches both paginated report data and summary statistics in parallel
+   * for optimal performance. Returns a combined object with all report information.
+   * 
    * @param {Object} params - Request parameters
-   * @returns {Promise<Object>} Complete report data
+   * @param {string} params.startDate - Start date in YYYY-MM-DD format
+   * @param {string} params.endDate - End date in YYYY-MM-DD format
+   * @param {number} [params.page=1] - Page number for pagination
+   * @param {number} [params.limit=10] - Items per page
+   * @param {string} [params.sortBy='date'] - Field to sort by
+   * @param {string} [params.sortOrder='desc'] - Sort order (asc/desc)
+   * @param {string} [params.searchQuery=''] - Search query string
+   * @param {string} [params.orderTypeFilter='all'] - Filter by order type
+   * @returns {Promise<Object>} Complete report object
+   * @returns {Array} returns.data - Paginated report data
+   * @returns {Object} returns.pagination - Pagination metadata
+   * @returns {Object} returns.summary - Summary statistics
+   * @returns {string} returns.generatedAt - ISO timestamp of report generation
+   * @returns {Object} returns.dateRange - Date range used for the report
    * @throws {Error} If parameters are invalid or query fails
    */
   async getCompleteReport(params) {
@@ -200,10 +229,17 @@ class SurgicalGuideOrdersService {
   /**
    * Export report to CSV format
    * 
-   * @param {string} startDate - Start date (YYYY-MM-DD)
-   * @param {string} endDate - End date (YYYY-MM-DD)
-   * @returns {Promise<string>} CSV data
+   * Generates a CSV file containing all report data for the specified date range.
+   * Includes all order details, payment information, status, and timestamps.
+   * 
+   * @param {string} startDate - Start date in YYYY-MM-DD format
+   * @param {string} endDate - End date in YYYY-MM-DD format
+   * @returns {Promise<string>} CSV formatted string with headers and data
    * @throws {Error} If dates are invalid or export fails
+   * @throws {Error} If date range validation fails
+   * @example
+   * const csv = await service.exportToCSV('2024-01-01', '2024-12-31');
+   * // Returns: "ID,Cost,Amount Paid,...\n1,100.00,50.00,...\n..."
    */
   async exportToCSV(startDate, endDate) {
     try {

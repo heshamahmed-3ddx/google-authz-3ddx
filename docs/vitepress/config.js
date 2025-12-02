@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: '3DDX Client Documentation',
+  title: 'InsightHub Client Documentation',
   description: 'Documentation for the Vue.js client application and components',
   themeConfig: {
     nav: [

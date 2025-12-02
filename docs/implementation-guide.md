@@ -1,8 +1,8 @@
-# Implementation Specifications - Google AuthZ 3DDX
+# Implementation Specifications - InsightHub
 
 ## 🎯 Detailed Implementation Guide
 
-This document provides specific implementation details for transforming the current OAuth demo into a production-ready system meeting all 3D Diagnostix requirements.
+This document provides specific implementation details for transforming the current OAuth demo into a production-ready system meeting all InsightHub requirements.
 
 ## 📝 Phase 1: Foundation & Logging
 
@@ -271,9 +271,9 @@ async function fetchGoogleProfile(accessToken) {
 /**
  * @file auth.js
  * @description Google OAuth authentication routes and session management
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub, Inc. All rights reserved.
  */
 ```
 
@@ -407,4 +407,4 @@ LOG_LEVEL=info
 - [ ] Rollback procedures documented
 - [ ] Load testing completed
 
-This implementation guide provides the roadmap to transform your working OAuth demo into a production-ready enterprise authentication and authorization system that fully satisfies the 3D Diagnostix requirements.
+This implementation guide provides the roadmap to transform your working OAuth demo into a production-ready enterprise authentication and authorization system that fully satisfies the InsightHub requirements.

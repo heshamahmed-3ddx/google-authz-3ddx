@@ -1,7 +1,7 @@
-# Reuse Guide: Using Google AuthZ 3DDX for Future Projects
+# Reuse Guide: Using InsightHub for Future Projects
 
 ## Overview
-This guide explains how to adapt and reuse the Google AuthZ 3DDX authentication and authorization system for other applications or organizations.
+This guide explains how to adapt and reuse the InsightHub authentication and authorization system for other applications or organizations.
 
 ---
 
@@ -17,7 +17,7 @@ This guide explains how to adapt and reuse the Google AuthZ 3DDX authentication 
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/heshamahmed-3ddx/google-authz-3ddx.git
+git clone <repository-url>
 ```
 
 ### Step 2: Update Branding & UI

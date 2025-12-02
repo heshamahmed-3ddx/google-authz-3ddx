@@ -1,9 +1,9 @@
 /**
  * @file logging.js
  * @description Structured logging service with pino for audit trails and compliance
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import pino from 'pino';

@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: 3D Diagnostix Authorization API
+  title: InsightHub Authorization API
   description: |
-    Enterprise-grade authentication and authorization system for 3D Diagnostix platform.
+    Enterprise-grade authentication and authorization system for InsightHub platform.
     
     ## Features
     - Google Workspace SSO authentication
@@ -27,7 +27,7 @@ info:
     - Authorization decisions and resource access
   version: 1.0.0
   contact:
-    name: 3D Diagnostix Development Team
+    name: InsightHub Development Team
     email: dev@3ddiagnostix.com
   license:
     name: Proprietary
@@ -592,5 +592,5 @@ tags:
     description: Health checks and system status endpoints
 
 externalDocs:
-  description: 3D Diagnostix Developer Documentation
+  description: InsightHub Developer Documentation
   url: https://docs.3ddiagnostix.com

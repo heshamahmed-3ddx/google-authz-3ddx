@@ -261,6 +261,36 @@ When rate limit is exceeded:
 }
 ```
 
+## Monitoring & Metrics
+
+### Prometheus Metrics Endpoint
+
+```http
+GET /metrics
+Authorization: Optional (Bearer token if configured)
+```
+
+**Response:**
+- **Content-Type**: `text/plain; version=0.0.4; charset=utf-8`
+- **Format**: Prometheus exposition format
+
+**Available Metrics:**
+- `sg_report_db_query_duration_seconds` - Database query execution time (histogram)
+- `sg_report_api_fulfillment_duration_seconds` - End-to-end API latency (histogram)
+- Default Node.js metrics (CPU, memory, event loop, GC, etc.)
+
+**Example:**
+```bash
+curl http://localhost:3001/metrics
+```
+
+**Configuration:**
+- Enable/disable via `PROMETHEUS_ENABLED` environment variable
+- Optional authentication via `PROMETHEUS_BEARER_TOKEN`
+- Custom path via `PROMETHEUS_METRICS_PATH` (default: `/metrics`)
+
+For detailed monitoring documentation, see [Monitoring & Observability](./monitoring).
+
 ## Swagger Documentation
 
 Interactive API documentation is available at:
@@ -285,6 +315,7 @@ CORS is configured to allow:
 
 ## Next Steps
 
-- [Security Guide](./security.md)
-- [Deployment Guide](./deployment.md)
-- [Architecture Overview](./architecture.md)
+- [Security Guide](./security)
+- [Deployment Guide](./deployment)
+- [Monitoring & Observability](./monitoring)
+- [Architecture Overview](./architecture)

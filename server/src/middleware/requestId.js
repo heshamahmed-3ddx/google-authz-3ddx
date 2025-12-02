@@ -1,9 +1,9 @@
 /**
  * @file requestId.js
  * @description Request ID middleware for correlating requests across frontend/backend
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-07
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import { v4 as uuidv4 } from 'uuid';

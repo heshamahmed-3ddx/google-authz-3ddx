@@ -126,6 +126,93 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 
 ---
 
+### OverlaySidebar.vue
+
+**Location:** `client/src/components/OverlaySidebar.vue`
+
+**Purpose:** Full-screen overlay navigation sidebar for mobile and desktop experiences
+
+**Props:**
+```typescript
+{
+  modelValue: boolean  // Controls overlay visibility
+}
+```
+
+**Events:**
+- `update:modelValue` - Emitted when overlay should close/open
+
+**Features:**
+- Full-screen overlay with backdrop (using Vuetify `v-overlay`)
+- User profile section with avatar, name, job title, and logout button
+- Search functionality to filter navigation items by route name or localized title
+- Grid-based navigation layout with responsive columns
+- Section headers for navigation groups
+- RTL support for Arabic and other RTL languages
+- Safe area support for mobile devices (notches, home indicators)
+- Text selection protection - doesn't close when selecting text
+- No results message when search returns empty
+- Static design - no animations or hover effects
+- Uses Vuetify components (`v-list-item`, `v-list-subheader`, `v-card`)
+
+**Usage:**
+```vue
+<template>
+  <OverlaySidebar v-model="showOverlay" />
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import OverlaySidebar from '@/components/OverlaySidebar.vue';
+
+const showOverlay = ref(false);
+
+// Open overlay
+const openNavigation = () => {
+  showOverlay.value = true;
+};
+
+// Close overlay (also closes on backdrop click or close button)
+const closeNavigation = () => {
+  showOverlay.value = false;
+};
+</script>
+```
+
+**Technical Details:**
+- Uses `Teleport` to render in body
+- Uses Vuetify `v-overlay` for backdrop with `@click:outside` handler
+- Uses `v-card` for content container
+- Uses `v-list-item` for navigation items in a grid layout
+- Uses `v-list-subheader` for section headers
+- Profile picture with fallback to initials if image fails
+- Search filters by route path and localized navigation title
+- Grid layout: 1 column (mobile), 2-3 columns (tablet), 3-4 columns (desktop)
+- Content max-width: 1200px (centered)
+- Bottom safe space: 48px minimum (plus safe area insets)
+
+**Styling:**
+- **No animations** - completely static design
+- **No hover effects** - clean, minimal interaction
+- Compact spacing and typography
+- Brand orange color scheme (#ff6f00)
+- Full-width overlay with centered content
+- Custom scrollbar styling
+
+**RTL Support:**
+- Automatic direction switching for RTL languages
+- Close button positioned on left in RTL mode
+- Text alignment adjusts automatically
+- Navigation grid maintains proper layout
+
+**Accessibility:**
+- Keyboard support (Escape key closes overlay)
+- ARIA labels via Vuetify components
+- Focus management
+- Screen reader friendly
+
+---
+
 ### DevToolbar.vue
 
 **Location:** `client/src/components/DevToolbar.vue`
@@ -136,10 +223,14 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 - None (uses `useDevModeStore()`)
 
 **Features:**
-- Admin view toggle
-- Simulated group membership
-- Dev mode indicator
-- Only visible in development
+- Admin view toggle with visual indicator
+- Simulated group membership with count badge
+- Groups section showing all simulated groups
+- VitePress documentation button (links to docs)
+- Compact, modern design
+- Status indicators (card-style display)
+- Control buttons for Admin View and Groups
+- Only visible in development mode
 
 **Usage:**
 ```vue
@@ -159,9 +250,32 @@ const isDevelopment = import.meta.env.DEV;
 import { useDevModeStore } from '@/stores/devMode';
 
 const devMode = useDevModeStore();
+
+// Toggle admin view
 devMode.toggleAdminView();
+
+// Add simulated group
 devMode.addSimulatedGroup('Finance22');
+
+// Remove simulated group
+devMode.removeSimulatedGroup('Finance22');
+
+// Clear all simulated groups
+devMode.clearSimulatedGroups();
+
+// Check current state
+const isAdminView = devMode.adminViewEnabled;
+const simulatedGroups = devMode.simulatedGroups;
 ```
+
+**UI Features:**
+- Floating button with tooltip
+- Menu card with header (avatar + title)
+- Status indicators showing active states
+- Groups section with count badge
+- Control buttons for toggles
+- Documentation section with links
+- Compact design with reduced spacing
 
 ---
 
@@ -262,13 +376,27 @@ const loadUsers = async () => {
 **Purpose:** Financial report for surgical guide cases
 
 **Features:**
-- Date range filtering
+- Date range filtering (YYYY-MM-DD format)
 - Search functionality
-- Pagination (server-side)
+- Server-side pagination (default: 10 items per page)
+- Custom pagination display ("Page X of Y")
 - CSV export
 - Order type filtering
 - Expandable row details
 - Access control (Finance22 or admin only)
+- **Localized summary cards** - All summary card labels use i18n
+- **Date column width** - Optimized width (180px) to prevent text wrapping
+
+**Pagination:**
+- Default items per page: 10
+- Configurable: 10, 25, 50, 100 items per page
+- Server-side pagination for optimal performance
+- Custom footer display showing current page and total pages
+
+**Date Formatting:**
+- Dates automatically formatted to YYYY-MM-DD before API requests
+- Date picker ensures correct format
+- Validates date format on both frontend and backend
 
 **Route:**
 ```javascript

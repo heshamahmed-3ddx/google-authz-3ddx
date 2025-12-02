@@ -1,10 +1,10 @@
 /**
  * @file logger.js
  * @description Enhanced logging system with file/line tracking and specific format
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-20
  * @version 1.2.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import { createLogger, format, transports } from 'winston';
@@ -86,7 +86,23 @@ export const logger = createLogger({
 });
 
 /**
- * Enhanced logging function with automatic file/line detection and critical/important filtering
+ * Create a context-aware logger instance with automatic file/line tracking
+ * 
+ * This function creates a logger wrapper that automatically includes filename and line number
+ * information in log entries. It filters non-critical info-level logs to reduce noise.
+ * 
+ * @param {string} filename - Full path or filename for logging context
+ * @param {string|null} [functionName=null] - Optional function name for additional context
+ * @returns {Object} Logger object with info, warn, error, and debug methods
+ * @returns {Function} returns.info - Log info-level messages (filtered for critical events only)
+ * @returns {Function} returns.warn - Log warning messages
+ * @returns {Function} returns.error - Log error messages with stack trace
+ * @returns {Function} returns.debug - Log debug messages (development only)
+ * 
+ * @example
+ * const logger = createContextLogger(__filename, 'myFunction');
+ * logger.info('System initialized'); // Only logs if message contains critical keywords
+ * logger.error('Operation failed', { error: err.message });
  */
 export function createContextLogger(filename, functionName = null) {
   // Use static string for Jest compatibility
@@ -162,7 +178,16 @@ export function createContextLogger(filename, functionName = null) {
 }
 
 /**
- * Determine if a log message is critical/important enough to show
+ * Determine if a log message is critical/important enough to show at info level
+ * 
+ * Filters out non-critical info-level logs to reduce log noise. Only messages
+ * containing critical keywords related to system events, authentication, security,
+ * or business logic are logged at info level.
+ * 
+ * @param {string} message - Log message to check
+ * @param {string} level - Log level (currently only 'info' is filtered)
+ * @returns {boolean} True if message should be logged, false otherwise
+ * @private
  */
 function isCriticalLog(message, level) {
   const criticalKeywords = [
@@ -177,7 +202,18 @@ function isCriticalLog(message, level) {
 }
 
 /**
- * Request logging middleware with enhanced details
+ * Express middleware for HTTP request logging with enhanced details
+ * 
+ * Logs HTTP requests with method, URL, status code, duration, and user context.
+ * Only logs critical requests (auth, API, admin) to reduce log volume.
+ * 
+ * @param {import('express').Request} req - Express request object
+ * @param {import('express').Response} res - Express response object
+ * @param {import('express').NextFunction} next - Express next middleware function
+ * @returns {void}
+ * 
+ * @example
+ * app.use(requestLogger);
  */
 export function requestLogger(req, res, next) {
   const startTime = Date.now();
@@ -218,7 +254,14 @@ export function requestLogger(req, res, next) {
 }
 
 /**
- * Determine if a request is critical enough to log
+ * Determine if a request URL is critical enough to log at info level
+ * 
+ * Filters requests to only log those related to authentication, authorization,
+ * admin operations, or system health checks.
+ * 
+ * @param {string} url - Request URL to check
+ * @returns {boolean} True if request should be logged, false otherwise
+ * @private
  */
 function isCriticalRequest(url) {
   const criticalPaths = [
@@ -230,7 +273,21 @@ function isCriticalRequest(url) {
 }
 
 /**
- * User access logging for audit trail
+ * Log user access events for audit trail
+ * 
+ * Records user actions such as login, logout, resource access, etc.
+ * for compliance and security auditing purposes.
+ * 
+ * @param {string} action - Action performed (e.g., 'login', 'logout', 'resource_access')
+ * @param {Object} [userInfo={}] - User information object
+ * @param {string} [userInfo.email] - User email address
+ * @param {string} [userInfo.id] - User ID
+ * @param {string} [userInfo.username] - Username
+ * @param {Object} [metadata={}] - Additional metadata for the event
+ * @returns {void}
+ * 
+ * @example
+ * logUserAccess('login', { email: 'user@example.com' }, { ip: '192.168.1.1' });
  */
 export function logUserAccess(action, userInfo = {}, metadata = {}) {
   const contextLogger = createContextLogger('logUserAccess', 'logUserAccess');
@@ -244,7 +301,21 @@ export function logUserAccess(action, userInfo = {}, metadata = {}) {
 }
 
 /**
- * Security event logging
+ * Log security-related events for monitoring and alerting
+ * 
+ * Records security events such as failed authentication attempts,
+ * authorization denials, rate limit violations, etc.
+ * 
+ * @param {string} event - Security event type (e.g., 'auth_failed', 'rate_limit', 'unauthorized_access')
+ * @param {Object} [details={}] - Event details
+ * @param {string} [details.ip] - Client IP address
+ * @param {string} [details.userEmail] - User email (if applicable)
+ * @param {string} [details.reason] - Reason for the security event
+ * @param {Object} [details.metadata] - Additional event metadata
+ * @returns {void}
+ * 
+ * @example
+ * logSecurityEvent('auth_failed', { ip: '192.168.1.1', reason: 'Invalid credentials' });
  */
 export function logSecurityEvent(event, details = {}) {
   const contextLogger = createContextLogger('logSecurityEvent', 'logSecurityEvent');
@@ -258,7 +329,17 @@ export function logSecurityEvent(event, details = {}) {
 }
 
 /**
- * System initialization logging
+ * Log system initialization events
+ * 
+ * Records component initialization status during application startup.
+ * 
+ * @param {string} component - Component name being initialized
+ * @param {string} status - Initialization status ('started', 'initialized', 'failed', etc.)
+ * @param {Object} [details={}] - Additional initialization details
+ * @returns {void}
+ * 
+ * @example
+ * logSystemInit('Database', 'initialized', { host: 'localhost', port: 3306 });
  */
 export function logSystemInit(component, status, details = {}) {
   const contextLogger = createContextLogger('logSystemInit', 'logSystemInit');
@@ -272,7 +353,21 @@ export function logSystemInit(component, status, details = {}) {
 }
 
 /**
- * Database/External service logging
+ * Log external service interactions
+ * 
+ * Records interactions with external services (APIs, databases, etc.)
+ * for monitoring and debugging purposes.
+ * 
+ * @param {string} service - External service name (e.g., 'Google API', 'Database')
+ * @param {string} operation - Operation performed (e.g., 'getUser', 'query')
+ * @param {string} status - Operation status ('success', 'failed', 'timeout')
+ * @param {Object} [details={}] - Additional operation details
+ * @param {number} [details.duration] - Operation duration in milliseconds
+ * @param {string} [details.error] - Error message if operation failed
+ * @returns {void}
+ * 
+ * @example
+ * logExternalService('Google API', 'getUser', 'success', { duration: 150 });
  */
 export function logExternalService(service, operation, status, details = {}) {
   const contextLogger = createContextLogger('logExternalService', 'logExternalService');

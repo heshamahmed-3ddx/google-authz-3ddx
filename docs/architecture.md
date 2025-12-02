@@ -1,7 +1,7 @@
 # System Architecture Overview
 
 ## Introduction
-This document provides a high-level overview of the architecture for the Google AuthZ 3DDX platform, detailing the major components, their interactions, and design principles.
+This document provides a high-level overview of the architecture for the InsightHub platform, detailing the major components, their interactions, and design principles.
 
 ---
 
@@ -32,13 +32,22 @@ This document provides a high-level overview of the architecture for the Google 
 - Handles authentication via Google OAuth
 - Communicates with backend via REST API
 - Admin panel for user/policy management
+- **NavigationSidebar** - Desktop sidebar navigation with rail mode
+- **OverlaySidebar** - Mobile/tablet full-screen overlay navigation with search
+- **DevToolbar** - Development tools with VitePress integration
+- **Static design philosophy** - No animations, optimized performance
+- **Search functionality** - Filter navigation items
+- **Grid-based layout** - Responsive navigation grid
 
 ### 2. Backend (Node.js + Express)
 - Serves API endpoints for authentication, authorization, and admin features
 - Integrates with Google OAuth 2.0 for SSO
 - Manages sessions and user context
 - Implements Casbin RBAC for fine-grained access control
-- Structured logging and error handling
+- Structured logging (Winston) and error handling
+- **Prometheus metrics** - Performance monitoring
+- **Grafana integration** - Metrics visualization
+- **Swagger/OpenAPI** - API documentation at /docs
 
 ### 3. Authorization (Casbin RBAC)
 - Policy engine for user/group/role management
@@ -50,6 +59,12 @@ This document provides a high-level overview of the architecture for the Google 
 - Rate limiting and request tracking
 - CSRF protection for sensitive endpoints
 - Audit logging for admin actions
+
+### 5. Monitoring & Observability
+- Prometheus metrics collection
+- Grafana dashboards for visualization
+- Performance monitoring (API latency, DB query duration)
+- User context tracking in metrics
 
 ---
 

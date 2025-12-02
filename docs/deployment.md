@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This document provides step-by-step instructions for deploying the Google AuthZ 3DDX platform in production environments.
+This document provides step-by-step instructions for deploying the InsightHub platform in production environments.
 
 ---
 

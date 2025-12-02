@@ -6,6 +6,24 @@ This document describes the global compact UI design system used throughout the 
 
 The compact UI style provides a consistent, space-efficient design pattern that maximizes information density while maintaining readability and usability. All styles are globally available and can be applied using CSS classes.
 
+## Design Philosophy
+
+### Static Design Approach
+
+The application follows a **static design philosophy** with no animations or hover effects:
+
+- **No animations** - All components use static styling without transitions
+- **No hover effects** - Clean, minimal interaction without visual changes on hover
+- **Flat design** - No shadows, gradients, or visual effects
+- **Immediate feedback** - State changes are instant, not animated
+- **Performance focused** - Reduced CSS complexity and better performance
+
+This approach ensures:
+- Faster rendering
+- Reduced motion for accessibility
+- Cleaner, more professional appearance
+- Consistent behavior across all devices
+
 ## Quick Start
 
 The compact UI styles are automatically imported in `main.js` and available throughout the application. Simply use the provided CSS classes to apply compact styling.
@@ -320,9 +338,39 @@ To migrate existing pages to compact UI:
 7. Add `density="compact"` to alerts if not already present
 8. Tables automatically get compact styling - no changes needed
 
+## Static Design Principles
+
+The application follows a **static design philosophy** with no animations or hover effects:
+
+- **No animations** - All components use static styling without transitions
+- **No hover effects** - Clean, minimal interaction without visual changes on hover
+- **Flat design** - No shadows, gradients, or visual effects
+- **Immediate feedback** - State changes are instant, not animated
+- **Performance focused** - Reduced CSS complexity and better performance
+
+**Benefits:**
+- Faster rendering and better performance
+- Reduced motion for accessibility
+- Cleaner, more professional appearance
+- Consistent behavior across all devices
+- Lower CSS complexity
+
+**Implementation:**
+- No `transition` properties in CSS
+- No `:hover` selectors with visual changes
+- No `animation` or `@keyframes`
+- Static colors and borders
+- Instant state changes
+
 ## RTL Support
 
 All compact UI styles support RTL (Right-to-Left) languages automatically. Icons and spacing adjust based on the document direction.
+
+**RTL Best Practices:**
+- Use `text-align: start` instead of `left` or `right`
+- Use `margin-inline-start` and `margin-inline-end` instead of `margin-left` and `margin-right`
+- Use `padding-inline-start` and `padding-inline-end` for padding
+- Use `direction: rtl` on containers for RTL languages
 
 ## Dark Mode Support
 
@@ -358,6 +406,118 @@ The following Vuetify defaults are configured globally:
   }
 }
 ```
+
+## OverlaySidebar Styling
+
+### Full-Screen Overlay Pattern
+
+The `OverlaySidebar` component uses a full-screen overlay pattern:
+
+```vue
+<template>
+  <v-overlay :model-value="showOverlay">
+    <v-card class="overlay-card">
+      <!-- Content -->
+    </v-card>
+  </v-overlay>
+</template>
+```
+
+**Key Styling:**
+- Full viewport width and height
+- Backdrop with 50% opacity
+- Centered content with max-width: 1200px
+- Single scrollbar on right edge
+- Safe area support for mobile devices (48px bottom padding minimum)
+
+### Grid Navigation Layout
+
+Navigation items are displayed in a responsive grid:
+
+```css
+/* Mobile: 1 column */
+grid-template-columns: 1fr;
+
+/* Tablet: 2-3 columns */
+grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+
+/* Desktop: 3-4 columns */
+grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+```
+
+**Navigation Item Styling:**
+- Compact padding: 8px 10px
+- Border radius: 6px
+- Border: 1px solid (no hover changes)
+- Icon wrapper: 28px × 28px
+- Icon size: 18px
+- Text: 0.8125rem, normal weight
+- **No hover effects or animations** (static design)
+
+### Profile Section
+
+User profile display at the top:
+
+```vue
+<v-list-item class="user-profile-section">
+  <template #prepend>
+    <v-avatar size="40">
+      <!-- Profile picture or initials -->
+    </v-avatar>
+  </template>
+  <v-list-item-title>{{ user.name }}</v-list-item-title>
+  <v-list-item-subtitle>{{ user.jobTitle }}</v-list-item-subtitle>
+  <template #append>
+    <v-btn>Logout</v-btn>
+  </template>
+</v-list-item>
+```
+
+**Styling:**
+- Avatar: 40px with brand orange background
+- Name: 0.8125rem, font-weight 600
+- Job title: 0.6875rem, muted color
+- Logout button: Compact, inline with profile
+
+### Search Input
+
+Search field styling:
+
+```vue
+<v-text-field
+  v-model="searchQuery"
+  prepend-inner-icon="mdi-magnify"
+  variant="outlined"
+  density="compact"
+  class="search-input"
+/>
+```
+
+**Styling:**
+- Fixed height: 40px (prevents layout shifts)
+- Border radius: 8px
+- Compact padding
+- Orange accent on focus
+- No hover effects
+
+### Section Headers
+
+Navigation section headers:
+
+```vue
+<v-list-subheader class="section-header">
+  <v-icon size="16">{{ section.icon }}</v-icon>
+  <span class="section-title">{{ section.title }}</span>
+  <v-divider class="section-separator-line" />
+</v-list-subheader>
+```
+
+**Styling:**
+- Font size: 0.6875rem
+- Uppercase text
+- Icon + title on left, separator line extending right
+- Muted colors
+- Compact spacing
 
 ## Related Documentation
 

@@ -4,7 +4,7 @@ title: Deployment Guide
 
 # Deployment Guide
 
-This document provides step-by-step instructions for deploying the Google AuthZ 3DDX platform in production environments.
+This document provides step-by-step instructions for deploying the InsightHub platform in production environments.
 
 ## 1. Prerequisites
 - Node.js 18+ and npm/yarn
@@ -47,8 +47,47 @@ npm start     # or npm run prod
 - Run migrations or seed data as needed
 
 ## 8. Monitoring & Logging
+
+### Prometheus Metrics
+
+The application exposes Prometheus metrics at `/metrics` endpoint:
+
+1. **Configure Prometheus scraping**:
+   - Add InsightHub backend to Prometheus scrape config
+   - Set scrape interval (recommended: 15-30 seconds)
+   - Configure authentication if using bearer token
+
+2. **Environment variables**:
+   ```bash
+   PROMETHEUS_ENABLED=true
+   PROMETHEUS_METRICS_PATH=/metrics
+   PROMETHEUS_BEARER_TOKEN=your-secret-token  # Optional
+   ```
+
+3. **Verify metrics endpoint**:
+   ```bash
+   curl http://your-server:3001/metrics
+   ```
+
+### Grafana Dashboards
+
+1. **Import dashboard**:
+   - Use `docs/grafana-dashboard-insighthub-comprehensive.json`
+   - Configure Prometheus data source
+   - Customize panels as needed
+
+2. **Set up alerts**:
+   - Configure alert rules in Prometheus
+   - Set up notification channels in Grafana
+   - Monitor API latency and database performance
+
+For detailed setup instructions, see [Monitoring & Observability](./monitoring).
+
+### Logging
+
 - Set up log rotation and monitoring (Pino, external services)
 - Monitor audit logs for security events
+- Configure log aggregation (ELK, Loki, etc.)
 
 ## 9. Updating & Maintenance
 - Pull latest changes from GitHub

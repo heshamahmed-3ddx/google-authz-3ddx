@@ -34,12 +34,28 @@ title: Component Reference
 - `changeLanguage(code)`: Change language
 
 ## NavigationSidebar.vue
-**Purpose:** Main sidebar navigation  
+**Purpose:** Desktop sidebar navigation  
 **Props:**
 - `drawer` (Boolean): Sidebar open/close
 - `rail` (Boolean): Compact/expanded mode  
-**Slots:**
-- Custom header, footer, navigation items
+**Features:**
+- Rail mode (collapsible to icon-only)
+- Permission-based filtering
+- User profile section
+- Static design (no animations)
+
+## OverlaySidebar.vue
+**Purpose:** Mobile/tablet full-screen overlay navigation  
+**Props:**
+- `modelValue` (Boolean): Overlay visibility  
+**Features:**
+- Full-screen overlay with backdrop
+- Search functionality
+- Grid-based layout (responsive)
+- User profile with job title
+- RTL support
+- Safe area support
+- Static design (no animations)
 
 ## ThemeToggle.vue
 **Purpose:** Light/dark theme switcher  

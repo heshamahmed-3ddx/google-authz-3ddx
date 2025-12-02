@@ -1,10 +1,10 @@
 /**
  * @file surgicalGuideOrders.routes.js
  * @description Routes for surgical guide orders API endpoints with Swagger documentation
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import express from 'express';

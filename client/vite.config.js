@@ -96,6 +96,7 @@ export default defineConfig({
         categories: ["business", "productivity", "utilities"],
       },
       workbox: {
+        mode: "production",
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {

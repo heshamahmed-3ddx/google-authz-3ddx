@@ -1,11 +1,11 @@
 ---
-title: 3DDX Application Documentation
+title: InsightHub Application Documentation
 layout: home
 
 hero:
-  name: 3DDX Platform
+  name: InsightHub Platform
   text: Authorization & Management System
-  tagline: Comprehensive documentation for the entire Google AuthZ 3DDX platform
+  tagline: Comprehensive documentation for the entire InsightHub platform
   actions:
     - theme: brand
       text: Get Started
@@ -26,21 +26,27 @@ features:
     details: Fine-grained role-based access control with policy management
   - icon: 🎨
     title: Compact UI Design
-    details: Global compact UI system with consistent spacing, typography, and components
+    details: Global compact UI system with static design (no animations), consistent spacing, typography, and components
+  - icon: 📱
+    title: OverlaySidebar Navigation
+    details: Full-screen overlay navigation with search, user profile, and grid-based layout
   - icon: ⚙️
     title: Settings Management
     details: Comprehensive settings page with roles, permissions, and policies management
   - icon: 📊
     title: Reports & Analytics
     details: Surgical guide financial reports with filtering and export
+  - icon: 📈
+    title: Monitoring & Observability
+    details: Prometheus metrics and Grafana dashboards for performance tracking
   - icon: 🚀
     title: Developer Tools
     details: Dev mode with group simulation and permission testing
 ---
 
-# Welcome to 3DDX Documentation
+# Welcome to InsightHub Documentation
 
-Comprehensive documentation for the entire Google AuthZ 3DDX platform: client, backend, components, API, architecture, and guides.
+Comprehensive documentation for the entire InsightHub platform: client, backend, components, API, architecture, and guides.
 
 ## 📚 Core Documentation
 
@@ -101,13 +107,15 @@ npm run dev
 
 - ✅ **OAuth 2.0 Authentication** - Secure Google login
 - ✅ **Casbin RBAC** - Fine-grained permissions
-- ✅ **Compact UI System** - Global consistent design
+- ✅ **Compact UI System** - Global consistent design with static styling (no animations)
+- ✅ **OverlaySidebar Navigation** - Full-screen overlay navigation with search
 - ✅ **Settings Management** - Roles, permissions, and policies
-- ✅ **Surgical Guide Reports** - Financial analytics
-- ✅ **Multi-language Support** - EN, AR, ES, FR
+- ✅ **Surgical Guide Reports** - Financial analytics with localization
+- ✅ **Monitoring & Observability** - Prometheus metrics and Grafana dashboards
+- ✅ **Multi-language Support** - EN, AR, ES, FR with full RTL support
 - ✅ **Dark Mode** - Light, dark, and auto themes
-- ✅ **Responsive Design** - Mobile and desktop
-- ✅ **Dev Mode Tools** - Testing and debugging
+- ✅ **Responsive Design** - Mobile and desktop optimized
+- ✅ **Dev Mode Tools** - Testing and debugging with VitePress docs integration
 
 ## 📖 Documentation Sections
 
@@ -131,6 +139,7 @@ npm run dev
 ### Deployment & Security
 - [Deployment Guide](./deployment)
 - [Security Guide](./security)
+- [Monitoring & Observability](./monitoring)
 - [Technical Specifications](./technical-specifications)
 
 ### Development

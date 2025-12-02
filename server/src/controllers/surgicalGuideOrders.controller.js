@@ -1,10 +1,10 @@
 /**
  * @file surgicalGuideOrders.controller.js
  * @description HTTP request handlers for surgical guide report endpoints
- * @author 3D Diagnostix Development Team
+ * @author InsightHub Development Team
  * @created 2025-10-27
  * @version 1.0.0
- * @copyright 2025 3D Diagnostix, Inc. All rights reserved.
+ * @copyright 2025 InsightHub. All rights reserved.
  */
 
 import surgicalGuideOrdersService from '../services/surgicalGuideOrders.service.js';
@@ -21,11 +21,44 @@ const logger = createContextLogger('/server/src/controllers/surgicalGuideOrders.
 class SurgicalGuideOrdersController {
   /**
    * Get surgical guide report data
-   * GET /api/reports/surgical_guide
    * 
-   * @param {import('express').Request} req - Express request
-   * @param {import('express').Response} res - Express response
-   * @returns {Promise<void>}
+   * Retrieves paginated surgical guide report data with filtering, sorting, and search capabilities.
+   * Requires authentication and Finance22 group membership for access.
+   * 
+   * Route: GET /api/reports/surgical_guide
+   * 
+   * Query Parameters:
+   * - startDate (required): Start date in YYYY-MM-DD format
+   * - endDate (required): End date in YYYY-MM-DD format
+   * - page (optional): Page number (default: 1)
+   * - limit (optional): Items per page (default: 10, max: 100)
+   * - sortBy (optional): Field to sort by (default: 'date')
+   * - sortOrder (optional): Sort order 'asc' or 'desc' (default: 'desc')
+   * - searchQuery (optional): Search term for ID, patient name, doctor, or scan center
+   * - orderTypeFilter (optional): Filter by order type (all, free, postpaid, fullyPrepaid, etc.)
+   * 
+   * @param {import('express').Request} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
+   * @param {string} req.query.endDate - End date (YYYY-MM-DD)
+   * @param {number} [req.query.page=1] - Page number
+   * @param {number} [req.query.limit=10] - Items per page
+   * @param {string} [req.query.sortBy='date'] - Sort field
+   * @param {string} [req.query.sortOrder='desc'] - Sort order
+   * @param {string} [req.query.searchQuery=''] - Search query
+   * @param {string} [req.query.orderTypeFilter='all'] - Order type filter
+   * @param {import('express').Response} res - Express response object
+   * @returns {Promise<void>} Sends JSON response with report data
+   * 
+   * @throws {401} If user is not authenticated
+   * @throws {403} If user doesn't have Finance22 group membership
+   * @throws {400} If required parameters are missing or invalid
+   * @throws {503} If database service is unavailable
+   * @throws {500} If an internal error occurs
+   * 
+   * @example
+   * // Request: GET /api/reports/surgical_guide?startDate=2024-01-01&endDate=2024-12-31&page=1&limit=10
+   * // Response: { success: true, data: [...], pagination: {...}, sort: {...}, dateRange: {...} }
    */
   async getReport(req, res) {
     try {
@@ -184,11 +217,33 @@ class SurgicalGuideOrdersController {
 
   /**
    * Get report summary statistics
-   * GET /api/reports/surgical_guide/summary
    * 
-   * @param {import('express').Request} req - Express request
-   * @param {import('express').Response} res - Express response
-   * @returns {Promise<void>}
+   * Retrieves aggregated statistics for the specified date range including total orders,
+   * postpaid orders, fully prepaid orders, free orders, rush orders, on-hold orders,
+   * confirmed orders, and active orders.
+   * 
+   * Route: GET /api/reports/surgical_guide/summary
+   * 
+   * Query Parameters:
+   * - startDate (required): Start date in YYYY-MM-DD format
+   * - endDate (required): End date in YYYY-MM-DD format
+   * 
+   * @param {import('express').Request} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
+   * @param {string} req.query.endDate - End date (YYYY-MM-DD)
+   * @param {import('express').Response} res - Express response object
+   * @returns {Promise<void>} Sends JSON response with summary statistics
+   * 
+   * @throws {401} If user is not authenticated
+   * @throws {403} If user doesn't have Finance22 group membership
+   * @throws {400} If required parameters are missing or invalid
+   * @throws {503} If database service is unavailable
+   * @throws {500} If an internal error occurs
+   * 
+   * @example
+   * // Request: GET /api/reports/surgical_guide/summary?startDate=2024-01-01&endDate=2024-12-31
+   * // Response: { success: true, data: { totalOrders: 100, postpaidOrders: 50, ... }, dateRange: {...} }
    */
   async getSummary(req, res) {
     try {
@@ -292,12 +347,33 @@ class SurgicalGuideOrdersController {
   }
 
   /**
-   * Export report to CSV
-   * GET /api/reports/surgical_guide/export
+   * Export report to CSV format
    * 
-   * @param {import('express').Request} req - Express request
-   * @param {import('express').Response} res - Express response
-   * @returns {Promise<void>}
+   * Generates and downloads a CSV file containing all report data for the specified date range.
+   * The CSV includes all order details, payment information, status, and timestamps.
+   * File is named in format: OSG_YYYYMMDD.csv with UTF-8 BOM for Excel compatibility.
+   * 
+   * Route: GET /api/reports/surgical_guide/export
+   * 
+   * Query Parameters:
+   * - startDate (required): Start date in YYYY-MM-DD format
+   * - endDate (required): End date in YYYY-MM-DD format
+   * 
+   * @param {import('express').Request} req - Express request object
+   * @param {Object} req.query - Query parameters
+   * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
+   * @param {string} req.query.endDate - End date (YYYY-MM-DD)
+   * @param {import('express').Response} res - Express response object
+   * @returns {Promise<void>} Sends CSV file as download
+   * 
+   * @throws {401} If user is not authenticated
+   * @throws {403} If user doesn't have Finance22 group membership
+   * @throws {400} If required parameters are missing or invalid
+   * @throws {500} If export fails
+   * 
+   * @example
+   * // Request: GET /api/reports/surgical_guide/export?startDate=2024-01-01&endDate=2024-12-31
+   * // Response: CSV file download with Content-Type: text/csv; charset=utf-8
    */
   async exportCSV(req, res) {
     try {
@@ -383,11 +459,31 @@ class SurgicalGuideOrdersController {
 
   /**
    * Check user access to report features
-   * GET /api/reports/surgical_guide/access
    * 
-   * @param {import('express').Request} req - Express request
-   * @param {import('express').Response} res - Express response
-   * @returns {Promise<void>}
+   * Returns the user's access permissions for report features and Swagger documentation.
+   * This endpoint is safe to call even if the user is not authenticated (returns false for all permissions).
+   * 
+   * Route: GET /api/reports/surgical_guide/access
+   * 
+   * @param {import('express').Request} req - Express request object
+   * @param {import('express').Response} res - Express response object
+   * @returns {Promise<void>} Sends JSON response with access permissions
+   * 
+   * Response Format:
+   * {
+   *   success: true,
+   *   data: {
+   *     hasReportAccess: boolean,  // True if user has Finance22 or admin group
+   *     hasSwaggerAccess: boolean, // True if user has Developers22, admin, SWD, or developers group
+   *     userGroups: string[]       // Array of user's group names
+   *   }
+   * }
+   * 
+   * @throws {500} If an internal error occurs (rare, as this endpoint is designed to be safe)
+   * 
+   * @example
+   * // Request: GET /api/reports/surgical_guide/access
+   * // Response: { success: true, data: { hasReportAccess: true, hasSwaggerAccess: false, userGroups: ['Finance22'] } }
    */
   async checkAccess(req, res) {
     try {
