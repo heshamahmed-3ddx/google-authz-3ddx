@@ -27,7 +27,7 @@
 
     <!-- Grafana Dashboard -->
     <v-row no-gutters>
-      <v-col cols="12" md="3" class="compact-filters-col">
+      <v-col cols="12" md="3" class="pr-4">
         <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
           <v-card-text class="compact-filters-content pa-3">
             <!-- Dashboard Controls -->
@@ -36,7 +36,7 @@
                 <v-icon size="16" class="mr-1">mdi-cog-outline</v-icon>
                 Dashboard Controls
               </div>
-              <div class="d-flex gap-2">
+              <div class="d-flex gap-2 flex-wrap">
                 <v-btn
                   color="primary"
                   size="default"
@@ -120,12 +120,34 @@
                 </code>
               </v-card-text>
             </v-card>
+
+            <!-- Dashboard Info -->
+            <v-card variant="outlined" class="mt-3">
+              <v-card-title class="text-caption font-weight-medium pa-2">
+                <v-icon size="16" class="mr-1">mdi-information-outline</v-icon>
+                Dashboard Info
+              </v-card-title>
+              <v-card-text class="pa-2">
+                <div class="text-caption text-medium-emphasis mb-1">
+                  Dashboard UID:
+                </div>
+                <code class="text-caption" style="word-break: break-all; font-size: 0.7rem;">
+                  {{ dashboardId || 'Not configured' }}
+                </code>
+                <div class="text-caption text-medium-emphasis mb-1 mt-2">
+                  Embed URL:
+                </div>
+                <code class="text-caption" style="word-break: break-all; font-size: 0.7rem;">
+                  {{ embedUrl }}
+                </code>
+              </v-card-text>
+            </v-card>
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- Grafana Dashboard iframe -->
-      <v-col cols="12" md="9" class="table-col" style="padding: 0 !important; margin: 0 !important;">
+      <v-col cols="12" md="9" class="table-col">
         <v-card elevation="1" class="table-card" style="width: 100% !important; margin: 0 !important; padding: 0 !important;">
           <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
             <div class="d-flex align-center">
@@ -230,12 +252,22 @@ const { t } = useI18n();
 
 // Grafana URL from environment variable or default
 const grafanaUrl = computed(() => {
-  return import.meta.env.VITE_GRAFANA_URL || "http://localhost:3000";
+  return import.meta.env.VITE_GRAFANA_URL || "http://localhost:3030";
 });
 
 // Prometheus URL (backend API URL)
 const prometheusUrl = computed(() => {
-  return import.meta.env.VITE_API_URL || "http://localhost:3001";
+  return import.meta.env.VITE_PROMETHEUS_URL || "http://localhost:9090";
+});
+
+// Dashboard ID from environment
+const dashboardId = computed(() => {
+  return import.meta.env.VITE_GRAFANA_DASHBOARD_ID || "";
+});
+
+// Organization ID from environment
+const orgId = computed(() => {
+  return import.meta.env.VITE_GRAFANA_ORG_ID || "1";
 });
 
 // Display name for the dashboard
@@ -246,16 +278,39 @@ const displayDashboardName = computed(() => {
 // Embed URL for Grafana dashboard
 const embedUrl = computed(() => {
   const baseUrl = grafanaUrl.value.replace(/\/$/, ""); // Remove trailing slash
-  const dashboardId = import.meta.env.VITE_GRAFANA_DASHBOARD_ID || "";
-  const orgId = import.meta.env.VITE_GRAFANA_ORG_ID || "1";
+  const dashboardUid = dashboardId.value;
+  const org = orgId.value;
   
-  // If dashboard ID is provided, use it, otherwise use default dashboard
-  if (dashboardId) {
-    return `${baseUrl}/d/${dashboardId}?orgId=${orgId}&kiosk=tv&theme=light`;
+  // If dashboard ID/UID is provided, use it
+  if (dashboardUid) {
+    // Clean the dashboard ID - remove any path segments or extra parts
+    // Dashboard UID format: just the UUID part (e.g., "237d7ea8-519f-4e37-bedb-9e830778fbb8")
+    const cleanDashboardId = dashboardUid.split("/").pop().split("?")[0];
+    
+    // Build embed URL with proper parameters
+    // kiosk=tv mode removes UI chrome for better embedding
+    // from=now-6h&to=now sets default time range
+    // refresh=30s sets auto-refresh interval
+    const params = new URLSearchParams({
+      orgId: org,
+      kiosk: "tv",
+      theme: "light",
+      from: "now-6h",
+      to: "now",
+      refresh: "30s"
+    });
+    
+    return `${baseUrl}/d/${cleanDashboardId}?${params.toString()}`;
   }
   
   // Default to Grafana home or explore page
-  return `${baseUrl}/explore?orgId=${orgId}&theme=light`;
+  const params = new URLSearchParams({
+    orgId: org,
+    theme: "light",
+    from: "now-6h",
+    to: "now"
+  });
+  return `${baseUrl}/explore?${params.toString()}`;
 });
 
 const loading = ref(true);
@@ -306,6 +361,26 @@ onMounted(() => {
 <style scoped>
 .grafana-report {
   padding: 16px;
+}
+
+/* Ensure columns display side by side on medium+ screens */
+@media (min-width: 960px) {
+  .grafana-report .v-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  .grafana-report .v-row > .v-col.md-3 {
+    flex: 0 0 25% !important;
+    max-width: 25% !important;
+    width: 25% !important;
+  }
+  
+  .grafana-report .v-row > .v-col.md-9 {
+    flex: 0 0 75% !important;
+    max-width: 75% !important;
+    width: 75% !important;
+  }
 }
 
 .v-row.no-gutters > .table-col {
@@ -373,9 +448,7 @@ onMounted(() => {
   z-index: 10;
 }
 
-.compact-filters-col {
-  padding-right: 16px;
-}
+/* Gap utilities are now handled globally via compact-ui.css */
 
 .compact-filters-card {
   height: 100%;

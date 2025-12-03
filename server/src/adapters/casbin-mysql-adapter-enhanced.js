@@ -181,14 +181,26 @@ class MySQLAdapterEnhanced {
    */
   async savePolicy(model) {
     const startTime = Date.now();
+    let policiesCount = 0; // Track policy count outside transaction scope
     
     try {
       logger.debug('Saving all policies to database', { tableName: this.tableName });
 
+      // Check if database is available
+      if (!databaseService.isAvailable()) {
+        throw new Error('Database service is not available');
+      }
+
       // Use transaction for atomicity
       await databaseService.transaction(async (connection) => {
-        // Clear existing policies
-        await connection.execute(`DELETE FROM ${this.tableName}`);
+        // Clear existing policies (use TRUNCATE for better performance, fallback to DELETE)
+        try {
+          await connection.execute(`TRUNCATE TABLE ${this.tableName}`);
+        } catch (truncateError) {
+          // If TRUNCATE fails (e.g., foreign key constraints), use DELETE
+          logger.debug('TRUNCATE failed, using DELETE instead', { error: truncateError.message });
+          await connection.execute(`DELETE FROM ${this.tableName}`);
+        }
 
         // Get all policies from model
         const policies = [];
@@ -211,9 +223,14 @@ class MySQLAdapterEnhanced {
           policies.push({ ptype: 'g2', rule: policy });
         }
 
+        // Store count for logging outside transaction
+        policiesCount = policies.length;
+
         // Batch insert for better performance
         if (policies.length > 0) {
           await this.batchInsert(connection, policies);
+        } else {
+          logger.debug('No policies to save', { tableName: this.tableName });
         }
       });
 
@@ -224,17 +241,48 @@ class MySQLAdapterEnhanced {
       this.updateMetrics('savePolicy', duration);
       
       logger.info('Policies saved to database successfully', { 
-        count: policies.length,
+        count: policiesCount,
         duration: `${duration}ms`
       });
       
       this.metrics.savePolicyCount++;
       return true;
     } catch (error) {
-      logger.error('Failed to save policies to database', {
+      // Log full error details for debugging
+      const errorDetails = {
         error: error.message,
-        stack: error.stack
+        errorCode: error.code,
+        sqlState: error.sqlState,
+        errno: error.errno,
+        tableName: this.tableName,
+        adapterType: 'MySQLAdapterEnhanced',
+        storageType: this.storageType || 'unknown'
+      };
+      
+      logger.error('Failed to save policies to database', errorDetails);
+      logger.error('Full error details:', {
+        ...errorDetails,
+        stack: error.stack,
+        fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
       });
+      
+      // Provide more helpful error messages
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        const helpfulError = new Error(`Casbin table '${this.tableName}' does not exist. Please run database migrations.`);
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        const helpfulError = new Error('Database connection failed. Please check database configuration and connectivity.');
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      } else if (error.code === 'ER_LOCK_WAIT_TIMEOUT' || error.code === 'ER_LOCK_DEADLOCK') {
+        const helpfulError = new Error('Database lock timeout. Another operation may be in progress. Please try again.');
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      }
+      
+      // For any other error, log it and re-throw
+      logger.error(`Unexpected error saving policies: ${error.message}`, errorDetails);
       throw error;
     }
   }
@@ -245,36 +293,93 @@ class MySQLAdapterEnhanced {
    * @param {Array} policies - Array of policy objects
    */
   async batchInsert(connection, policies) {
+    if (!policies || policies.length === 0) {
+      logger.debug('No policies to insert', { tableName: this.tableName });
+      return;
+    }
+
+    // Use INSERT IGNORE to handle duplicate key violations gracefully
+    // This prevents errors when the same policy exists multiple times in the model
     const insertQuery = `
-      INSERT INTO ${this.tableName} (ptype, v0, v1, v2, v3, v4, v5)
+      INSERT IGNORE INTO ${this.tableName} (ptype, v0, v1, v2, v3, v4, v5)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
-    // Process in batches
-    for (let i = 0; i < policies.length; i += this.batchSize) {
-      const batch = policies.slice(i, i + this.batchSize);
-      
-      // Use prepared statement for batch
-      const values = batch.map(({ ptype, rule }) => [
-        ptype,
-        rule[0] || null,
-        rule[1] || null,
-        rule[2] || null,
-        rule[3] || null,
-        rule[4] || null,
-        rule[5] || null
-      ]);
+    try {
+      // Remove duplicates before inserting (based on ptype + all rule values)
+      const seen = new Set();
+      const uniquePolicies = policies.filter(({ ptype, rule }) => {
+        if (!rule || !Array.isArray(rule)) {
+          logger.warn('Invalid policy rule format', { ptype, rule });
+          return false;
+        }
+        const key = `${ptype}:${rule.join(':')}`;
+        if (seen.has(key)) {
+          return false; // Duplicate
+        }
+        seen.add(key);
+        return true;
+      });
 
-      // Execute batch insert
-      for (const valueSet of values) {
-        await connection.execute(insertQuery, valueSet);
+      logger.debug('Filtered duplicate policies', {
+        original: policies.length,
+        unique: uniquePolicies.length,
+        duplicates: policies.length - uniquePolicies.length
+      });
+
+      // Process in batches
+      for (let i = 0; i < uniquePolicies.length; i += this.batchSize) {
+        const batch = uniquePolicies.slice(i, i + this.batchSize);
+        
+        // Use prepared statement for batch
+        const values = batch.map(({ ptype, rule }) => [
+          ptype,
+          rule[0] || null,
+          rule[1] || null,
+          rule[2] || null,
+          rule[3] || null,
+          rule[4] || null,
+          rule[5] || null
+        ]);
+
+        // Execute batch insert
+        for (const valueSet of values) {
+          try {
+            await connection.execute(insertQuery, valueSet);
+          } catch (insertError) {
+            // Even with INSERT IGNORE, log any unexpected errors
+            if (insertError.code !== 'ER_DUP_ENTRY') {
+              logger.error('Failed to insert policy', {
+                error: insertError.message,
+                errorCode: insertError.code,
+                sqlState: insertError.sqlState,
+                values: valueSet,
+                tableName: this.tableName
+              });
+              throw insertError;
+            }
+            // ER_DUP_ENTRY is expected and ignored with INSERT IGNORE
+            logger.debug('Duplicate policy ignored', { values: valueSet });
+          }
+        }
       }
-    }
 
-    logger.debug('Batch insert completed', { 
-      total: policies.length,
-      batches: Math.ceil(policies.length / this.batchSize)
-    });
+      logger.debug('Batch insert completed', { 
+        total: uniquePolicies.length,
+        batches: Math.ceil(uniquePolicies.length / this.batchSize)
+      });
+    } catch (error) {
+      logger.error('Batch insert failed', {
+        error: error.message,
+        errorCode: error.code,
+        sqlState: error.sqlState,
+        errno: error.errno,
+        tableName: this.tableName,
+        policyCount: policies.length,
+        stack: error.stack
+      });
+      throw error;
+    }
   }
 
   /**
