@@ -1,6 +1,6 @@
 /**
  * Test script to find records matching row color criteria
- * Run with: node test-row-colors.js
+ * Run with: node server/scripts/test-row-colors.js
  */
 
 import dotenv from 'dotenv';

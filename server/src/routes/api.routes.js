@@ -641,11 +641,15 @@ router.get('/user/details', requireAuth, async (req, res) => {
           syncedRoles: googleRoles.length
         });
       } catch (casbinErr) {
-        logger.error('Casbin synchronization failed', { 
+        // Log error but don't fail the login - user can still access the system
+        logger.error('Casbin synchronization failed (non-blocking)', { 
           userEmail, 
           error: casbinErr.message,
-          stack: casbinErr.stack
+          errorCode: casbinErr.code,
+          stack: casbinErr.stack,
+          note: 'User login will proceed, but group/role sync from Google may be incomplete. User may need to refresh or re-login.'
         });
+        // Don't throw - allow login to succeed even if Casbin sync fails
       }
     } catch (err) {
       logger.error('Google Directory API integration failed', { 

@@ -86,6 +86,153 @@
 }
 
 /* ========================================
+   GAP UTILITIES
+   ======================================== */
+
+/* Global gap utilities for consistent spacing */
+.gap-0 {
+  gap: 0 !important;
+}
+
+.gap-1 {
+  gap: 4px !important;
+}
+
+.gap-2 {
+  gap: 8px !important;
+}
+
+.gap-3 {
+  gap: 12px !important;
+}
+
+.gap-4 {
+  gap: 16px !important;
+}
+
+.gap-5 {
+  gap: 20px !important;
+}
+
+.gap-6 {
+  gap: 24px !important;
+}
+
+.gap-8 {
+  gap: 32px !important;
+}
+
+/* Row gap utilities */
+.row-gap-0 {
+  row-gap: 0 !important;
+}
+
+.row-gap-1 {
+  row-gap: 4px !important;
+}
+
+.row-gap-2 {
+  row-gap: 8px !important;
+}
+
+.row-gap-3 {
+  row-gap: 12px !important;
+}
+
+.row-gap-4 {
+  row-gap: 16px !important;
+}
+
+.row-gap-5 {
+  row-gap: 20px !important;
+}
+
+.row-gap-6 {
+  row-gap: 24px !important;
+}
+
+/* Column gap utilities */
+.column-gap-0 {
+  column-gap: 0 !important;
+}
+
+.column-gap-1 {
+  column-gap: 4px !important;
+}
+
+.column-gap-2 {
+  column-gap: 8px !important;
+}
+
+.column-gap-3 {
+  column-gap: 12px !important;
+}
+
+.column-gap-4 {
+  column-gap: 16px !important;
+}
+
+.column-gap-5 {
+  column-gap: 20px !important;
+}
+
+.column-gap-6 {
+  column-gap: 24px !important;
+}
+
+/* Ensure flex and grid containers respect gaps */
+.d-flex,
+.d-grid {
+  gap: inherit;
+}
+
+/* Vuetify row gap support - override no-gutters */
+.v-row {
+  gap: 0;
+}
+
+.v-row.gap-1 {
+  gap: 4px !important;
+  margin: 0 !important;
+}
+
+.v-row.gap-2 {
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.v-row.gap-3 {
+  gap: 12px !important;
+  margin: 0 !important;
+}
+
+.v-row.gap-4 {
+  gap: 16px !important;
+  margin: 0 !important;
+}
+
+.v-row.gap-5 {
+  gap: 20px !important;
+  margin: 0 !important;
+}
+
+.v-row.gap-6 {
+  gap: 24px !important;
+  margin: 0 !important;
+}
+
+/* When row has gap, columns should not have negative margins */
+.v-row.gap-1 > .v-col,
+.v-row.gap-2 > .v-col,
+.v-row.gap-3 > .v-col,
+.v-row.gap-4 > .v-col,
+.v-row.gap-5 > .v-col,
+.v-row.gap-6 > .v-col {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ========================================
    TYPOGRAPHY
    ======================================== */
 

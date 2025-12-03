@@ -585,42 +585,72 @@ class CasbinService {
         roles: googleData.roles?.length || 0
       });
 
+      // Temporarily disable auto-save to batch operations and save once at the end
+      // This prevents multiple full policy saves during sync (performance optimization)
+      const originalAutoSave = CONFIG.casbin.autoSave;
+      CONFIG.casbin.autoSave = false;
 
-      // Get all current group assignments for this user
-      const allGroupings = await this.enforcer.getGroupingPolicy();
-      // Only consider group assignments for this user
-      const currentGroups = allGroupings
-        .filter(([user, group]) => user === userEmail)
-        .map(([user, group]) => group);
+      try {
+        // Get all current group assignments for this user
+        const allGroupings = await this.enforcer.getGroupingPolicy();
+        // Only consider group assignments for this user
+        const currentGroups = allGroupings
+          .filter(([user, group]) => user === userEmail)
+          .map(([user, group]) => group);
 
-      // Local-only groups that should NOT be removed by Google sync
-      // These are used for development, testing, or manual assignments
-      const localOnlyGroups = ['Finance22', 'Developers22', 'admin', 'engineering', 'developer'];
+        // Local-only groups that should NOT be removed by Google sync
+        // These are used for development, testing, or manual assignments
+        const localOnlyGroups = ['Finance22', 'Developers22', 'admin', 'engineering', 'developer'];
 
-      // Remove user from groups that are NOT in the new Google group list
-      // BUT preserve local-only groups that were manually added
-      const googleGroups = Array.isArray(googleData.groups) ? googleData.groups : [];
-      for (const group of currentGroups) {
-        // Skip removal if this is a local-only group
-        if (localOnlyGroups.includes(group)) {
-          logger.debug('Preserving local-only group during sync', { userEmail, group });
-          continue;
-        }
-        
-        if (!googleGroups.includes(group)) {
-          await this.removeUserFromGroup(userEmail, group);
-          logger.info('Removed user from group', { userEmail, group });
-        }
-      }
-
-      // Add user to new Google groups
-      if (googleData.groups && Array.isArray(googleData.groups)) {
-        for (const group of googleData.groups) {
-          if (group) {
-            await this.addUserToGroup(userEmail, group);
-            logger.info('Added user to group', { userEmail, group });
+        // Remove user from groups that are NOT in the new Google group list
+        // BUT preserve local-only groups that were manually added
+        const googleGroups = Array.isArray(googleData.groups) ? googleData.groups : [];
+        for (const group of currentGroups) {
+          // Skip removal if this is a local-only group
+          if (localOnlyGroups.includes(group)) {
+            logger.debug('Preserving local-only group during sync', { userEmail, group });
+            continue;
+          }
+          
+          if (!googleGroups.includes(group)) {
+            // Use direct enforcer method to avoid auto-save
+            await this.enforcer.removeGroupingPolicy(userEmail, group);
+            logger.info('Removed user from group', { userEmail, group });
           }
         }
+
+        // Add user to new Google groups
+        if (googleData.groups && Array.isArray(googleData.groups)) {
+          for (const group of googleData.groups) {
+            if (group) {
+              // Use direct enforcer method to avoid auto-save
+              await this.enforcer.addGroupingPolicy(userEmail, group);
+              logger.info('Added user to group', { userEmail, group });
+            }
+          }
+        }
+
+        // Save all changes once at the end (only if using database storage)
+        // Wrap in try-catch to prevent login failure if policy save fails
+        if (this.storageType === 'database') {
+          try {
+            await this.enforcer.savePolicy();
+            logger.debug('Policies saved to database after sync', { userEmail });
+          } catch (saveError) {
+            // Log error but don't fail the sync - policies are still in memory
+            logger.error('Failed to save policies to database during sync (non-blocking)', {
+              userEmail,
+              error: saveError.message,
+              errorCode: saveError.code,
+              sqlState: saveError.sqlState,
+              note: 'User sync completed successfully, but policies were not persisted to database. Policies are still active in memory.'
+            });
+            // Don't throw - allow login to succeed even if database save fails
+          }
+        }
+      } finally {
+        // Restore original auto-save setting
+        CONFIG.casbin.autoSave = originalAutoSave;
       }
 
       // Update user info in memory (if using users.json)

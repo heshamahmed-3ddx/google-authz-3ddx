@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 function addUserPermissions(userEmail) {
   if (!userEmail) {
     console.error('Please provide your email address:');
-    console.log('node add-user-permissions.js your-email@domain.com');
+    console.log('node scripts/add-user-permissions.js your-email@domain.com');
     process.exit(1);
   }
 
