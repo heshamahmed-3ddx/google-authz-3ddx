@@ -10,8 +10,12 @@
 import express from 'express';
 import surgicalGuideOrdersController from '../controllers/surgicalGuideOrders.controller.js';
 import { requireAuth } from '../middleware/auth.js';
+import { reportAccessLogger } from '../middleware/reportLogging.js';
 
 const router = express.Router();
+
+// Apply report access logging middleware to all routes
+router.use(reportAccessLogger());
 
 /**
  * @swagger

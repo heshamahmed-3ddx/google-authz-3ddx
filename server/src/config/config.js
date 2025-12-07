@@ -26,7 +26,9 @@ export const CONFIG = {
 
   // Date and Time Formats
   dateFormats: {
-    display: 'DD/MMM/YYYY',
+    display: 'DD/MMM/YYYY', // Keep for backwards compatibility
+    standard: '31/Dec/2025', // New standard format: day/month name/year
+    timeStandard: 'hh:mma/p', // New time format: hours:minutesam/pm (e.g., 10:02p)
     timestamp: 'DD/MM/YYYY HH:mm:ss',
     iso: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
     log: 'DD/MM/YYYY HH:mm:ss'
@@ -81,7 +83,7 @@ export const CONFIG = {
     maxRetries: parseInt(process.env.CASBIN_MAX_RETRIES) || 3, // Max retry attempts for transient failures
     cache: {
       enabled: process.env.CASBIN_CACHE_ENABLED !== 'false', // Enable policy caching (default: true)
-      ttl: parseInt(process.env.CASBIN_CACHE_TTL) || 60000 // Cache TTL in milliseconds (default: 1 minute)
+      ttl: parseInt(process.env.CASBIN_CACHE_TTL) || 300000 // Cache TTL in milliseconds (default: 5 minutes)
     },
     /**
      * Test authorization config (used for Casbin service self-test)
@@ -117,6 +119,11 @@ export const CONFIG = {
       path: '/docs',
       requireAuth: true,
       authorizedRoles: ['admin', 'developer']
+    },
+    github: {
+      repositoryUrl: process.env.GITHUB_REPOSITORY_URL || 'https://github.com/3ddx/InsightHub',
+      repositoryName: process.env.GITHUB_REPOSITORY_NAME || 'InsightHub',
+      displayInDocs: process.env.GITHUB_DISPLAY_IN_DOCS !== 'false' // Default: true
     }
   },
 

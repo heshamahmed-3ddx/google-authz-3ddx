@@ -37,6 +37,37 @@
           </v-card-text>
         </v-card>
 
+        <!-- GitHub Repository Link -->
+        <v-card v-if="githubInfo" elevation="2" class="mb-6">
+          <v-card-title>
+            <v-icon icon="mdi-github" class="mr-2"></v-icon>
+            Repository
+          </v-card-title>
+          <v-card-text>
+            <div class="d-flex align-center gap-3">
+              <v-icon icon="mdi-source-repository" size="24" color="primary"></v-icon>
+              <div class="flex-grow-1">
+                <div class="text-subtitle-1 font-weight-medium mb-1">
+                  {{ githubInfo.repositoryName }}
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  View source code and contribute to the project
+                </div>
+              </div>
+              <v-btn
+                :href="githubInfo.repositoryUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                color="primary"
+                variant="elevated"
+                prepend-icon="mdi-open-in-new"
+              >
+                View on GitHub
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
+
         <!-- Quick actions (if applicable) -->
         <v-card v-if="quickActions.length > 0" elevation="2">
           <v-card-title>
@@ -73,14 +104,16 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import {
   getBreadcrumbTrail,
   NAVIGATION_CONFIG,
 } from "@/config/navigationConfig";
+import apiService from "@/services/api.js";
 
 const route = useRoute();
+const githubInfo = ref(null);
 
 // Page configuration based on route
 const pageConfig = computed(() => {
@@ -419,6 +452,19 @@ const breadcrumbs = computed(() => {
     disabled: item.route === route.path,
     to: item.route,
   }));
+});
+
+// Load GitHub repository information
+onMounted(async () => {
+  try {
+    const response = await apiService.get('/config/github');
+    if (response.data.success && response.data.data) {
+      githubInfo.value = response.data.data;
+    }
+  } catch (error) {
+    // Silently fail - GitHub link is optional
+    console.warn('Failed to load GitHub repository information:', error);
+  }
 });
 </script>
 

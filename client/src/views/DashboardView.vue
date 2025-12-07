@@ -902,6 +902,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useDevModeStore } from "@/stores/devMode";
 import api, { BASE_URL } from "@/services/api";
 import PageHeader from "@/components/PageHeader.vue";
+import { formatDateTime } from "@/utils/dateFormatter.js";
 import {
   DASHBOARD_ACCESS_CONFIG,
   getRequiredGroupsForRestrictedAccess,
@@ -1182,18 +1183,11 @@ async function testAuthorization(resource, action) {
   }
 }
 
-// Format date helper
+// Format date helper - using standardized date formatter
 function formatDate(dateString) {
   if (!dateString) return "N/A";
   try {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatDateTime(new Date(dateString));
   } catch (error) {
     return dateString;
   }

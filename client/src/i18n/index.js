@@ -46,29 +46,16 @@ export const isRTL = (locale = i18n.global.locale.value) => {
 
 // Helper function to set locale and update document direction
 export const setLocale = (locale) => {
+  // Just update the i18n locale - App.vue watcher will handle all the rest
+  // This keeps all locale/RTL logic in one place (App.vue)
   i18n.global.locale.value = locale;
   localStorage.setItem("locale", locale);
-
-  const isRtl = isRTL(locale);
-
-  // Update document attributes
-  document.documentElement.lang = locale;
-  document.documentElement.dir = isRtl ? "rtl" : "ltr";
-
-  // Add CSS classes for styling
-  document.documentElement.classList.toggle("rtl", isRtl);
-  document.documentElement.classList.toggle("ltr", !isRtl);
-
-  // Update body class for global RTL styles
-  document.body.classList.toggle("rtl", isRtl);
-  document.body.classList.toggle("ltr", !isRtl);
-
-  // Update Vuetify RTL if available
-  if (window.vuetifyInstance && window.vuetifyInstance.framework) {
-    window.vuetifyInstance.framework.rtl.value = isRtl;
-  }
-
-  // Locale changed
+  
+  // The App.vue watcher will handle:
+  // - Vuetify locale update
+  // - Document direction update
+  // - CSS classes
+  // - All reactive updates
 };
 
 // Initialize document direction on load

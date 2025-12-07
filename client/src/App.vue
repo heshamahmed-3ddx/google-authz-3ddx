@@ -38,7 +38,7 @@
           </template>
           <span>{{ t('app.navigation') || 'App Navigation' }}</span>
         </v-tooltip>
-        <LanguageSwitcher />
+       
         <ThemeToggle />
         <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
@@ -61,12 +61,19 @@
     </v-app-bar>
 
     <!-- Breadcrumbs Section -->
-    <div v-if="authStore.isAuthenticated && showAppBar" class="minimal-breadcrumbs-bar">
+    <div v-if="authStore.isAuthenticated && showAppBar && route.name !== 'Home' && route.name !== 'Callback'" class="minimal-breadcrumbs-bar">
       <v-container fluid class="py-0 px-3">
-        <div class="d-flex align-center">
-          <v-breadcrumbs :items="breadcrumbItems" class="pa-0 minimal-breadcrumbs" density="compact">
+        <div class="d-flex align-center breadcrumb-wrapper">
+          <v-breadcrumbs 
+            :items="breadcrumbItems" 
+            :key="`breadcrumbs-${locale}-${isRtlComputed}`"
+            class="pa-0 minimal-breadcrumbs" 
+            density="compact"
+          >
             <template #divider>
-              <v-icon size="x-small" class="breadcrumb-divider">mdi-chevron-right</v-icon>
+              <v-icon size="x-small" class="breadcrumb-divider">
+                {{ isRtlComputed ? 'mdi-chevron-left' : 'mdi-chevron-right' }}
+              </v-icon>
             </template>
           </v-breadcrumbs>
         </div>
@@ -135,7 +142,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed } from "vue";
+import { reactive, ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
@@ -153,7 +160,7 @@ const DevToolbar = defineAsyncComponent(
 );
 import { useI18n } from "vue-i18n";
 import { useTheme, useLocale } from "vuetify";
-import { isRTL } from "@/i18n";
+import { nextTick } from "vue";
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
@@ -222,15 +229,38 @@ const handleLogout = async () => {
 // Overlay sidebar state
 const overlaySidebarOpen = ref(false);
 
+// Listen for custom event from WelcomeView to open overlay sidebar
+const handleOpenOverlaySidebar = () => {
+  overlaySidebarOpen.value = true;
+};
+
+onMounted(() => {
+  window.addEventListener('openOverlaySidebar', handleOpenOverlaySidebar);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('openOverlaySidebar', handleOpenOverlaySidebar);
+});
+
+// Computed property for RTL state - reactive to locale changes
+const isRtlComputed = computed(() => {
+  return vuetifyLocale.isRtl.value;
+});
+
 // Breadcrumb items computed from current route
 const breadcrumbItems = computed(() => {
+  // Don't show breadcrumbs if we're on the home page or callback page
+  if (route.name === "Home" || route.name === "home" || route.name === "Callback") {
+    return [];
+  }
+
   const items = [];
 
   // Add home - use 'to' instead of 'href' for Vue Router navigation (no page refresh)
   items.push({
     title: t("nav.home"),
     disabled: false,
-    to: "/dashboard",
+    to: "/home",
   });
 
   // Add current route breadcrumbs
@@ -243,7 +273,7 @@ const breadcrumbItems = computed(() => {
       title: breadcrumbTitle,
       disabled: true,
     });
-  } else if (route.name && route.name !== "dashboard") {
+  } else if (route.name && route.name !== "home" && route.name !== "Home") {
     // Generate breadcrumb from route name
     const routeName = String(route.name).replace(/-/g, " ");
     items.push({
@@ -274,19 +304,45 @@ watch(
   { immediate: true },
 );
 
-// Watch for locale changes and update RTL
+// Watch for locale changes and update Vuetify locale (which handles RTL automatically)
 watch(
   () => locale.value,
-  (newLocale) => {
-    const shouldBeRTL = isRTL(newLocale);
-    vuetifyLocale.isRtl = shouldBeRTL;
+  async (newLocale) => {
+    // Update Vuetify locale - this will automatically update RTL based on locale.rtl config
+    vuetifyLocale.current.value = newLocale;
+    
+    // Wait for Vuetify to update
+    await nextTick();
+    
+    // Wait one more tick to ensure all reactive updates propagate
+    await nextTick();
+    
+    // Get the RTL state from Vuetify (it's now reactive based on locale.current)
+    const shouldBeRTL = vuetifyLocale.isRtl.value;
+    
+    // Update document direction to match Vuetify's RTL state
     document.documentElement.dir = shouldBeRTL ? "rtl" : "ltr";
     document.documentElement.lang = newLocale;
-    document.documentElement.classList.toggle("rtl", shouldBeRTL);
-    document.documentElement.classList.toggle("ltr", !shouldBeRTL);
-    document.body.classList.toggle("rtl", shouldBeRTL);
-    document.body.classList.toggle("ltr", !shouldBeRTL);
-    setTimeout(() => {}, 50);
+    
+    // Remove old direction classes first
+    document.documentElement.classList.remove("rtl", "ltr");
+    document.body.classList.remove("rtl", "ltr");
+    
+    // Add new direction classes
+    if (shouldBeRTL) {
+      document.documentElement.classList.add("rtl");
+      document.body.classList.add("rtl");
+    } else {
+      document.documentElement.classList.add("ltr");
+      document.body.classList.add("ltr");
+    }
+    
+    // Force a re-render by triggering multiple events for components that might need it
+    window.dispatchEvent(new Event("resize"));
+    window.dispatchEvent(new Event("localechange"));
+    
+    // Force Vue to recognize the change
+    await nextTick();
   },
   { immediate: true },
 );
@@ -459,11 +515,13 @@ authStore.checkAuth();
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
-.minimal-breadcrumbs-bar :deep(.v-container > .d-flex) {
+.minimal-breadcrumbs-bar :deep(.v-container > .breadcrumb-wrapper) {
   height: 100%;
   align-items: center;
+  width: 100%;
 }
 
 .minimal-breadcrumbs {
@@ -503,16 +561,20 @@ authStore.checkAuth();
 }
 
 /* RTL support for minimal breadcrumbs */
-[dir="rtl"] .minimal-breadcrumbs-bar .d-flex {
-  flex-direction: row-reverse;
+.breadcrumb-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
-[dir="rtl"] .minimal-breadcrumbs :deep(.v-breadcrumbs) {
-  direction: rtl;
+/* RTL: Align breadcrumbs container to the right */
+[dir="rtl"] .minimal-breadcrumbs-bar :deep(.v-container) {
+  justify-content: flex-end !important;
 }
 
-[dir="rtl"] .breadcrumb-divider {
-  transform: scaleX(-1);
+[dir="rtl"] .breadcrumb-wrapper {
+  justify-content: flex-end;
 }
 
 /* Flat Design - Remove all shadows and elevations */

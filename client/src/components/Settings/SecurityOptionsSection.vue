@@ -33,7 +33,7 @@
               color="primary"
               variant="outlined"
               size="small"
-              prepend-icon="mdi-reload"
+              prepend-icon="mdi-refresh"
               @click="reloadPolicies"
               :loading="reloadLoading"
             >

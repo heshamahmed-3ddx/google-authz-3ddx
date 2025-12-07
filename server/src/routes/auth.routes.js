@@ -79,110 +79,315 @@ router.get('/google', (req, res) => {
 })
 
 /**
+ * Helper function to standardize error redirects
+ */
+const errorRedirect = (errorCode, res, logger) => {
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  logger?.error('OAuth callback error', { errorCode });
+  return res.redirect(`${clientUrl}/?error=${errorCode}`);
+};
+
+/**
+ * Shared OAuth callback processing logic
+ * Handles token exchange, user data fetching, and session creation
+ */
+async function processOAuthCallback(code, req, res) {
+  const logger = req.logger;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+  // Create OAuth2 client
+  const client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+
+  logger?.debug('Creating OAuth client', {
+    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+    redirectUri: process.env.GOOGLE_REDIRECT_URI
+  });
+
+  // Exchange code for tokens
+  const { tokens } = await client.getToken(code);
+  client.setCredentials(tokens);
+
+  // Get basic user info from ID token
+  const ticket = await client.verifyIdToken({
+    idToken: tokens.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID
+  });
+  const payload = ticket.getPayload();
+  const userEmail = payload.email;
+
+  // Initialize user data with defaults from ID token
+  let userProfile = {};
+  let groups = [];
+  let roles = [];
+
+  // Use Directory API to get groups and profile with error handling
+  const directory = google.admin({ version: 'directory_v1', auth: client });
+
+  // Fetch user profile with graceful fallback
+  try {
+    const userProfileRes = await directory.users.get({ userKey: userEmail });
+    userProfile = userProfileRes.data || {};
+    
+    logger?.info('User profile fetched successfully', { 
+      userEmail,
+      hasOrgUnit: !!userProfile.orgUnitPath,
+      hasDepartment: !!userProfile.department
+    });
+  } catch (error) {
+    logger?.warn('Failed to fetch user profile from Google Directory API, using defaults', { 
+      userEmail, 
+      error: error.message 
+    });
+    // Continue with minimal user info from ID token - profile fetch is optional
+  }
+
+  // Fetch user groups with graceful fallback
+  try {
+    const groupsRes = await directory.groups.list({ userKey: userEmail });
+    groups = (groupsRes.data.groups || []).map(g => g.name);
+    
+    logger?.info('User groups fetched successfully', { 
+      userEmail,
+      groupsCount: groups.length
+    });
+  } catch (error) {
+    logger?.warn('Failed to fetch user groups from Google Directory API, using empty array', { 
+      userEmail, 
+      error: error.message 
+    });
+    groups = []; // Empty groups - user can still login but may have limited permissions
+  }
+
+  // Extract roles from custom schemas (correct approach)
+  if (userProfile.customSchemas && userProfile.customSchemas.Roles) {
+    roles = userProfile.customSchemas.Roles.values || [];
+    logger?.debug('User roles extracted from custom schemas', { 
+      userEmail,
+      rolesCount: roles.length
+    });
+  }
+
+  // Build user info from Google data
+  const userInfo = {
+    id: payload.sub,
+    email: userEmail,
+    name: payload.name,
+    picture: payload.picture,
+    orgUnit: userProfile.orgUnitPath || null,
+    department: userProfile.department || null,
+    groups,
+    roles,
+    googleRaw: { 
+      profile: userProfile, 
+      groups: groups.map(name => ({ name })) // Simplified structure
+    }
+  };
+
+  // Sync user to Casbin for authorization
+  try {
+    const { default: casbinService } = await import('../services/casbin.js');
+    await casbinService.syncUserFromGoogle(userEmail, {
+      fullName: userInfo.name,
+      groups: userInfo.groups,
+      roles: userInfo.roles,
+      orgUnit: userInfo.orgUnit,
+      department: userInfo.department
+    });
+    
+    logger?.info('User synced to Casbin successfully', { 
+      userEmail,
+      groupsCount: userInfo.groups.length,
+      rolesCount: userInfo.roles.length
+    });
+  } catch (syncError) {
+    // Log error but don't fail login - Casbin sync failures shouldn't block authentication
+    logger?.error('Failed to sync user to Casbin (non-blocking)', {
+      userEmail,
+      error: syncError.message,
+      stack: syncError.stack,
+      note: 'Login will continue, but user may have limited permissions until sync succeeds'
+    });
+  }
+
+  // Set session data
+  req.session.user = userInfo;
+  req.session.tokens = tokens;
+
+  // Save session synchronously before redirect/response
+  await new Promise((resolve, reject) => {
+    req.session.save((err) => {
+      if (err) {
+        logger?.error('Session save failed', { 
+          error: err.message,
+          userEmail 
+        });
+        reject(err);
+      } else {
+        logger?.debug('Session saved successfully', { userEmail });
+        resolve();
+      }
+    });
+  });
+
+  return userInfo;
+}
+
+/**
  * GET /auth/google/callback
  *
  * OAuth callback endpoint for Google. Expects query parameter `code`.
  * Exchanges the authorization code for tokens, verifies the ID token, and
  * initializes the server-side session with `req.session.user` and
- * `req.session.tokens`. On success the user is redirected to the frontend
- * dashboard. On failure the user is redirected to the frontend root with
- * an error query parameter.
+ * `req.session.tokens`. 
+ * 
+ * Redirects to frontend callback page or dashboard based on flow.
  *
  * Query params:
  * - code: authorization code from Google
  * - error: optional error returned by Google
+ * - format: optional query param ('json' for API response, default is redirect)
  *
  * Side effects:
  * - Creates/updates express session with user info and tokens
+ * - Syncs user to Casbin for authorization
  * - Calls `req.session.save()` before redirecting
  */
-// Handle Google OAuth callback
 router.get('/google/callback', async (req, res) => {
+  const logger = req.logger;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const { code, error, format } = req.query;
+  const wantsJson = format === 'json' || req.headers.accept?.includes('application/json');
+
+  logger?.info('OAuth callback received (GET)', {
+    hasCode: !!code,
+    hasError: !!error,
+    wantsJson
+  });
+
+  // Handle OAuth errors from Google
+  if (error) {
+    logger?.error('OAuth error from Google', { error });
+    if (wantsJson) {
+      return res.status(400).json({ 
+        error: 'oauth_rejected',
+        message: `OAuth error: ${error}` 
+      });
+    }
+    return errorRedirect('oauth_rejected', res, logger);
+  }
+
+  // Validate authorization code
+  if (!code) {
+    logger?.error('No authorization code provided');
+    if (wantsJson) {
+      return res.status(400).json({ 
+        error: 'no_code',
+        message: 'No authorization code provided' 
+      });
+    }
+    return errorRedirect('no_code', res, logger);
+  }
+
   try {
-    const { code, error } = req.query
+    // Process OAuth callback
+    const userInfo = await processOAuthCallback(code, req, res);
 
-    req.logger?.info('OAuth callback received', {
-      hasCode: !!code,
-      hasError: !!error
-    });
-
-    if (error) {
-      req.logger?.error('OAuth error from Google', { error });
-      return res.redirect(`${process.env.CLIENT_URL}/?error=oauth_rejected`)
+    // Return JSON response if requested (for API clients)
+    if (wantsJson) {
+      return res.json({
+        success: true,
+        user: userInfo,
+        authenticated: true
+      });
     }
 
-    if (!code) {
-      req.logger?.error('No authorization code provided');
-      return res.redirect(`${process.env.CLIENT_URL}/?error=no_code`)
-    }
+    // Default: Redirect to frontend callback page (not directly to dashboard)
+    // This allows frontend to handle the callback and prefetch data
+    res.redirect(`${clientUrl}/callback?success=true`);
 
-    req.logger?.debug('Creating OAuth client', {
-      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
-      redirectUri: process.env.GOOGLE_REDIRECT_URI
-    });
-
-    // Create OAuth2 client
-    const client = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
-    )
-
-    // Exchange code for tokens
-    const { tokens } = await client.getToken(code)
-    client.setCredentials(tokens)
-
-    // Get basic user info from ID token
-    const ticket = await client.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: process.env.GOOGLE_CLIENT_ID
-    })
-    const payload = ticket.getPayload()
-
-    // Use Directory API to get groups and profile
-    const directory = google.admin({ version: 'directory_v1', auth: client })
-    // Get user profile (orgUnit, department, etc.)
-    const userProfileRes = await directory.users.get({ userKey: payload.email })
-    const userProfile = userProfileRes.data
-
-    // Get user groups
-    const groupsRes = await directory.groups.list({ userKey: payload.email })
-    const groups = (groupsRes.data.groups || []).map(g => g.name)
-
-    // Build user info from Google data
-    const userInfo = {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      picture: payload.picture,
-      orgUnit: userProfile.orgUnitPath || null,
-      department: userProfile.department || null,
-      groups,
-      roles: userProfile.relations ? userProfile.relations.filter(r => r.type === 'manager').map(r => r.value) : [],
-      googleRaw: { profile: userProfile, groups: groupsRes.data.groups }
-    }
-
-    req.session.user = userInfo
-    req.session.tokens = tokens
-
-    // Save session and redirect
-    req.session.save((err) => {
-      if (err) {
-        req.logger?.error('Session save error', { error: err.message });
-        return res.redirect(`${process.env.CLIENT_URL}/?error=session_failed`)
-      }
-      res.redirect(`${process.env.CLIENT_URL}/dashboard`)
-    })
   } catch (error) {
-    req.logger?.error('OAuth callback error', {
+    logger?.error('OAuth callback processing error', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+      code: error.code
+    });
+
+    // Return appropriate error response
+    if (wantsJson) {
+      return res.status(500).json({
+        error: 'oauth_failed',
+        message: error.message || 'OAuth callback processing failed'
+      });
+    }
+
+    return errorRedirect('oauth_failed', res, logger);
+  }
+});
+
+/**
+ * POST /auth/google/callback
+ *
+ * Alternative OAuth callback endpoint that accepts code in request body.
+ * Returns JSON response instead of redirecting. Useful for API clients
+ * or SPA applications that prefer JSON responses.
+ *
+ * Body:
+ * - code: authorization code from Google
+ * - state: optional state value from OAuth flow
+ *
+ * Response:
+ * - 200: { success: true, user: {...}, authenticated: true }
+ * - 400: { error: string, message: string }
+ * - 500: { error: string, message: string }
+ */
+router.post('/google/callback', async (req, res) => {
+  const logger = req.logger;
+  const { code, state } = req.body;
+
+  logger?.info('OAuth callback received (POST)', {
+    hasCode: !!code,
+    hasState: !!state
+  });
+
+  // Validate authorization code
+  if (!code) {
+    logger?.error('No authorization code provided in POST body');
+    return res.status(400).json({
+      error: 'no_code',
+      message: 'No authorization code provided'
+    });
+  }
+
+  try {
+    // Process OAuth callback (same logic as GET)
+    const userInfo = await processOAuthCallback(code, req, res);
+
+    // Return JSON response
+    return res.json({
+      success: true,
+      user: userInfo,
+      authenticated: true,
+      state // Echo back state if provided
+    });
+
+  } catch (error) {
+    logger?.error('OAuth callback processing error (POST)', {
       message: error.message,
       stack: error.stack,
       response: error.response?.data
-    })
-    // Redirect to frontend with error instead of returning JSON
-    res.redirect(`${process.env.CLIENT_URL}/?error=oauth_failed`)
+    });
+
+    return res.status(500).json({
+      error: 'oauth_failed',
+      message: error.message || 'OAuth callback processing failed'
+    });
   }
-})
+});
 
 /**
  * POST /auth/logout

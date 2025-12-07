@@ -4,6 +4,7 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi";
+import { en, ar } from "vuetify/locale";
 import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 
@@ -66,6 +67,12 @@ const vuetify = createVuetify({
     },
   },
   locale: {
+    locale: i18n.global.locale.value || "en",
+    fallback: "en",
+    messages: {
+      en,
+      ar,
+    },
     rtl: {
       ar: true,
       he: true,
@@ -73,7 +80,6 @@ const vuetify = createVuetify({
       ur: true,
     },
   },
-  rtl: isRTL(i18n.global.locale.value),
   theme: {
     defaultTheme: "light",
     variations: {
@@ -163,7 +169,9 @@ if (import.meta.env.DEV) {
       msg.includes("withDirectives can only be used inside render functions") ||
       msg.includes(
         "Missing ref owner context. ref cannot be used on hoisted vnodes",
-      )
+      ) ||
+      msg.includes("<Suspense> is an experimental feature") ||
+      msg.includes("Suspense") && msg.includes("experimental")
     ) {
       return;
     }

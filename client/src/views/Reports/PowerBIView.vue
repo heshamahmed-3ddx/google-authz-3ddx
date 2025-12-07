@@ -7,15 +7,15 @@
           class="d-flex justify-space-between mb-2 header-container compact-header"
         >
           <div>
-            <h1 class="text-h6 pt-2 compact-header-title">
+            <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
               <v-icon
                 size="small"
-                style="margin-inline-end: 6px"
+                class="header-icon"
                 color="primary"
               >
                 mdi-chart-box-outline
               </v-icon>
-              {{ $t("navigation.powerbi-reporting") || $t("navigation.powerbiReporting") || "PowerBI Reporting" }}
+              <span>{{ $t("navigation.powerbi-reporting") || $t("navigation.powerbiReporting") || "PowerBI Reporting" }}</span>
             </h1>
             <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
               {{ $t("reports.powerbi.subtitle") || "Interactive analytics and business intelligence dashboards" }}
@@ -433,6 +433,22 @@ onUnmounted(() => {
   margin-bottom: 4px;
   display: flex;
   align-items: center;
+  flex-direction: row;
+}
+
+.header-icon {
+  margin-inline-end: 6px;
+  flex-shrink: 0;
+}
+
+/* RTL: Reverse icon and text order */
+[dir="rtl"] .compact-header-title {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-icon {
+  margin-inline-end: 0;
+  margin-inline-start: 6px;
 }
 
 .compact-header-subtitle {

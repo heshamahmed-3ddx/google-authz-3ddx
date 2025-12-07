@@ -2,78 +2,64 @@
   <Teleport to="body">
     <v-overlay
       :model-value="modelValue"
-      class="overlay-fullscreen"
-      :class="{ 'rtl-overlay': isRTL }"
+      class="sidebar-overlay"
       scrim="rgba(0, 0, 0, 0.5)"
       persistent
       @click:outside="closeSidebar"
     >
       <v-card
-        class="overlay-card"
-        :class="{ 'rtl-card': isRTL }"
+        class="sidebar-card"
         @click.stop.prevent
       >
-        <!-- Close button -->
-        <v-btn
-          icon
-          variant="text"
-          size="small"
-          class="close-btn-top"
-          @click="handleCloseClick"
-        >
-          <v-icon size="18">mdi-close</v-icon>
-        </v-btn>
-
         <!-- Content Container -->
         <div class="overlay-content" @click.stop.prevent>
           <div class="overlay-content-wrapper" @click.stop.prevent>
           <!-- User Profile Section with Logout -->
-          <v-list-item
-            v-if="userProfile"
-            class="user-profile-section"
-            :title="userProfile.name"
-            :subtitle="userProfile.jobTitle"
-          >
-            <template #prepend>
-              <v-avatar size="40" class="profile-avatar" color="primary">
-                <img
-                  v-if="userProfile.picture && !imageError"
-                  :src="userProfile.picture"
-                  :alt="userProfile.name"
-                  class="profile-image"
-                  @error="imageError = true"
-                  @load="imageError = false"
-                />
-                <span v-else class="profile-initials">{{ getInitials(userProfile.name) }}</span>
-              </v-avatar>
-            </template>
-            <template #append>
-              <v-btn
-                variant="text"
-                size="small"
-                prepend-icon="mdi-logout"
-                class="profile-logout-btn"
-                @click="handleLogout"
-              >
-                {{ $t("nav.logout") }}
-              </v-btn>
-            </template>
-          </v-list-item>
+          <div v-if="userProfile" class="user-profile-section">
+            <v-avatar size="48" class="profile-avatar" color="primary">
+              <img
+                v-if="userProfile.picture && !imageError"
+                :src="userProfile.picture"
+                :alt="userProfile.name"
+                class="profile-image"
+                @error="imageError = true"
+                @load="imageError = false"
+              />
+              <span v-else class="profile-initials">{{ getInitials(userProfile.name) }}</span>
+            </v-avatar>
+            <div class="profile-info">
+              <div class="profile-name">{{ userProfile.name }}</div>
+              <div v-if="userProfile.jobTitle" class="profile-job-title">{{ userProfile.jobTitle }}</div>
+            </div>
+            <v-btn
+              variant="text"
+              size="small"
+              icon="mdi-logout"
+              class="profile-logout-btn"
+              @click="handleLogout"
+            >
+              <v-icon size="18">mdi-logout</v-icon>
+              <v-tooltip activator="parent" location="bottom">{{ $t("nav.logout") }}</v-tooltip>
+            </v-btn>
+          </div>
 
           <v-divider v-if="userProfile" class="profile-divider"></v-divider>
 
           <!-- Search Filter -->
-          <v-text-field
-            v-model="searchQuery"
-            :placeholder="t('nav.searchPlaceholder') || 'Search navigation...'"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-            class="search-input"
-            @click.stop
-          ></v-text-field>
+          <div class="search-input-wrapper">
+            <v-text-field
+              v-model="searchQuery"
+              :placeholder="t('nav.searchPlaceholder') || 'Search navigation...'"
+              prepend-inner-icon="mdi-magnify"
+              variant="solo-filled"
+              density="compact"
+              hide-details
+              clearable
+              class="search-input"
+              flat
+              @click.stop
+            ></v-text-field>
+          </div>
 
           <!-- Navigation Grid Container -->
           <div class="navigation-grid-container">
@@ -113,19 +99,16 @@
                   :to="item.route"
                   :active="isActiveRoute(item.route)"
                   class="nav-list-item"
-                  @click="navigateTo(item.route)"
+                  :class="{ 'nav-list-item-active': isActiveRoute(item.route) }"
                 >
                   <template #prepend>
-                    <v-avatar
-                      size="32"
-                      class="tile-icon-wrapper"
-                    >
+                    <div class="tile-icon-wrapper">
                       <v-icon
                         :icon="item.icon"
-                        size="20"
+                        size="22"
                         class="nav-tile-icon"
                       ></v-icon>
-                    </v-avatar>
+                    </div>
                   </template>
                   <v-list-item-title class="nav-tile-label">
                     {{ $t("navigation." + item.id) }}
@@ -136,7 +119,13 @@
                       :content="item.badge.text"
                       :color="item.badge.color"
                       size="x-small"
+                      class="nav-badge"
                     ></v-badge>
+                    <v-icon
+                      v-else-if="isActiveRoute(item.route)"
+                      size="16"
+                      class="nav-active-indicator"
+                    >mdi-check-circle</v-icon>
                   </template>
                 </v-list-item>
               </template>
@@ -173,7 +162,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useDevModeStore } from "@/stores/devMode";
 import { useI18n } from "vue-i18n";
-import { isRTL as checkRTL } from "@/i18n";
 import {
   NAVIGATION_CONFIG,
   filterNavigationByPermissions,
@@ -202,8 +190,6 @@ const searchQuery = ref("");
 const imageError = ref(false);
 
 // Computed
-const isRTL = computed(() => checkRTL(locale.value));
-
 const userProfile = computed(() => {
   const details = authStore.cachedUserDetails || authStore.user;
   if (!details) return null;
@@ -327,38 +313,12 @@ function isActiveRoute(itemRoute) {
   return route.path === itemRoute || route.path.startsWith(`${itemRoute}/`);
 }
 
-function handleCloseClick() {
-  // Always close when clicking the close button
-  emit("update:modelValue", false);
-}
-
 function closeSidebar(event) {
   // Prevent closing if user is selecting text
   if (event && window.getSelection && window.getSelection().toString().length > 0) {
     return;
   }
-  // Only close if clicking directly on overlay scrim/background, not on card or content
-  if (event) {
-    const target = event.target;
-    const card = event.currentTarget?.querySelector?.('.overlay-card');
-    // Only close if clicking on the scrim/overlay itself, not on the card or its children
-    if (target && card && !card.contains(target) && target.classList.contains('v-overlay__scrim')) {
-      emit("update:modelValue", false);
-    } else if (!card) {
-      // Fallback if card not found
-      emit("update:modelValue", false);
-    }
-  } else {
-    // Called from @click:outside or other non-event source
-    emit("update:modelValue", false);
-  }
-}
-
-function navigateTo(routePath) {
-  if (routePath) {
-    router.push(routePath);
-    closeSidebar();
-  }
+  emit("update:modelValue", false);
 }
 
 function onItemClick() {
@@ -436,6 +396,30 @@ watch(
   }
 );
 
+// Close sidebar when route changes (after navigation completes)
+// This ensures sidebar stays open during navigation, then closes smoothly
+let routeChangeTimer = null;
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    // Clear any existing timer
+    if (routeChangeTimer) {
+      clearTimeout(routeChangeTimer);
+    }
+    
+    // Only close if sidebar is open and route actually changed
+    if (props.modelValue && newPath !== oldPath && oldPath) {
+      // Wait for route transition to start before closing sidebar
+      // This prevents the "sidebar disappears, wait, then navigate" issue
+      routeChangeTimer = setTimeout(() => {
+        emit("update:modelValue", false);
+        routeChangeTimer = null;
+      }, 200); // Small delay to allow route transition to begin
+    }
+  },
+  { immediate: false }
+);
+
 // Prevent body scroll when sidebar is open
 watch(
   () => props.modelValue,
@@ -452,9 +436,9 @@ watch(
 
 <style scoped>
 /* ========================================
-   FULL SCREEN OVERLAY (Vuetify v-overlay)
+   SIDEBAR OVERLAY (Vuetify v-overlay)
    ======================================== */
-.overlay-fullscreen {
+.sidebar-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -462,93 +446,112 @@ watch(
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  z-index: 2000 !important;
 }
 
-.overlay-fullscreen :deep(.v-overlay__scrim) {
+.sidebar-overlay :deep(.v-overlay__scrim) {
   background-color: rgba(0, 0, 0, 0.5) !important;
   cursor: pointer;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.overlay-card {
+.sidebar-card {
   cursor: default;
   pointer-events: auto;
 }
 
-.overlay-fullscreen :deep(.v-overlay__content) {
-  width: 100vw !important;
+.sidebar-overlay :deep(.v-overlay__content) {
+  width: auto !important;
   height: 100vh !important;
-  max-width: 100vw !important;
+  max-width: none !important;
   margin: 0 !important;
   padding: 0 !important;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-start;
-  overflow: hidden;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important; /* Both LTR and RTL: Sidebar on left */
+  overflow: hidden !important;
+  left: 0 !important;
+  right: auto !important;
 }
 
-.overlay-card {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
+.sidebar-overlay :deep(.v-overlay__content) {
+  justify-content: flex-start !important;
+}
+
+.sidebar-card {
+  width: 480px !important;
+  max-width: 85vw !important;
+  height: 100vh !important;
   background-color: rgb(var(--v-theme-surface)) !important;
   border-radius: 0 !important;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
-  margin: 0;
+  position: relative !important;
+  margin: 0 !important;
   padding: 0;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  transform: translateX(0);
+  animation: slideInFromLeft 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.overlay-card :deep(.v-card-text) {
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+
+@media (max-width: 600px) {
+  .sidebar-card {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+}
+
+.sidebar-card :deep(.v-card-text) {
   display: none;
 }
 
-.v-theme--light .overlay-card {
+.v-theme--light .sidebar-card {
   background-color: #ffffff !important;
 }
 
-.v-theme--dark .overlay-card {
-  background-color: #121212 !important;
+.v-theme--dark .sidebar-card {
+  background-color: #1e1e1e !important;
 }
 
-.close-btn-top {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  color: rgba(var(--v-theme-on-surface), 0.7) !important;
-  min-width: 28px !important;
-  width: 28px !important;
-  height: 28px !important;
-  min-height: 28px !important;
-  border-radius: 4px !important;
-}
-
-
-.overlay-card.rtl-card .close-btn-top {
-  right: auto;
-  left: 8px;
-}
 
 /* RTL Support */
-.overlay-card.rtl-card {
+.sidebar-card.rtl-card {
   direction: rtl;
 }
 
-.overlay-card.rtl-card .overlay-content {
+.sidebar-card.rtl-card .overlay-content {
   direction: rtl;
 }
 
-.overlay-card.rtl-card .navigation-grid-wrapper {
+.sidebar-card.rtl-card .navigation-grid-wrapper {
   direction: ltr;
 }
 
-.overlay-card.rtl-card .section-header {
+.sidebar-card.rtl-card .section-header {
   direction: rtl;
 }
 
-.overlay-card.rtl-card .nav-list-item {
+.sidebar-card.rtl-card .nav-list-item {
   direction: rtl;
 }
 
@@ -585,12 +588,10 @@ watch(
 
 
 .overlay-content-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 50px 16px 0;
+  padding: 20px 20px 0;
   min-height: 100%;
 }
 
@@ -612,36 +613,40 @@ watch(
 }
 
 /* ========================================
-   USER PROFILE SECTION (Vuetify v-list-item)
+   USER PROFILE SECTION
    ======================================== */
 .user-profile-section {
-  padding: 10px 0 !important;
-  margin-bottom: 0 !important;
-  min-height: auto !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: rgba(240, 138, 74, 0.06);
+  border-radius: 8px;
+  transition: background 0.2s ease;
 }
 
-.user-profile-section :deep(.v-list-item__prepend) {
-  align-self: center;
-  margin-inline-end: 12px;
+.user-profile-section:hover {
+  background: rgba(240, 138, 74, 0.1);
 }
 
-.user-profile-section :deep(.v-list-item__content) {
-  flex: 1;
-  min-width: 0;
+.v-theme--dark .user-profile-section {
+  background: rgba(240, 138, 74, 0.08);
 }
 
-.user-profile-section :deep(.v-list-item__append) {
-  margin-inline-start: 12px;
+.v-theme--dark .user-profile-section:hover {
+  background: rgba(240, 138, 74, 0.12);
 }
 
 .profile-avatar {
-  background: rgba(255, 111, 0, 0.1) !important;
-  border: 1px solid rgba(255, 111, 0, 0.2);
+  background: rgba(240, 138, 74, 0.12) !important;
+  border: 1px solid rgba(240, 138, 74, 0.25);
+  flex-shrink: 0;
 }
 
 .v-theme--dark .profile-avatar {
-  background: rgba(255, 183, 77, 0.15) !important;
-  border-color: rgba(255, 183, 77, 0.25);
+  background: rgba(240, 138, 74, 0.15) !important;
+  border-color: rgba(240, 138, 74, 0.35);
 }
 
 .profile-image {
@@ -652,37 +657,57 @@ watch(
 }
 
 .profile-initials {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #ff6f00;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f08a4a;
 }
 
 .v-theme--dark .profile-initials {
   color: #ffb74d;
 }
 
-.user-profile-section :deep(.v-list-item-title) {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgba(var(--v-theme-on-surface), 0.9);
-  line-height: 1.3;
-  margin-bottom: 2px;
+.profile-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.user-profile-section :deep(.v-list-item-subtitle) {
-  font-size: 0.6875rem;
+.profile-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.95);
+  line-height: 1.4;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-job-title {
+  font-size: 0.75rem;
   font-weight: 400;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  line-height: 1.2;
-  opacity: 1;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-logout-btn {
-  color: rgba(var(--v-theme-on-surface), 0.7) !important;
-  font-size: 0.75rem !important;
-  min-height: 28px !important;
+  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+  min-width: 36px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  flex-shrink: 0;
 }
 
+.profile-logout-btn:hover {
+  background: rgba(244, 67, 54, 0.1) !important;
+  color: #f44336 !important;
+  transform: scale(1.05);
+}
 
 .profile-divider {
   margin: 16px 0;
@@ -691,62 +716,78 @@ watch(
 /* ========================================
    SEARCH FILTER
    ======================================== */
-.search-input {
-  margin-bottom: 16px;
+.search-input-wrapper {
+  margin-bottom: 12px;
   width: 100%;
   flex-shrink: 0;
 }
 
+.search-input {
+  width: 100%;
+}
+
 .search-input :deep(.v-field) {
   border-radius: 8px;
-  background: rgba(var(--v-theme-surface), 1);
-  border-color: rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-surface), 0.6) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   min-height: 40px;
   max-height: 40px;
   height: 40px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
 }
 
 .v-theme--dark .search-input :deep(.v-field) {
-  background: rgba(var(--v-theme-surface), 0.8);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(var(--v-theme-surface), 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-
 .search-input :deep(.v-field--focused) {
-  border-color: rgba(255, 111, 0, 0.5);
+  background: rgba(var(--v-theme-surface), 0.9) !important;
+  border-color: #f08a4a !important;
+  box-shadow: 0 0 0 2px rgba(240, 138, 74, 0.1);
   min-height: 40px;
   max-height: 40px;
   height: 40px;
 }
 
 .v-theme--dark .search-input :deep(.v-field--focused) {
-  border-color: rgba(255, 183, 77, 0.6);
+  background: rgba(var(--v-theme-surface), 0.8) !important;
+  border-color: #ffb74d !important;
+  box-shadow: 0 0 0 2px rgba(255, 183, 77, 0.15);
 }
 
 .search-input :deep(.v-field__input) {
-  padding: 6px 10px;
+  padding: 0 12px;
   font-size: 0.8125rem;
   min-height: 40px;
   max-height: 40px;
   height: 40px;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
 .search-input :deep(.v-field__prepend-inner) {
   padding-inline-start: 12px;
   padding-inline-end: 8px;
+  padding-top: 0;
+  align-items: center;
 }
 
 .search-input :deep(.v-field__append-inner) {
   padding-inline-start: 8px;
   padding-inline-end: 12px;
+  padding-top: 0;
+  align-items: center;
 }
 
 .search-input :deep(.v-icon) {
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  transition: color 0.2s ease;
+  font-size: 18px;
 }
 
 .search-input :deep(.v-field--focused .v-icon) {
-  color: #ff6f00;
+  color: #f08a4a;
 }
 
 .v-theme--dark .search-input :deep(.v-field--focused .v-icon) {
@@ -758,6 +799,10 @@ watch(
   padding: 0;
 }
 
+.search-input :deep(.v-field__clearable .v-icon) {
+  font-size: 16px;
+}
+
 /* ========================================
    NAVIGATION GRID CONTAINER
    ======================================== */
@@ -766,6 +811,9 @@ watch(
   width: 100%;
   display: flex;
   flex-direction: column;
+  margin-top: 0;
+  padding-top: 0;
+  min-height: 0;
 }
 
 /* ========================================
@@ -820,24 +868,10 @@ watch(
 }
 
 .navigation-grid-wrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 0;
-}
-
-@media (min-width: 600px) {
-  .navigation-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 8px;
-  }
-}
-
-@media (min-width: 960px) {
-  .navigation-grid-wrapper {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-  }
 }
 
 /* ========================================
@@ -846,10 +880,10 @@ watch(
 .section-header {
   margin-top: 12px;
   margin-bottom: 6px;
-  padding: 0 4px !important;
+  padding: 6px 12px !important;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   height: auto !important;
   min-height: auto !important;
   background: transparent !important;
@@ -860,37 +894,38 @@ watch(
 }
 
 .section-icon {
-  color: rgba(var(--v-theme-on-surface), 0.55);
+  color: #f08a4a;
   flex-shrink: 0;
-  font-size: 15px !important;
+  font-size: 18px !important;
 }
 
 .v-theme--dark .section-icon {
-  color: rgba(255, 255, 255, 0.5);
+  color: #ffb74d;
 }
 
 .section-title {
-  color: rgba(var(--v-theme-on-surface), 0.65);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.75);
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 1px;
   white-space: nowrap;
   line-height: 1.3;
 }
 
 .v-theme--dark .section-title {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .section-separator-line {
   flex: 1;
   margin-left: 0;
-  border-color: rgba(var(--v-theme-on-surface), 0.2) !important;
+  border-color: rgba(var(--v-theme-on-surface), 0.15) !important;
+  border-width: 1px !important;
 }
 
 .v-theme--dark .section-separator-line {
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 /* ========================================
@@ -898,15 +933,39 @@ watch(
    ======================================== */
 .nav-list-item {
   margin-bottom: 0;
-  border-radius: 6px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  background: rgba(var(--v-theme-surface), 1);
-  min-height: 36px;
-  padding: 8px 10px !important;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  min-height: 48px;
+  padding: 10px 12px !important;
   cursor: pointer;
   width: 100%;
-  align-items: flex-start;
+  align-items: center;
   box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-list-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: #f08a4a;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.nav-list-item:hover {
+  background: rgba(240, 138, 74, 0.08);
+  transform: translateX(4px);
+}
+
+.nav-list-item:hover::before {
+  opacity: 1;
 }
 
 .nav-list-item :deep(.v-list-item) {
@@ -915,64 +974,92 @@ watch(
 }
 
 .v-theme--dark .nav-list-item {
-  background: rgba(var(--v-theme-surface), 0.8);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(var(--v-theme-surface), 0.9);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
+.v-theme--dark .nav-list-item:hover {
+  background: rgba(240, 138, 74, 0.08);
+  border-color: rgba(240, 138, 74, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
 
+.nav-list-item-active,
 .nav-list-item.v-list-item--active {
-  background: rgba(255, 111, 0, 0.15) !important;
-  border-color: rgba(255, 111, 0, 0.5);
-  border-width: 1px;
+  background: rgba(240, 138, 74, 0.12) !important;
+  border-left: 3px solid #f08a4a !important;
+  transform: translateX(0);
 }
 
+.nav-list-item-active::before,
+.nav-list-item.v-list-item--active::before {
+  opacity: 1;
+}
+
+.v-theme--dark .nav-list-item-active,
 .v-theme--dark .nav-list-item.v-list-item--active {
-  background: rgba(255, 183, 77, 0.18) !important;
-  border-color: rgba(255, 183, 77, 0.55);
-  border-width: 1px;
+  background: rgba(240, 138, 74, 0.15) !important;
+  border-left-color: #ffb74d !important;
 }
 
 .tile-icon-wrapper {
-  background: rgba(255, 111, 0, 0.12) !important;
-  border-radius: 5px;
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px !important;
-}
-
-.v-theme--dark .tile-icon-wrapper {
-  background: rgba(255, 183, 77, 0.15) !important;
-}
-
-
-.nav-list-item.v-list-item--active .tile-icon-wrapper {
-  background: rgba(255, 111, 0, 0.2) !important;
-}
-
-.v-theme--dark .nav-list-item.v-list-item--active .tile-icon-wrapper {
-  background: rgba(255, 183, 77, 0.25) !important;
+  background: transparent !important;
+  border-radius: 6px;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-tile-icon {
-  color: #ff6f00;
-  font-size: 18px !important;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 20px !important;
+  transition: color 0.2s ease;
 }
 
 .v-theme--dark .nav-tile-icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.nav-list-item:hover .nav-tile-icon {
+  color: #f08a4a;
+}
+
+.v-theme--dark .nav-list-item:hover .nav-tile-icon {
   color: #ffb74d;
 }
 
-
+.nav-list-item-active .nav-tile-icon,
 .nav-list-item.v-list-item--active .nav-tile-icon {
-  color: #e65100;
+  color: #f08a4a;
 }
 
+.v-theme--dark .nav-list-item-active .nav-tile-icon,
 .v-theme--dark .nav-list-item.v-list-item--active .nav-tile-icon {
-  color: #ffcc80;
+  color: #ffb74d;
+}
+
+.nav-active-indicator {
+  color: #f08a4a !important;
+  animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .nav-list-item :deep(.v-list-item__prepend) {
-  margin-inline-end: 8px;
+  margin-inline-end: 12px;
 }
 
 .nav-list-item :deep(.v-list-item__content) {
@@ -983,32 +1070,33 @@ watch(
 }
 
 .nav-list-item :deep(.v-list-item__append) {
-  margin-inline-start: 6px;
+  margin-inline-start: 8px;
 }
 
 .nav-tile-label {
-  color: rgba(var(--v-theme-on-surface), 0.9);
-  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.85);
+  font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.4;
-  white-space: normal;
-  overflow: visible;
-  word-wrap: break-word;
-  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
 }
 
 .v-theme--dark .nav-tile-label {
   color: rgba(255, 255, 255, 0.85);
 }
 
-
+.nav-list-item-active .nav-tile-label,
 .nav-list-item.v-list-item--active .nav-tile-label {
-  color: #e65100;
+  color: #f08a4a;
   font-weight: 600;
 }
 
+.v-theme--dark .nav-list-item-active .nav-tile-label,
 .v-theme--dark .nav-list-item.v-list-item--active .nav-tile-label {
-  color: #ffcc80;
+  color: #ffb74d;
 }
 
 /* ========================================
@@ -1051,25 +1139,30 @@ watch(
 /* ========================================
    RESPONSIVE ADJUSTMENTS
    ======================================== */
+@media (max-width: 960px) {
+  .overlay-content-wrapper {
+    padding: 18px 16px 0;
+  }
+}
+
 @media (max-width: 600px) {
-  .navigation-grid-wrapper {
-    grid-template-columns: 1fr;
-    gap: 6px;
+  .overlay-content-wrapper {
+    padding: 16px 14px 0;
   }
 
   .nav-list-item {
-    min-height: 36px;
+    min-height: 44px;
     padding: 8px 10px !important;
   }
 
   .tile-icon-wrapper {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
   }
 
   .nav-tile-icon {
-    font-size: 16px !important;
+    font-size: 18px !important;
   }
 
   .nav-tile-label {
@@ -1077,9 +1170,37 @@ watch(
   }
 
   .section-header {
-    padding: 0 4px !important;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    padding: 6px 0 !important;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .user-profile-section {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+
+  .search-input-wrapper {
+    margin-bottom: 10px;
+  }
+
+  .search-input :deep(.v-field) {
+    min-height: 38px;
+    max-height: 38px;
+    height: 38px;
+  }
+
+  .search-input :deep(.v-field__input) {
+    min-height: 38px;
+    max-height: 38px;
+    height: 38px;
+    font-size: 0.8125rem;
   }
 }
 

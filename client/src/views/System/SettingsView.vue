@@ -7,11 +7,11 @@
           class="d-flex justify-space-between mb-2 header-container compact-header"
         >
           <div>
-            <h1 class="text-h6 pt-2 compact-header-title">
-              <v-icon size="small" style="margin-inline-end: 6px" color="primary"
+            <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
+              <v-icon size="small" class="header-icon" color="primary"
                 >mdi-cog</v-icon
               >
-              Settings
+              <span>Settings</span>
             </h1>
             <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
               Manage system settings and configurations
@@ -132,6 +132,24 @@ watch(activeTab, (newTab) => {
   line-height: 1.5rem !important;
   min-height: 1.5rem !important;
   margin-bottom: 0 !important;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.header-icon {
+  margin-inline-end: 6px;
+  flex-shrink: 0;
+}
+
+/* RTL: Reverse icon and text order */
+[dir="rtl"] .compact-header-title {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-icon {
+  margin-inline-end: 0;
+  margin-inline-start: 6px;
 }
 
 .compact-header-subtitle {

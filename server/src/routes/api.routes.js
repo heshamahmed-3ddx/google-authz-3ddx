@@ -2101,6 +2101,61 @@ router.get('/dev/casbin-state', requireAuth, async (req, res) => {
 });
 
 // ========================================
+// CONFIGURATION ENDPOINTS
+// ========================================
+
+/**
+ * GET /api/config/github
+ * Get GitHub repository information for developer documentation
+ * @route GET /api/config/github
+ * @access Public (can be protected if needed)
+ * @returns {Object} GitHub repository information
+ */
+router.get('/config/github', async (req, res) => {
+  try {
+    const githubConfig = CONFIG.documentation.github;
+    
+    if (!githubConfig.displayInDocs) {
+      logger.info('GitHub config requested but disabled', {
+        ip: req.ip,
+        requestId: req.requestId
+      });
+      
+      return res.status(404).json(createErrorResponse(
+        'NOT_FOUND',
+        404,
+        'GitHub repository link is not configured or disabled',
+        req.requestId
+      ));
+    }
+    
+    logger.info('GitHub config requested', {
+      ip: req.ip,
+      requestId: req.requestId
+    });
+    
+    res.json(createApiResponse({
+      repositoryUrl: githubConfig.repositoryUrl,
+      repositoryName: githubConfig.repositoryName
+    }, 'GitHub repository information retrieved successfully'));
+    
+  } catch (error) {
+    logger.error('Error fetching GitHub config', {
+      error: error.message,
+      stack: error.stack,
+      requestId: req.requestId
+    });
+    
+    res.status(500).json(createErrorResponse(
+      'INTERNAL_ERROR',
+      500,
+      'Failed to fetch GitHub repository information',
+      req.requestId
+    ));
+  }
+});
+
+// ========================================
 // SURGICAL GUIDE REPORT ROUTES
 // ========================================
 // Mount surgical guide report routes at /api/reports/*

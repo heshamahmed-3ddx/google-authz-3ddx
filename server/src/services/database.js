@@ -151,6 +151,7 @@ class DatabaseService {
    */
   async query(sql, params = []) {
     let connection;
+    const queryStartTime = process.hrtime();
     try {
       // Get connection from pool (timeout handled by acquireTimeout config)
       connection = await this.getPool().getConnection();
@@ -163,8 +164,17 @@ class DatabaseService {
       // Execute query (connectTimeout handles connection establishment)
       const [rows] = await connection.execute(sql, params);
       
-      logger.debug('Query executed successfully', {
-        rowCount: Array.isArray(rows) ? rows.length : 'N/A'
+      // Calculate execution time
+      const queryDuration = process.hrtime(queryStartTime);
+      const queryDurationMs = queryDuration[0] * 1000 + queryDuration[1] / 1e6;
+      
+      // Log query execution with timing (info level for queries >100ms, debug otherwise)
+      const logLevel = queryDurationMs > 100 ? 'info' : 'debug';
+      logger[logLevel]('Database query executed', {
+        duration: `${queryDurationMs.toFixed(2)}ms`,
+        rowCount: Array.isArray(rows) ? rows.length : 'N/A',
+        sql: sql.substring(0, 200) + (sql.length > 200 ? '...' : ''),
+        paramsCount: params.length
       });
 
       return rows;

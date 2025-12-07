@@ -865,11 +865,29 @@
    RTL SUPPORT
    ======================================== */
 
+/* Header icon positioning - RTL support */
+.header-icon {
+  margin-inline-end: 6px;
+  flex-shrink: 0;
+}
+
 [dir="rtl"] .compact-icon,
 [dir="rtl"] .compact-header-title .v-icon,
-[dir="rtl"] .compact-title .v-icon {
+[dir="rtl"] .compact-title .v-icon,
+[dir="rtl"] .header-icon {
   margin-inline-end: 0 !important;
   margin-inline-start: 6px !important;
+}
+
+/* RTL: Reverse icon and text order in headers */
+[dir="rtl"] .compact-header-title {
+  flex-direction: row-reverse;
+}
+
+/* RTL: Reverse icon and text order in card titles with flex */
+[dir="rtl"] .compact-title.d-flex.align-center,
+[dir="rtl"] .table-card-title .d-flex.align-center {
+  flex-direction: row-reverse;
 }
 
 /* RTL Table Support */
