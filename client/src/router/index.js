@@ -9,6 +9,12 @@ const routes = [
     component: () => import("@/views/LoginPage.vue"),
   },
   {
+    path: "/home",
+    name: "Home",
+    component: () => import("@/views/WelcomeView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/dashboard",
     name: "Dashboard",
     // Prefetch dashboard for faster loading
@@ -340,6 +346,7 @@ const routes = [
     path: "/callback",
     name: "Callback",
     component: () => import("@/views/CallbackView.vue"),
+    meta: { requiresAuth: false }, // Explicitly public - OAuth callback
   },
 
   // ========================================
@@ -349,7 +356,7 @@ const routes = [
     path: "/unauthorized",
     name: "Unauthorized",
     component: () => import("@/views/UnauthorizedView.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false }, // Must be accessible without auth
   },
   {
     path: "/404",
@@ -386,88 +393,160 @@ const router = createRouter({
   routes,
 });
 
+/**
+ * Helper function to get user groups with fallback
+ */
+async function getUserGroups(authStore) {
+  // Try cached user rights first
+  let userGroups = authStore.cachedUserRights?.groups || [];
+  
+  // Fallback to user object from session if cached rights not available
+  if (userGroups.length === 0 && authStore.user?.groups) {
+    userGroups = authStore.user.groups;
+  }
+  
+  // If still empty and user is authenticated, try to fetch user rights
+  if (userGroups.length === 0 && authStore.isAuthenticated) {
+    try {
+      // Fetch user rights if not cached (non-blocking)
+      const { apiService } = await import("@/services/api");
+      const response = await apiService.get("/api/user/rights");
+      if (response.data?.data?.groups) {
+        userGroups = response.data.data.groups;
+      }
+    } catch (error) {
+      // Silently fail - will use empty groups and rely on wildcard permissions
+      console.debug("Failed to fetch user rights in router guard", error);
+    }
+  }
+  
+  return userGroups;
+}
+
 // Navigation guard with group-based permissions
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore();
+  try {
+    const authStore = useAuthStore();
 
-  // Fast path: if already authenticated and going to public route, allow immediately
-  if (!to.meta.requiresAuth && authStore.isAuthenticated && to.name === "Login") {
-    next({ name: "Dashboard" });
-    return;
-  }
+    // Fast path: if route doesn't require auth, allow immediately
+    if (!to.meta.requiresAuth) {
+      // If authenticated user tries to access login page, redirect to dashboard
+      if (to.name === "Login" && authStore.isAuthenticated) {
+        next({ name: "Dashboard" });
+        return;
+      }
+      next();
+      return;
+    }
 
-  // Fast path: if route doesn't require auth, allow immediately
-  if (!to.meta.requiresAuth) {
-    next();
-    return;
-  }
+    // Check if user is already authenticated (use cached value first)
+    let isAuthenticated = authStore.isAuthenticated;
+    
+    // Only check with server if not already authenticated (avoid unnecessary API calls)
+    if (!isAuthenticated) {
+      try {
+        isAuthenticated = await authStore.checkAuth();
+      } catch (error) {
+        // If auth check fails, treat as not authenticated
+        console.error("Auth check failed in router guard", error);
+        isAuthenticated = false;
+      }
+    }
 
-  // Check if user is already authenticated (use cached value first)
-  let isAuthenticated = authStore.isAuthenticated;
-  
-  // Only check with server if not already authenticated (avoid unnecessary API calls)
-  if (!isAuthenticated) {
-    isAuthenticated = await authStore.checkAuth();
-  }
+    // If logged-in user tries to access login page, redirect to dashboard
+    if (to.name === "Login" && isAuthenticated) {
+      next({ name: "Dashboard" });
+      return;
+    }
 
-  // If logged-in user tries to access login page, redirect to dashboard
-  if (to.name === "Login" && isAuthenticated) {
-    next({ name: "Dashboard" });
-    return;
-  }
+    // Require authentication for protected routes
+    if (!isAuthenticated) {
+      next({ name: "Login" });
+      return;
+    }
 
-  if (!isAuthenticated) {
-    next({ name: "Login" });
-    return;
-  }
-
-  // Check group-based permissions (only if required)
-  if (to.meta.requiredGroups) {
-    // Get user groups from auth store (use cached value)
-    const userRights = authStore.cachedUserRights;
-    let userGroups = userRights?.groups || [];
-
-    // In development mode, merge with simulated groups
-    if (import.meta.env.DEV) {
-      const { useDevModeStore } = await import("@/stores/devMode");
-      const devModeStore = useDevModeStore();
-
-      // If admin view is enabled, grant access to all routes
-      if (devModeStore.adminViewEnabled) {
+    // Check group-based permissions (only if required)
+    if (to.meta.requiredGroups) {
+      // Check for wildcard permission first (allows all authenticated users)
+      if (to.meta.requiredGroups.includes("*")) {
         next();
         return;
       }
 
-      // Merge actual groups with simulated groups
-      userGroups = devModeStore.getMergedGroups(userGroups);
+      // Get user groups with fallback
+      let userGroups = await getUserGroups(authStore);
+
+      // In development mode, merge with simulated groups
+      if (import.meta.env.DEV) {
+        try {
+          const { useDevModeStore } = await import("@/stores/devMode");
+          const devModeStore = useDevModeStore();
+
+          // If admin view is enabled, grant access to all routes
+          if (devModeStore.adminViewEnabled) {
+            next();
+            return;
+          }
+
+          // Merge actual groups with simulated groups
+          userGroups = devModeStore.getMergedGroups(userGroups);
+        } catch (error) {
+          // Dev mode store might not be available, continue with normal flow
+          console.debug("Dev mode store not available", error);
+        }
+      }
+
+      // Check if user has required access
+      try {
+        const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
+
+        if (!hasAccess) {
+          // Redirect to unauthorized page with context
+          if (import.meta.env.DEV) {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `Access denied to ${to.path}. Required groups:`,
+              to.meta.requiredGroups,
+            );
+            // eslint-disable-next-line no-console
+            console.warn(`User groups:`, userGroups);
+          }
+          next({
+            name: "Unauthorized",
+            query: {
+              from: to.path,
+              requiredGroups: to.meta.requiredGroups.join(", "),
+            },
+          });
+          return;
+        }
+      } catch (error) {
+        // If permission check fails, deny access by default
+        console.error("Permission check failed in router guard", error);
+        next({
+          name: "Unauthorized",
+          query: {
+            from: to.path,
+            requiredGroups: to.meta.requiredGroups.join(", "),
+          },
+        });
+        return;
+      }
     }
 
-    // Check if user has required access
-    const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
-
-    if (!hasAccess) {
-      // Redirect to unauthorized page with context
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `Access denied to ${to.path}. Required groups:`,
-          to.meta.requiredGroups,
-        );
-        // eslint-disable-next-line no-console
-        console.warn(`User groups:`, userGroups);
-      }
-      next({
-        name: "Unauthorized",
-        query: {
-          from: to.path,
-          requiredGroups: to.meta.requiredGroups.join(", "),
-        },
-      });
-      return;
+    next();
+  } catch (error) {
+    // Global error handler for router guard
+    console.error("Router guard error", error);
+    
+    // If error occurs, redirect to login to ensure user can re-authenticate
+    // Only if we're not already on a public route
+    if (to.meta.requiresAuth) {
+      next({ name: "Login" });
+    } else {
+      next(); // Allow public routes even on error
     }
   }
-
-  next();
 });
 
 export default router;

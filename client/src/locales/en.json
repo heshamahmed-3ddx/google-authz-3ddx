@@ -446,6 +446,12 @@
         "hasExtraction": "Indicates if extraction was performed",
         "boneReduction": "Indicates if bone reduction was selected"
       },
+      "progress": {
+        "validating": "Validating",
+        "fetching": "Fetching",
+        "processing": "Processing",
+        "complete": "Complete"
+      },
       "status": {
         "qcShipping": "QC Shipping",
         "confirmedByOEM": "Confirmed by OEM",

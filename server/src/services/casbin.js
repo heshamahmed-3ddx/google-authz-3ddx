@@ -217,35 +217,43 @@ class CasbinService {
     try {
       const startTime = Date.now();
       
-      logger.info('Authorization check started', { userEmail, resource, action });
+      // Only log in non-production or if explicitly enabled
+      if (process.env.NODE_ENV !== 'production' || process.env.CASBIN_DEBUG === 'true') {
+        logger.info('Authorization check started', { userEmail, resource, action });
+      }
       
       // Check authorization
       const allowed = await this.enforcer.enforce(userEmail, resource, action);
       
       const duration = Date.now() - startTime;
       
-      // Get user groups for audit logging
+      // Get user groups for audit logging (only if needed)
       const userInfo = this.getUserInfo(userEmail);
       const userGroups = userInfo ? userInfo.groups : [];
       
-      // Get matching policies for audit trail
-      const allPolicies = await this.enforcer.getPolicy();
-      const matchingPolicies = allPolicies.filter(policy => {
-        const [, subject, obj, act] = policy;
-        return userGroups.includes(subject) && obj === resource && act === action;
-      });
+      // OPTIMIZED: Removed expensive getPolicy() call - only log if taking too long
+      // The matchingPolicies count was only for audit logging and is not critical
+      if (duration > 100) {
+        logger.warn('Slow authorization check detected', {
+          userEmail,
+          resource,
+          action,
+          duration: `${duration}ms`
+        });
+      }
 
-      // Log authorization result
-      const logLevel = allowed ? 'info' : 'warn';
-      logger[logLevel](`Authorization ${allowed ? 'granted' : 'denied'}`, {
-        userEmail,
-        resource,
-        action,
-        result: allowed,
-        duration: `${duration}ms`,
-        userGroups,
-        matchingPolicies: matchingPolicies.length
-      });
+      // Log authorization result (only if denied or in debug mode)
+      if (!allowed || process.env.NODE_ENV !== 'production') {
+        const logLevel = allowed ? 'info' : 'warn';
+        logger[logLevel](`Authorization ${allowed ? 'granted' : 'denied'}`, {
+          userEmail,
+          resource,
+          action,
+          result: allowed,
+          duration: `${duration}ms`,
+          userGroups
+        });
+      }
 
       const result = {
         allowed,
@@ -253,7 +261,6 @@ class CasbinService {
         resource,
         action,
         userGroups,
-        matchingPolicies,
         evaluationTime: duration,
         timestamp: new Date().toISOString(),
         requestId: 'unknown' // Will be set by calling function
@@ -297,13 +304,7 @@ class CasbinService {
       throw new Error('Casbin enforcer not initialized');
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      logger.info('User rights retrieval started', { 
-        userEmail, 
-        hasSessionUser: !!sessionUser,
-        sessionGroups: sessionUser?.groups?.length || 0
-      });
-    }
+    const startTime = Date.now();
 
     // Use Google session data if available
     const userInfo = this.getUserInfo(userEmail, sessionUser);
@@ -318,47 +319,87 @@ class CasbinService {
       };
     }
 
-    // Dynamically assign Casbin group memberships for this session
+    // OPTIMIZED: Use getRolesForUser to check existing roles (more efficient than loading all groupings)
+    let existingUserRoles = [];
+    try {
+      existingUserRoles = await this.enforcer.getRolesForUser(userEmail);
+    } catch (error) {
+      logger.debug('Error getting existing roles, will add all groups', { userEmail, error: error.message });
+    }
+
+    // Only add missing group/role memberships (don't modify enforcer state unnecessarily)
     if (userInfo.groups && Array.isArray(userInfo.groups)) {
       for (const group of userInfo.groups) {
-        await this.enforcer.addGroupingPolicy(userEmail, group);
+        if (!existingUserRoles.includes(group)) {
+          await this.enforcer.addGroupingPolicy(userEmail, group);
+        }
       }
     }
     if (userInfo.roles && Array.isArray(userInfo.roles)) {
       for (const role of userInfo.roles) {
-        await this.enforcer.addGroupingPolicy(userEmail, role);
+        if (!existingUserRoles.includes(role)) {
+          await this.enforcer.addGroupingPolicy(userEmail, role);
+        }
       }
     }
 
-    // Evaluate all policies for this user
-    const allPolicies = await this.enforcer.getPolicy();
-
-    // Get all subjects (groups/roles) the user belongs to
-    const allUserSubjects = [
-      userEmail,
-      ...(userInfo.groups || []),
-      ...(userInfo.roles || [])
-    ];
-
-    // Filter policies that apply to the user's subjects
-    const relevantPolicies = allPolicies.filter(policy => {
-      const [subject] = policy;  // First element is the subject
-      return allUserSubjects.includes(subject);
-    });
-
+    // OPTIMIZED: Use getPermissionsForUser which handles RBAC evaluation efficiently
+    // This method automatically evaluates all roles/groups the user belongs to
     const resourcePermissions = {};
-    for (const policy of relevantPolicies) {
-      const [subject, resource, action] = policy;  // Correct order
-      if (!resourcePermissions[resource]) {
-        resourcePermissions[resource] = new Set();
+    
+    try {
+      // getPermissionsForUser handles RBAC and returns all permissions for user + their roles
+      const allPermissions = await this.enforcer.getPermissionsForUser(userEmail);
+      
+      for (const perm of allPermissions) {
+        const [, resource, action] = perm;
+        if (resource && action) {
+          if (!resourcePermissions[resource]) {
+            resourcePermissions[resource] = new Set();
+          }
+          resourcePermissions[resource].add(action);
+        }
       }
-      resourcePermissions[resource].add(action);
+    } catch (error) {
+      logger.warn('Error getting permissions, falling back to policy loading', { 
+        userEmail, 
+        error: error.message 
+      });
+      
+      // Fallback: Load policies only for user's groups/roles (still better than all policies)
+      const allUserSubjects = [userEmail, ...(userInfo.groups || []), ...(userInfo.roles || [])];
+      const allPolicies = await this.enforcer.getPolicy();
+      const relevantPolicies = allPolicies.filter(policy => {
+        const [subject] = policy;
+        return allUserSubjects.includes(subject);
+      });
+
+      for (const policy of relevantPolicies) {
+        const [, resource, action] = policy;
+        if (resource && action) {
+          if (!resourcePermissions[resource]) {
+            resourcePermissions[resource] = new Set();
+          }
+          resourcePermissions[resource].add(action);
+        }
+      }
     }
 
     const rightsArr = Object.entries(resourcePermissions).map(([resource, actions]) => ({
       resource,
       actions: Array.from(actions).sort()
     }));
+
+    const duration = Date.now() - startTime;
+    
+    // Log slow operations
+    if (duration > 500) {
+      logger.warn('Slow user rights retrieval detected', {
+        userEmail,
+        duration: `${duration}ms`,
+        rightsCount: rightsArr.length
+      });
+    }
 
     return {
       userEmail,
@@ -485,13 +526,20 @@ class CasbinService {
     if (!this.enforcer) {
       throw new Error('Casbin enforcer not initialized');
     }
-    // In our RBAC model, groups are often represented as roles
-    // Get all grouping policies and filter for this user
-    const allGroupings = await this.enforcer.getGroupingPolicy();
-    const userGroups = allGroupings
-      .filter(grouping => grouping[0] === userEmail)
-      .map(grouping => grouping[1]); // Extract the group/role name
-    return userGroups;
+    // OPTIMIZED: Use getRolesForUser which is more efficient than loading all groupings
+    // This returns both direct and inherited roles/groups
+    try {
+      const roles = await this.enforcer.getRolesForUser(userEmail);
+      return roles || [];
+    } catch (error) {
+      // Fallback to grouping policy method if getRolesForUser fails
+      logger.debug('getRolesForUser failed, using fallback method', { userEmail, error: error.message });
+      const allGroupings = await this.enforcer.getGroupingPolicy();
+      const userGroups = allGroupings
+        .filter(grouping => grouping[0] === userEmail)
+        .map(grouping => grouping[1]); // Extract the group/role name
+      return userGroups;
+    }
   }
 
   /**
@@ -741,22 +789,6 @@ class CasbinService {
     }
   }
 
-  /**
-   * Reload policies from database (invalidates cache and reloads)
-   * @returns {Promise<void>}
-   */
-  async reloadPolicies() {
-    if (!this.enforcer) {
-      throw new Error('Casbin enforcer not initialized');
-    }
-
-    // Invalidate cache if using enhanced adapter
-    this.invalidateCache();
-
-    // Reload policies
-    await this.enforcer.loadPolicy();
-    logger.info('Policies reloaded from database');
-  }
 }
 
 // Create singleton instance

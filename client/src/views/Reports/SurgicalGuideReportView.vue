@@ -4,14 +4,18 @@
     <v-row>
       <v-col cols="12">
         <div
-          class="d-flex justify-space-between  mb-2 header-container  compact-header"
+          class="d-flex justify-space-between mb-2 header-container compact-header"
         >
-          <div class="">
-            <h1 class="text-h6 pt-2  compact-header-title">
-              <v-icon size="small" style="margin-inline-end: 6px" color="primary"
-                >mdi-file-chart-outline</v-icon
+          <div>
+            <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
+              <v-icon
+                size="small"
+                class="header-icon"
+                color="primary"
               >
-              {{ t("reports.surgicalGuide.title") }}
+                mdi-file-chart-outline
+              </v-icon>
+              <span>{{ t("reports.surgicalGuide.title") }}</span>
             </h1>
             <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
               {{ t("reports.surgicalGuide.subtitle") }}
@@ -132,39 +136,26 @@
 
     <!-- Main Report Interface (Finance22 only) -->
     <template v-if="accessInfo.hasReportAccess">
-      <!-- Loading Skeleton Loaders -->
-      <v-row v-if="loading.table" no-gutters class="skeleton-loader-row">
-        <v-col cols="12" md="3" class="pr-md-2 skeleton-col">
-          <v-card elevation="1" class="skeleton-card h-100">
-            <v-card-text class="pa-3">
-              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
-              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
-              <v-skeleton-loader type="text" class="mb-3"></v-skeleton-loader>
-              <v-skeleton-loader type="button" class="mb-3"></v-skeleton-loader>
-              <v-divider class="my-3"></v-divider>
-              <v-skeleton-loader type="heading" class="mb-2"></v-skeleton-loader>
-              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
-              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
-              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
-              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
-              <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
-            </v-card-text>
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="9" class="skeleton-col">
-          <v-card elevation="1" class="skeleton-card h-100">
-            <v-card-text class="pa-3">
-              <v-skeleton-loader type="heading" class="mb-3"></v-skeleton-loader>
-              <v-skeleton-loader type="table-heading"></v-skeleton-loader>
-              <v-skeleton-loader type="table-tbody"></v-skeleton-loader>
-              <v-skeleton-loader type="table-tfoot"></v-skeleton-loader>
+      <!-- Enhanced Progress Bar -->
+      <v-row v-if="loading.table && loadingProgress > 0" no-gutters class="mb-4">
+        <v-col cols="12">
+          <v-card elevation="1">
+            <v-card-text class="pa-4">
+              <ProgressBarEnhanced
+                :percentage="loadingProgress"
+                :start-time="loadingStartTime"
+                :estimated-total-duration="estimatedDuration"
+                :stages="loadingStages"
+                :show-stages="true"
+                color="primary"
+              />
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
 
       <!-- Filters and Table Side by Side -->
-      <v-row v-else no-gutters>
+      <v-row no-gutters>
         <!-- Filters Section - 3 columns -->
         <v-col cols="12" md="3" class="compact-filters-col">
           <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
@@ -234,12 +225,14 @@
                 <v-btn
                   color="primary"
                   size="default"
-                  prepend-icon="mdi-refresh-outline"
-                  :disabled="!isDateRangeValid"
+                  :disabled="!isDateRangeValid || loading.table"
                   variant="elevated"
                   class="flex-1"
                   @click="fetchReport"
                 >
+                  <template #prepend>
+                    <v-icon color="white">mdi-refresh</v-icon>
+                  </template>
                   {{ t("reports.surgicalGuide.reload") }}
                 </v-btn>
                 <v-btn
@@ -247,7 +240,7 @@
                   size="default"
                   prepend-icon="mdi-download-outline"
                   variant="outlined"
-                  :disabled="!filteredReportData.length"
+                  :disabled="!filteredReportData.length || loading.table"
                   class="flex-1"
                   @click="exportToCSV"
                 >
@@ -256,7 +249,29 @@
               </div>
 
               <!-- Enhanced Statistics Cards -->
-              <div v-if="summary" class="enhanced-stats-section">
+              <!-- Skeleton Loaders for Summary Cards -->
+              <div v-if="loading.table && !summary" class="enhanced-stats-section">
+                <div class="stats-section-title">
+                  <v-skeleton-loader type="text" width="80"></v-skeleton-loader>
+                </div>
+                <div class="enhanced-stats-grid">
+                  <div
+                    v-for="i in 8"
+                    :key="`skeleton-${i}`"
+                    class="enhanced-stat-card"
+                  >
+                    <div class="stat-card-icon">
+                      <v-skeleton-loader type="avatar" width="18" height="18"></v-skeleton-loader>
+                    </div>
+                    <div class="stat-card-content">
+                      <v-skeleton-loader type="text" width="60" class="mb-1"></v-skeleton-loader>
+                      <v-skeleton-loader type="text" width="40"></v-skeleton-loader>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Actual Summary Cards -->
+              <div v-else-if="summary" class="enhanced-stats-section">
                 <div class="stats-section-title">
                   <v-icon size="16" class="mr-1">mdi-chart-box-outline</v-icon>
                   <span class="text-caption font-weight-medium">{{ t("reports.surgicalGuide.summary") || "Summary" }}</span>
@@ -266,8 +281,11 @@
                     v-for="stat in compactStats"
                     :key="stat.key"
                     class="enhanced-stat-card"
-                    :class="{ 'stat-card-active': activeFilter === stat.key }"
-                    @click="filterByOrderType(stat.key)"
+                    :class="{ 
+                      'stat-card-active': activeFilter === stat.key,
+                      'stat-card-disabled': loading.table
+                    }"
+                    @click="!loading.table && filterByOrderType(stat.key)"
                   >
                     <div class="stat-card-icon" :class="`stat-icon-${stat.color}`">
                       <v-icon size="18">{{ stat.icon }}</v-icon>
@@ -296,7 +314,17 @@
 
         <!-- Table Section - 9 columns -->
         <v-col cols="12" md="9" class="table-col pl-2">
-          <v-card elevation="1" class="table-card">
+          <!-- Loading Skeleton for Table -->
+          <v-card v-if="loading.table" elevation="1" class="skeleton-card h-100">
+            <v-card-text class="pa-3">
+              <v-skeleton-loader type="heading" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader type="table-heading"></v-skeleton-loader>
+              <v-skeleton-loader type="table-tbody"></v-skeleton-loader>
+              <v-skeleton-loader type="table-tfoot"></v-skeleton-loader>
+            </v-card-text>
+          </v-card>
+          <!-- Actual Table -->
+          <v-card v-else elevation="1" class="table-card">
             <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
               <div class="d-flex align-center">
                 <v-icon size="small" style="margin-inline-end: 6px">mdi-table</v-icon>
@@ -996,22 +1024,13 @@ import { useDevModeStore } from "@/stores/devMode";
 import { storeToRefs } from "pinia";
 import api from "@/services/api";
 import { useI18n } from "vue-i18n";
-import { isRTL } from "@/i18n";
+import ProgressBarEnhanced from "@/components/ProgressBarEnhanced.vue";
 
 const router = useRouter();
 const devModeStore = useDevModeStore();
 // Use storeToRefs for reactive access to dev mode store values
 const { adminViewEnabled, simulatedGroups } = storeToRefs(devModeStore);
-const { t, locale } = useI18n();
-
-// Computed reactive RTL flag tied to the current i18n locale for this component
-const isCurrentlyRTL = computed(() => {
-  try {
-    return isRTL(locale.value);
-  } catch (e) {
-    return false;
-  }
-});
+const { t } = useI18n();
 
 // =====================================
 // STATE
@@ -1068,6 +1087,39 @@ const loading = reactive({
   access: true,
   table: true, // Start as true to show skeleton immediately
 });
+
+// Progress tracking for enhanced progress bar
+const loadingProgress = ref(0);
+const loadingStartTime = ref(null);
+const estimatedDuration = ref(30000); // 30 seconds default estimate
+
+// Loading stages for progress bar
+const loadingStages = computed(() => [
+  { 
+    id: 1, 
+    label: t('reports.surgicalGuide.progress.validating') || 'Validating', 
+    completed: loadingProgress.value > 0, 
+    current: loadingProgress.value > 0 && loadingProgress.value <= 25 
+  },
+  { 
+    id: 2, 
+    label: t('reports.surgicalGuide.progress.fetching') || 'Fetching', 
+    completed: loadingProgress.value > 25, 
+    current: loadingProgress.value > 25 && loadingProgress.value <= 60 
+  },
+  { 
+    id: 3, 
+    label: t('reports.surgicalGuide.progress.processing') || 'Processing', 
+    completed: loadingProgress.value > 60, 
+    current: loadingProgress.value > 60 && loadingProgress.value <= 90 
+  },
+  { 
+    id: 4, 
+    label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
+    completed: loadingProgress.value === 100, 
+    current: loadingProgress.value > 90 
+  }
+]);
 
 const snackbar = reactive({
   show: false,
@@ -1449,9 +1501,20 @@ async function fetchReportData() {
     return;
   }
 
+  let progressInterval = null;
+
   try {
     isFetching = true;
     loading.table = true;
+    loadingStartTime.value = new Date();
+    loadingProgress.value = 0;
+
+    // Simulate progress updates during fetch
+    progressInterval = setInterval(() => {
+      if (loadingProgress.value < 90) {
+        loadingProgress.value += 10;
+      }
+    }, 500);
 
     // Format dates to YYYY-MM-DD before sending to API
     const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
@@ -1559,7 +1622,18 @@ async function fetchReportData() {
     showSnackbar(message, "error");
     // Ensure flag is reset on error
     tableOptionsDisabled = false;
+    loadingProgress.value = 0;
   } finally {
+    // Clear progress interval
+    if (progressInterval) {
+      clearInterval(progressInterval);
+    }
+    loadingProgress.value = 100;
+    // Small delay to show 100% before hiding
+    setTimeout(() => {
+      loadingProgress.value = 0;
+      loadingStartTime.value = null;
+    }, 500);
     isFetching = false;
     loading.table = false;
   }
@@ -1941,15 +2015,16 @@ watch(
     if (newVal === oldVal) return;
     
     // Clear any pending timeout
-  clearTimeout(searchTimeout);
+    clearTimeout(searchTimeout);
     
     // Debounce the search to avoid excessive API calls
-  searchTimeout = setTimeout(() => {
+    // Increased to 800ms to give user time to type a complete word
+    searchTimeout = setTimeout(() => {
       // Only trigger search if not already fetching
       if (!isFetching) {
-    applySearchFilter();
+        applySearchFilter();
       }
-  }, 300); // 300ms debounce
+    }, 800); // 800ms debounce - allows user to type a word before searching
   },
   { immediate: false } // Don't trigger on initial mount
 );
@@ -2348,42 +2423,47 @@ onMounted(async () => {
 
 
 
-/* Performance Optimizations - Fix CLS & LCP */
+/* Header Section - Matching PowerBI */
 .header-container {
-  min-height: 80px; /* Reserve space to prevent layout shift */
+  margin-bottom: 16px;
 }
 
 .compact-header {
-  min-height: 50px !important;
-}
-
-.header-title {
-  font-size: 2rem;
-  line-height: 2.5rem;
-  min-height: 2.5rem;
- 
+  padding: 8px 0;
 }
 
 .compact-header-title {
-  font-size: 1.25rem !important;
-  line-height: 1.5rem !important;
-  min-height: 1.5rem !important;
-  margin-bottom: 2px !important;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
 }
 
-.header-subtitle {
-  font-size: 1rem;
-  line-height: 1.5rem;
-  min-height: 1.5rem;
-  contain: layout style; /* Isolate layout calculations */
-  font-display: swap; /* Optimize font loading */
+.header-icon {
+  margin-inline-end: 6px;
+  flex-shrink: 0;
+}
+
+/* RTL: Reverse icon and text order */
+[dir="rtl"] .compact-header-title {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-icon {
+  margin-inline-end: 0;
+  margin-inline-start: 6px;
 }
 
 .compact-header-subtitle {
-  font-size: 0.75rem !important;
-  line-height: 1rem !important;
-  min-height: 1rem !important;
-  margin-top: 0 !important;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.header-text-section {
+  text-align: left;
 }
 
 /* Prevent layout shifts from cards */
@@ -3049,15 +3129,21 @@ onMounted(async () => {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.enhanced-stat-card:hover {
+.enhanced-stat-card:hover:not(.stat-card-disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-color: rgba(var(--v-theme-primary), 0.3);
 }
 
-.v-theme--dark .enhanced-stat-card:hover {
+.v-theme--dark .enhanced-stat-card:hover:not(.stat-card-disabled) {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 140, 0, 0.4);
+}
+
+.enhanced-stat-card.stat-card-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .enhanced-stat-card.stat-card-active {

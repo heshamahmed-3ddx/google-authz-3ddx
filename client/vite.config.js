@@ -12,7 +12,7 @@ export default defineConfig({
       includeAssets: [
         "favicon.ico",
         "logo.png",
-        "lamp.png",
+        // Excluded large images: lamp.png, logo2.png (over 2MB)
         "genfavicon-*.png",
         "apple-touch-icon-*.png",
       ],
@@ -98,6 +98,10 @@ export default defineConfig({
       workbox: {
         mode: "production",
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Exclude large images from precaching
+        globIgnores: ["**/logo2.png", "**/lamp.png"],
+        // Increase file size limit for precaching (optional, but we're excluding large files anyway)
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

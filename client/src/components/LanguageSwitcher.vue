@@ -63,7 +63,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { setLocale, isRTL } from "@/i18n";
+import { setLocale } from "@/i18n";
 
 const { locale } = useI18n();
 
@@ -100,25 +100,9 @@ const currentLanguage = computed(() => {
 // Change language
 const changeLanguage = (languageCode) => {
   if (languageCode !== currentLocale.value) {
-    const wasRTL = isRTL(currentLocale.value);
-    const willBeRTL = isRTL(languageCode);
-
+    // setLocale will update i18n locale, which App.vue watches to update Vuetify locale
     setLocale(languageCode);
-
-    // If RTL direction changes, update document and trigger reflow instead of full reload
-    if (wasRTL !== willBeRTL) {
-      // Add a smooth transition effect for visual change
-      document.body.style.transition = "all 0.3s ease";
-      // Update document direction and classes immediately. `App.vue` watches locale and will also update these.
-      document.documentElement.dir = willBeRTL ? "rtl" : "ltr";
-      document.documentElement.classList.toggle("rtl", willBeRTL);
-      document.documentElement.classList.toggle("ltr", !willBeRTL);
-      document.body.classList.toggle("rtl", willBeRTL);
-      document.body.classList.toggle("ltr", !willBeRTL);
-      // Trigger resize so UI libraries can recompute layout if needed
-      window.dispatchEvent(new Event("resize"));
-      // If some components require re-initialization, re-mount or call their init functions specifically.
-    }
+    // App.vue watcher will handle Vuetify locale and RTL updates automatically
   }
   showMenu.value = false;
 };

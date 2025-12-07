@@ -194,7 +194,8 @@ function isCriticalLog(message, level) {
     'initialized', 'startup', 'shutdown', 'authentication', 'authorization',
     'login', 'logout', 'error', 'failed', 'success', 'denied', 'granted',
     'policy', 'security', 'middleware', 'database', 'api', 'server',
-    'casbin', 'oauth', 'session', 'user', 'sync', 'role', 'group'
+    'casbin', 'oauth', 'session', 'user', 'sync', 'role', 'group',
+    'query', 'executed', 'duration', 'performance', 'slow'
   ];
   
   const lowerMessage = message.toLowerCase();
@@ -236,8 +237,13 @@ export function requestLogger(req, res, next) {
 
   res.on('finish', () => {
     const duration = Date.now() - startTime;
-    if (isCriticalRequest(req.url) || res.statusCode >= 400) {
-      logger.info('HTTP Request Completed', {
+    const isApiRequest = req.url.startsWith('/api/');
+    const isSlowRequest = duration > 1000; // Log slow requests (>1s)
+    const shouldLog = isCriticalRequest(req.url) || res.statusCode >= 400 || (isApiRequest && isSlowRequest);
+    
+    if (shouldLog) {
+      const logLevel = res.statusCode >= 400 ? 'error' : (isSlowRequest ? 'warn' : 'info');
+      logger[logLevel]('HTTP Request Completed', {
         filename: 'requestLogger',
         lineNumber: '0',
         method: req.method,
@@ -245,7 +251,8 @@ export function requestLogger(req, res, next) {
         statusCode: res.statusCode,
         duration: `${duration}ms`,
         requestId: req.requestId,
-        userEmail: req.session?.user?.email
+        userEmail: req.session?.user?.email,
+        isSlow: isSlowRequest
       });
     }
   });

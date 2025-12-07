@@ -10,6 +10,7 @@
 import surgicalGuideOrdersService from '../services/surgicalGuideOrders.service.js';
 import casbinService from '../services/casbin.js';
 import { createContextLogger } from '../services/logger.js';
+import reportLoggingService from '../services/reportLogging.service.js';
 
 // For Jest compatibility, use a static string for filename context
 const logger = createContextLogger('/server/src/controllers/surgicalGuideOrders.controller.js', 'SurgicalGuideOrdersController');
@@ -417,18 +418,48 @@ class SurgicalGuideOrdersController {
         });
       }
 
-  const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate);
+      const exportStartTime = Date.now();
+      const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate);
+      const exportDuration = Date.now() - exportStartTime;
 
       // Generate filename in format: OSG_YYYYMMDD.csv
       const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const filename = `OSG_${today}.csv`;
+      const fileSizeBytes = Buffer.byteLength(csv, 'utf8');
+
+      // Log export access (middleware will also log, but this captures export-specific details)
+      const csvWithBOM = '\uFEFF' + csv;
+      reportLoggingService.logReportAccess({
+        reportId: 'surgical_guide',
+        reportName: 'Surgical Guide Report',
+        requesterEmail: userEmail,
+        requesterUsername: req.session?.user?.name || req.session?.user?.fullName || null,
+        accessType: 'export',
+        requestMethod: req.method,
+        requestPath: req.path,
+        queryParameters: req.query,
+        requestDurationMs: exportDuration,
+        responseStatus: 200,
+        recordsReturned: null, // Will be calculated if available
+        ipAddress: req.ip || req.connection?.remoteAddress || null,
+        userAgent: req.get('user-agent') || null,
+        metadata: {
+          exportFormat: 'CSV',
+          filename,
+          fileSizeBytes,
+          dateRange: { start: startDate, end: endDate }
+        }
+      }).catch(err => {
+        // Don't fail export if logging fails
+        logger.warn('Failed to log export access', { error: err.message });
+      });
 
       // Set CSV headers
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       
       // Add BOM for proper Excel UTF-8 support
-      res.send('\uFEFF' + csv);
+      res.send(csvWithBOM);
     } catch (error) {
       logger.error('Failed to export CSV', {
         error: error.message,

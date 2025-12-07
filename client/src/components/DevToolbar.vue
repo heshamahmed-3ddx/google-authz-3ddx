@@ -5,10 +5,9 @@
         <v-btn
           v-bind="props"
           icon
-          color="warning"
           class="dev-toggle-btn"
-          size="small"
-          elevation="6"
+          size="default"
+          elevation="2"
         >
           <v-icon size="20">mdi-code-tags</v-icon>
           <v-tooltip activator="parent" location="left">
@@ -337,83 +336,41 @@ function toggleGroup(group) {
   animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Toggle Button */
+/* Toggle Button - Clean & Professional */
 .dev-toggle-btn {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 12px !important;
-  background: linear-gradient(135deg, 
-    rgba(255, 152, 0, 1) 0%, 
-    rgba(255, 167, 38, 1) 50%,
-    rgba(255, 152, 0, 1) 100%) !important;
-  box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
-              0 3px 8px rgba(255, 152, 0, 0.3),
-              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 50% !important;
+  background: #f08a4a !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(240, 138, 74, 0.3),
+              0 2px 6px rgba(240, 138, 74, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative;
-  overflow: hidden;
-}
-
-.dev-toggle-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.3), 
-    transparent);
-  transition: left 0.5s ease;
-}
-
-.dev-toggle-btn:hover::before {
-  left: 100%;
+  border: none !important;
 }
 
 .dev-toggle-btn:hover {
-  transform: scale(1.08) translateY(-3px) rotate(5deg);
-  box-shadow: 0 8px 24px rgba(255, 152, 0, 0.5),
-              0 4px 12px rgba(255, 152, 0, 0.4),
-              0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
-  background: linear-gradient(135deg, 
-    rgba(255, 167, 38, 1) 0%, 
-    rgba(255, 152, 0, 1) 50%,
-    rgba(255, 167, 38, 1) 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(240, 138, 74, 0.4),
+              0 4px 8px rgba(240, 138, 74, 0.3) !important;
+  background: #e67935 !important;
 }
 
 .dev-toggle-btn:active {
-  transform: scale(1.03) translateY(-1px) rotate(0deg);
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4),
-              0 2px 6px rgba(255, 152, 0, 0.3) !important;
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(240, 138, 74, 0.3),
+              0 1px 4px rgba(240, 138, 74, 0.2) !important;
 }
 
 .dev-toggle-btn :deep(.v-icon) {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.3s ease;
+  color: white !important;
+  transition: transform 0.2s ease;
 }
 
 .dev-toggle-btn:hover :deep(.v-icon) {
-  transform: scale(1.1) rotate(-5deg);
-}
-
-/* Pulse animation */
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
-                0 3px 8px rgba(255, 152, 0, 0.3),
-                0 0 0 0 rgba(255, 152, 0, 0.7);
-  }
-  50% {
-    box-shadow: 0 6px 18px rgba(255, 152, 0, 0.4),
-                0 3px 8px rgba(255, 152, 0, 0.3),
-                0 0 0 6px rgba(255, 152, 0, 0);
-  }
-}
-
-.dev-toggle-btn {
-  animation: pulse 3s ease-in-out infinite;
+  transform: scale(1.05);
 }
 
 .tooltip-content {
