@@ -223,7 +223,8 @@ export function requestLogger(req, res, next) {
   // cut down on allocations. We use the base `logger` instance and attach a
   // minimal filename/line metadata (no stack parsing) for performance.
   if (isCriticalRequest(req.url)) {
-    logger.info('HTTP Request Started', {
+    const startMessage = `HTTP Request Started: ${req.method} ${req.url}`;
+    logger.info(startMessage, {
       filename: 'requestLogger',
       lineNumber: '0',
       method: req.method,
@@ -243,7 +244,11 @@ export function requestLogger(req, res, next) {
     
     if (shouldLog) {
       const logLevel = res.statusCode >= 400 ? 'error' : (isSlowRequest ? 'warn' : 'info');
-      logger[logLevel]('HTTP Request Completed', {
+      const statusInfo = res.statusCode >= 400 ? 'FAILED' : (isSlowRequest ? 'SLOW' : 'OK');
+      const userContext = req.session?.user?.email ? ` (${req.session.user.email})` : '';
+      const completedMessage = `HTTP Request ${statusInfo}: ${req.method} ${req.url} [${res.statusCode}] ${duration}ms${userContext}`;
+      
+      logger[logLevel](completedMessage, {
         filename: 'requestLogger',
         lineNumber: '0',
         method: req.method,

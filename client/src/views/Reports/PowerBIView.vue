@@ -134,15 +134,17 @@
           </v-card-title>
           <div ref="powerbiContainer" class="powerbi-report-container position-relative">
             <!-- Loading overlay -->
-            <div v-if="loading" class="loading-overlay d-flex align-center justify-center">
-              <div class="text-center">
+            <div v-if="loading" class="loading-overlay">
+              <div class="loading-content">
                 <v-progress-circular
                   indeterminate
                   color="primary"
-                  size="64"
-                  class="mb-4"
+                  size="72"
+                  width="6"
+                  class="mb-6"
                 ></v-progress-circular>
-                <p class="text-body-1">Loading PowerBI Report...</p>
+                <p class="text-h6 font-weight-medium mb-2">Loading PowerBI Report</p>
+                <p class="text-body-2 text-medium-emphasis">Please wait while we load your dashboard...</p>
               </div>
             </div>
 
@@ -570,13 +572,37 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .v-theme--dark .loading-overlay,
 .v-theme--dark .error-overlay {
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(18, 18, 18, 0.98);
 }
 
 .position-relative {
