@@ -2,7 +2,14 @@ import express from 'express'
 import cors from 'cors'
 import session from 'express-session'
 import dotenv from 'dotenv';
-dotenv.config();
+
+// Load environment-specific .env file
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: envFile });
+
+console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`📂 Loading config from: ${envFile}`);
+console.log(`🔗 Google Redirect URI: ${process.env.GOOGLE_REDIRECT_URI}`);
 
 import authRoutes from './routes/auth.routes.js'
 import apiRoutes from './routes/api.routes.js'

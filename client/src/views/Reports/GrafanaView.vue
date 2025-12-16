@@ -173,15 +173,17 @@
           </v-card-title>
           <div ref="grafanaContainer" class="grafana-report-container position-relative" style="width: 100% !important; margin: 0 !important; padding: 0 !important;">
             <!-- Loading overlay -->
-            <div v-if="loading" class="loading-overlay d-flex align-center justify-center">
-              <div class="text-center">
+            <div v-if="loading" class="loading-overlay">
+              <div class="loading-content">
                 <v-progress-circular
                   indeterminate
                   color="primary"
-                  size="64"
-                  class="mb-4"
+                  size="72"
+                  width="6"
+                  class="mb-6"
                 ></v-progress-circular>
-                <p class="text-body-1">Loading Grafana Dashboard...</p>
+                <p class="text-h6 font-weight-medium mb-2">Loading Grafana Dashboard</p>
+                <p class="text-body-2 text-medium-emphasis">Connecting to monitoring system...</p>
               </div>
             </div>
 
@@ -444,8 +446,37 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(var(--v-theme-surface), 0.9);
+  background: rgba(255, 255, 255, 0.98);
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.v-theme--dark .loading-overlay,
+.v-theme--dark .error-overlay {
+  background: rgba(18, 18, 18, 0.98);
 }
 
 /* Gap utilities are now handled globally via compact-ui.css */
