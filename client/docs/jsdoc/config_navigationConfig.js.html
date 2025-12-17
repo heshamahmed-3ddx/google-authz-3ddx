@@ -28,13 +28,13 @@
         <article>
             <pre class="prettyprint source linenums"><code>/**
  * Navigation Configuration - Oracle Fusion Inspired
- * 
+ *
  * This configuration defines the sidebar navigation structure with:
  * - Hierarchical menu organization
  * - Role-based access control
  * - Icons and labels
  * - Route mappings
- * 
+ *
  * Structure inspired by Oracle Fusion's navigation patterns
  */
 
@@ -57,399 +57,42 @@ export const NAVIGATION_CONFIG = [
   // HOME SECTION
   // ========================================
   {
-    id: 'home',
-    title: 'Home',
-    icon: 'mdi-home',
-    route: '/dashboard',
-    permissions: ['*'], // Available to all authenticated users
+    id: "home",
+    title: "Home",
+    icon: "mdi-home",
+    route: "/home",
+    permissions: ["*"], // Available to all authenticated users
   },
 
   // ========================================
-  // USER MANAGEMENT SECTION
+  // REPORTS &amp; ANALYTICS (Live Pages Only)
   // ========================================
   {
-    id: 'user-management',
-    title: 'User Management',
-    icon: 'mdi-account-multiple',
-    permissions: ['admin', 'SWD', 'developers'],
+    id: "reportsAnalytics",
+    title: "Reports &amp; Analytics",
+    icon: "mdi-chart-box",
+    permissions: ["admin", "SWD", "finance"],
     children: [
       {
-        id: 'users-list',
-        title: 'Users',
-        icon: 'mdi-account-group',
-        route: '/users',
-        permissions: ['admin', 'SWD'],
+        id: "surgical-guide-report",
+        title: "Surgical Guide Report",
+        icon: "mdi-file-chart",
+        route: "/finance/surgical-guide-report",
+        permissions: ["admin", "Finance22"],
       },
       {
-        id: 'groups-list',
-        title: 'Groups',
-        icon: 'mdi-google-circles-communities',
-        route: '/groups',
-        permissions: ['admin', 'SWD'],
+        id: "powerbi-reporting",
+        title: "PowerBI Reporting",
+        icon: "mdi-chart-box-outline",
+        route: "/reports/powerbi",
+        permissions: ["*"],
       },
       {
-        id: 'roles-permissions',
-        title: 'Roles &amp; Permissions',
-        icon: 'mdi-shield-account',
-        route: '/roles',
-        permissions: ['admin'],
-      },
-      {
-        id: 'access-policies',
-        title: 'Access Policies',
-        icon: 'mdi-shield-lock',
-        route: '/policies',
-        permissions: ['admin'],
-      },
-    ],
-  },
-
-  // ========================================
-  // ORGANIZATION SECTION
-  // ========================================
-  {
-    id: 'organization',
-    title: 'Organization',
-    icon: 'mdi-domain',
-    permissions: ['admin', 'SWD', 'finance', 'users'],
-    children: [
-      {
-        id: 'org-structure',
-        title: 'Organization Structure',
-        icon: 'mdi-sitemap',
-        route: '/organization/structure',
-        permissions: ['admin', 'SWD'],
-      },
-      {
-        id: 'departments',
-        title: 'Departments',
-        icon: 'mdi-office-building',
-        route: '/organization/departments',
-        permissions: ['admin', 'SWD', 'finance'],
-      },
-      {
-        id: 'cost-centers',
-        title: 'Cost Centers',
-        icon: 'mdi-cash-multiple',
-        route: '/organization/cost-centers',
-        permissions: ['admin', 'finance'],
-      },
-      {
-        id: 'org-units',
-        title: 'Organizational Units',
-        icon: 'mdi-file-tree',
-        route: '/organization/units',
-        permissions: ['admin', 'SWD'],
-      },
-    ],
-  },
-
-  // ========================================
-  // FINANCIAL MANAGEMENT
-  // ========================================
-  {
-    id: 'finance',
-    title: 'Financial Management',
-    icon: 'mdi-currency-usd',
-    permissions: ['admin', 'finance'],
-    children: [
-      {
-        id: 'invoices',
-        title: 'Invoices',
-        icon: 'mdi-file-document',
-        route: '/finance/invoices',
-        permissions: ['admin', 'finance'],
-        badge: { text: 'New', color: 'error' },
-      },
-      {
-        id: 'budgets',
-        title: 'Budgets',
-        icon: 'mdi-chart-pie',
-        route: '/finance/budgets',
-        permissions: ['admin', 'finance'],
-      },
-      {
-        id: 'reports',
-        title: 'Financial Reports',
-        icon: 'mdi-chart-line',
-        route: '/finance/reports',
-        permissions: ['admin', 'finance'],
-      },
-      {
-        id: 'surgical-guide-report',
-        title: 'Surgical Guide Report',
-        icon: 'mdi-file-chart',
-        route: '/finance/surgical-guide-report',
-        permissions: ['admin', 'Finance22'],
-        badge: { text: 'New', color: 'success' },
-      },
-      {
-        id: 'approvals',
-        title: 'Approvals',
-        icon: 'mdi-check-circle',
-        route: '/finance/approvals',
-        permissions: ['admin', 'finance'],
-      },
-    ],
-  },
-
-  // ========================================
-  // DEVELOPMENT SECTION
-  // ========================================
-  {
-    id: 'development',
-    title: 'Development',
-    icon: 'mdi-code-braces',
-    permissions: ['admin', 'SWD', 'developers'],
-    children: [
-      {
-        id: 'repositories',
-        title: 'Code Repositories',
-        icon: 'mdi-source-repository',
-        route: '/dev/repositories',
-        permissions: ['admin', 'SWD', 'developers'],
-      },
-      {
-        id: 'deployments',
-        title: 'Deployments',
-        icon: 'mdi-rocket-launch',
-        route: '/dev/deployments',
-        permissions: ['admin', 'SWD'],
-      },
-      {
-        id: 'api-keys',
-        title: 'API Keys',
-        icon: 'mdi-key-variant',
-        route: '/dev/api-keys',
-        permissions: ['admin', 'SWD'],
-      },
-      {
-        id: 'webhooks',
-        title: 'Webhooks',
-        icon: 'mdi-webhook',
-        route: '/dev/webhooks',
-        permissions: ['admin', 'SWD', 'developers'],
-      },
-    ],
-  },
-
-  // ========================================
-  // PROJECTS &amp; TASKS
-  // ========================================
-  {
-    id: 'projects',
-    title: 'Projects &amp; Tasks',
-    icon: 'mdi-briefcase',
-    permissions: ['*'],
-    children: [
-      {
-        id: 'projects-list',
-        title: 'All Projects',
-        icon: 'mdi-folder-multiple',
-        route: '/projects',
-        permissions: ['*'],
-      },
-      {
-        id: 'my-tasks',
-        title: 'My Tasks',
-        icon: 'mdi-checkbox-marked-circle',
-        route: '/projects/my-tasks',
-        permissions: ['*'],
-      },
-      {
-        id: 'timesheets',
-        title: 'Timesheets',
-        icon: 'mdi-clock-time-four',
-        route: '/projects/timesheets',
-        permissions: ['*'],
-      },
-      {
-        id: 'project-reports',
-        title: 'Project Reports',
-        icon: 'mdi-chart-gantt',
-        route: '/projects/reports',
-        permissions: ['admin', 'SWD', 'finance'],
-      },
-    ],
-  },
-
-  // ========================================
-  // DOCUMENTATION
-  // ========================================
-  {
-    id: 'documentation',
-    title: 'Documentation',
-    icon: 'mdi-book-open-variant',
-    permissions: ['admin', 'SWD', 'developers'],
-    divider: true, // Add divider after this section
-    children: [
-      {
-        id: 'api-docs',
-        title: 'API Documentation',
-        icon: 'mdi-api',
-        route: '/docs/api',
-        permissions: ['admin', 'SWD', 'developers'],
-      },
-      {
-        id: 'jsdoc',
-        title: 'Code Documentation',
-        icon: 'mdi-file-document-outline',
-        route: '/docs/jsdoc',
-        permissions: ['admin', 'SWD', 'developers'],
-      },
-      {
-        id: 'user-guides',
-        title: 'User Guides',
-        icon: 'mdi-help-circle',
-        route: '/docs/guides',
-        permissions: ['*'],
-      },
-      {
-        id: 'technical-specs',
-        title: 'Technical Specifications',
-        icon: 'mdi-file-code',
-        route: '/docs/technical',
-        permissions: ['admin', 'SWD', 'developers'],
-      },
-    ],
-  },
-
-  // ========================================
-  // REPORTS &amp; ANALYTICS
-  // ========================================
-  {
-    id: 'reports',
-    title: 'Reports &amp; Analytics',
-    icon: 'mdi-chart-box',
-    permissions: ['admin', 'SWD', 'finance'],
-    children: [
-      {
-        id: 'dashboards',
-        title: 'Dashboards',
-        icon: 'mdi-view-dashboard',
-        route: '/reports/dashboards',
-        permissions: ['admin', 'SWD', 'finance'],
-      },
-      {
-        id: 'user-activity',
-        title: 'User Activity',
-        icon: 'mdi-account-clock',
-        route: '/reports/user-activity',
-        permissions: ['admin'],
-      },
-      {
-        id: 'system-logs',
-        title: 'System Logs',
-        icon: 'mdi-text-box-search',
-        route: '/reports/logs',
-        permissions: ['admin', 'SWD'],
-      },
-      {
-        id: 'audit-trail',
-        title: 'Audit Trail',
-        icon: 'mdi-history',
-        route: '/reports/audit',
-        permissions: ['admin'],
-      },
-    ],
-  },
-
-  // ========================================
-  // SYSTEM CONFIGURATION
-  // ========================================
-  {
-    id: 'system',
-    title: 'System',
-    icon: 'mdi-cog',
-    permissions: ['admin'],
-    children: [
-      {
-        id: 'settings',
-        title: 'System Settings',
-        icon: 'mdi-cog-outline',
-        route: '/system/settings',
-        permissions: ['admin'],
-      },
-      {
-        id: 'integrations',
-        title: 'Integrations',
-        icon: 'mdi-puzzle',
-        route: '/system/integrations',
-        permissions: ['admin'],
-      },
-      {
-        id: 'notifications',
-        title: 'Notifications',
-        icon: 'mdi-bell',
-        route: '/system/notifications',
-        permissions: ['admin'],
-      },
-      {
-        id: 'security',
-        title: 'Security',
-        icon: 'mdi-security',
-        route: '/system/security',
-        permissions: ['admin'],
-      },
-      {
-        id: 'backup',
-        title: 'Backup &amp; Recovery',
-        icon: 'mdi-backup-restore',
-        route: '/system/backup',
-        permissions: ['admin'],
-      },
-    ],
-  },
-
-  // ========================================
-  // USER PROFILE
-  // ========================================
-  {
-    id: 'profile',
-    title: 'My Profile',
-    icon: 'mdi-account-circle',
-    route: '/profile',
-    permissions: ['*'],
-    divider: true,
-  },
-
-  // ========================================
-  // HELP &amp; SUPPORT
-  // ========================================
-  {
-    id: 'help',
-    title: 'Help &amp; Support',
-    icon: 'mdi-help-circle-outline',
-    permissions: ['*'],
-    children: [
-      {
-        id: 'faq',
-        title: 'FAQs',
-        icon: 'mdi-frequently-asked-questions',
-        route: '/help/faq',
-        permissions: ['*'],
-      },
-      {
-        id: 'contact-support',
-        title: 'Contact Support',
-        icon: 'mdi-email-outline',
-        route: '/help/contact',
-        permissions: ['*'],
-      },
-      {
-        id: 'tutorials',
-        title: 'Video Tutorials',
-        icon: 'mdi-video-outline',
-        route: '/help/tutorials',
-        permissions: ['*'],
-      },
-      {
-        id: 'whats-new',
-        title: "What's New",
-        icon: 'mdi-new-box',
-        route: '/help/whats-new',
-        permissions: ['*'],
-        badge: { text: '2', color: 'primary' },
+        id: "grafana-monitoring",
+        title: "Grafana Monitoring",
+        icon: "mdi-chart-timeline-variant",
+        route: "/reports/grafana",
+        permissions: ["admin", "SWD"],
       },
     ],
   },
@@ -457,44 +100,89 @@ export const NAVIGATION_CONFIG = [
 
 /**
  * Get required groups for restricted navigation access
- * @returns {string[]} Array of group names that grant access to restricted features
+ * 
+ * Returns the list of user groups that have access to restricted/developer-only
+ * navigation items throughout the application.
+ * 
+ * @returns {string[]} Array of group names: ['admin', 'SWD', 'developers']
+ * 
+ * @example
+ * const restrictedGroups = getRequiredGroupsForNavigation();
+ * // Returns: ['admin', 'SWD', 'developers']
  */
 export function getRequiredGroupsForNavigation() {
-  return ['admin', 'SWD', 'developers'];
+  return ["admin", "SWD", "developers"];
 }
 
 /**
  * Check if a navigation item is accessible based on user groups
- * @param {string[]} itemPermissions - Required permissions for the nav item
- * @param {string[]} userGroups - User's current groups
- * @returns {boolean} Whether the item is accessible
+ * 
+ * Determines whether a user has permission to access a specific navigation item
+ * by comparing the item's required permissions against the user's groups.
+ * Special case: '*' permission grants access to all users.
+ * 
+ * @param {string[]} itemPermissions - Required permissions/groups for the navigation item
+ * @param {string[]} userGroups - Current user's group memberships
+ * @returns {boolean} True if user can access the item, false otherwise
+ * 
+ * @example
+ * // Check if user can access admin menu
+ * const canAccess = hasNavigationAccess(['admin'], ['admin', 'user']);
+ * // Returns: true
+ * 
+ * @example
+ * // Check wildcard permission (accessible to all)
+ * const canAccess = hasNavigationAccess(['*'], []);
+ * // Returns: true
+ * 
+ * @example
+ * // User without required permissions
+ * const canAccess = hasNavigationAccess(['admin'], ['user']);
+ * // Returns: false
  */
 export function hasNavigationAccess(itemPermissions, userGroups) {
   if (!itemPermissions || itemPermissions.length === 0) return false;
-  
+
   // If item allows all users
-  if (itemPermissions.includes('*')) return true;
-  
+  if (itemPermissions.includes("*")) return true;
+
   // Check if user has any of the required permissions
   if (!userGroups || userGroups.length === 0) return false;
-  
-  return itemPermissions.some(permission => userGroups.includes(permission));
+
+  return itemPermissions.some((permission) => userGroups.includes(permission));
 }
 
 /**
- * Filter navigation items based on user permissions
- * @param {Array} navigationItems - Full navigation structure
- * @param {string[]} userGroups - User's current groups
- * @returns {Array} Filtered navigation items
+ * Filter navigation items based on user permissions (recursive)
+ * 
+ * Filters the entire navigation structure to show only items accessible to the current user.
+ * Recursively processes nested children and removes parent items that have no accessible
+ * children and no direct route. This ensures the navigation menu only shows relevant items.
+ * 
+ * @param {Array&lt;Object>} navigationItems - Full navigation structure with nested items
+ * @param {string[]} userGroups - Current user's group memberships
+ * @returns {Array&lt;Object>} Filtered navigation items with only accessible entries
+ * 
+ * @example
+ * // Filter navigation for a regular user
+ * const userNav = filterNavigationByPermissions(navigationConfig, ['user', 'viewer']);
+ * 
+ * @example
+ * // Filter navigation for admin
+ * const adminNav = filterNavigationByPermissions(navigationConfig, ['admin']);
+ * // Returns all items including restricted ones
  */
 export function filterNavigationByPermissions(navigationItems, userGroups) {
   return navigationItems
-    .filter(item => hasNavigationAccess(item.permissions, userGroups))
-    .map(item => {
+    .filter((item) => hasNavigationAccess(item.permissions, userGroups))
+    .map((item) => {
       // If item has children, filter them recursively
       if (item.children &amp;&amp; item.children.length > 0) {
-        const filteredChildren = filterNavigationByPermissions(item.children, userGroups);
-        
+        const filteredChildren = filterNavigationByPermissions(
+          item.children,
+          userGroups,
+        );
+
         // Only include parent if it has accessible children or its own route
         if (filteredChildren.length > 0 || item.route) {
           return {
@@ -506,19 +194,34 @@ export function filterNavigationByPermissions(navigationItems, userGroups) {
       }
       return item;
     })
-    .filter(item => item !== null);
+    .filter((item) => item !== null);
 }
 
 /**
- * Find navigation item by route
- * @param {Array} navigationItems - Navigation structure
- * @param {string} route - Route to find
- * @returns {Object|null} Navigation item or null
+ * Find navigation item by route path (recursive search)
+ * 
+ * Searches through the navigation structure (including nested children) to find
+ * an item matching the specified route. Used for determining active navigation
+ * state and breadcrumb generation.
+ * 
+ * @param {Array&lt;Object>} navigationItems - Navigation structure to search
+ * @param {string} route - Route path to find (e.g., '/dashboard' or '/reports/surgical-guide')
+ * @returns {Object|null} Matching navigation item object, or null if not found
+ * 
+ * @example
+ * // Find dashboard item
+ * const item = findNavigationItemByRoute(navigationConfig, '/dashboard');
+ * // Returns: { title: 'Dashboard', route: '/dashboard', ... }
+ * 
+ * @example
+ * // Route not found
+ * const item = findNavigationItemByRoute(navigationConfig, '/nonexistent');
+ * // Returns: null
  */
 export function findNavigationItemByRoute(navigationItems, route) {
   for (const item of navigationItems) {
     if (item.route === route) return item;
-    
+
     if (item.children) {
       const found = findNavigationItemByRoute(item.children, route);
       if (found) return found;
@@ -528,23 +231,41 @@ export function findNavigationItemByRoute(navigationItems, route) {
 }
 
 /**
- * Get breadcrumb trail for a route
- * @param {Array} navigationItems - Navigation structure
- * @param {string} route - Current route
- * @returns {Array} Breadcrumb trail
+ * Get breadcrumb trail for current route
+ * 
+ * Generates a breadcrumb trail by finding the path from root to the current route
+ * through the navigation structure. Useful for displaying hierarchical navigation
+ * context (e.g., Home > Reports > Surgical Guide Report).
+ * 
+ * @param {Array&lt;Object>} navigationItems - Full navigation structure
+ * @param {string} route - Current route path
+ * @returns {Array&lt;Object>} Array of navigation items representing the breadcrumb trail
+ * 
+ * @example
+ * // Get breadcrumb for nested route
+ * const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/reports/surgical-guide');
+ * // Returns: [
+ * //   { title: 'Reports', route: '/reports', ... },
+ * //   { title: 'Surgical Guide', route: '/reports/surgical-guide', ... }
+ * // ]
+ * 
+ * @example
+ * // Top-level route
+ * const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/dashboard');
+ * // Returns: [{ title: 'Dashboard', route: '/dashboard', ... }]
  */
 export function getBreadcrumbTrail(navigationItems, route) {
   const trail = [];
-  
+
   function findTrail(items, targetRoute, currentTrail = []) {
     for (const item of items) {
       const newTrail = [...currentTrail, item];
-      
+
       if (item.route === targetRoute) {
         trail.push(...newTrail);
         return true;
       }
-      
+
       if (item.children) {
         if (findTrail(item.children, targetRoute, newTrail)) {
           return true;
@@ -553,7 +274,7 @@ export function getBreadcrumbTrail(navigationItems, route) {
     }
     return false;
   }
-  
+
   findTrail(navigationItems, route);
   return trail;
 }
@@ -569,13 +290,13 @@ export default NAVIGATION_CONFIG;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#createClientLogger">createClientLogger</a></li><li><a href="global.html#debug">debug</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getCallerInfo">getCallerInfo</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#isCriticalLog">isCriticalLog</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#logApiCall">logApiCall</a></li><li><a href="global.html#logAuth">logAuth</a></li><li><a href="global.html#logNavigation">logNavigation</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#warn">warn</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#parseDate">parseDate</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 03 2025 15:32:30 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:24:27 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

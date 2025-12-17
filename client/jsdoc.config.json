@@ -1,12 +1,23 @@
 {
   "source": {
-  "include": ["client/src/services", "client/src/stores", "client/src/components", "client/src/views"],
-    "includePattern": "\\.(js|vue)$",
-    "exclude": ["node_modules/"]
+    "include": [
+      "../client/src",
+      "../server/src"
+    ],
+    "includePattern": "\\.js$",
+    "exclude": [
+      "node_modules/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "test-results/",
+      "**/*.vue"
+    ]
   },
   "opts": {
     "destination": "./docs/jsdoc/",
-    "recurse": true
+    "recurse": true,
+    "readme": "./docs/README-JSDOC.md"
   },
   "plugins": [
     "plugins/markdown"
@@ -16,7 +27,7 @@
     "monospaceLinks": false
   },
   "metadata": {
-  "title": "InsightHub - Client Documentation",
-  "description": "JavaScript documentation for the InsightHub Vue.js client application"
+    "title": "InsightHub - Full Stack Documentation",
+    "description": "Complete JavaScript documentation for InsightHub frontend (Vue.js) and backend (Node.js/Express)"
   }
 }

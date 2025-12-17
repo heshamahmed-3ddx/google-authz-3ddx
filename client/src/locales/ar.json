@@ -6,6 +6,7 @@
   },
   "navigation": {
     "home": "الرئيسية",
+    "dashboard": "لوحة المعلومات",
     "userManagement": "إدارة المستخدمين",
     "user-management": "إدارة المستخدمين",
     "users": "المستخدمون",

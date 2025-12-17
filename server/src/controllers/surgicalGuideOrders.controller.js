@@ -38,7 +38,7 @@ class SurgicalGuideOrdersController {
    * - searchQuery (optional): Search term for ID, patient name, doctor, or scan center
    * - orderTypeFilter (optional): Filter by order type (all, free, postpaid, fullyPrepaid, etc.)
    * 
-   * @param {import('express').Request} req - Express request object
+   * @param {Object} req - Express request object
    * @param {Object} req.query - Query parameters
    * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
    * @param {string} req.query.endDate - End date (YYYY-MM-DD)
@@ -48,7 +48,7 @@ class SurgicalGuideOrdersController {
    * @param {string} [req.query.sortOrder='desc'] - Sort order
    * @param {string} [req.query.searchQuery=''] - Search query
    * @param {string} [req.query.orderTypeFilter='all'] - Order type filter
-   * @param {import('express').Response} res - Express response object
+   * @param {Object} res - Express response object
    * @returns {Promise<void>} Sends JSON response with report data
    * 
    * @throws {401} If user is not authenticated
@@ -229,11 +229,11 @@ class SurgicalGuideOrdersController {
    * - startDate (required): Start date in YYYY-MM-DD format
    * - endDate (required): End date in YYYY-MM-DD format
    * 
-   * @param {import('express').Request} req - Express request object
+   * @param {Object} req - Express request object
    * @param {Object} req.query - Query parameters
    * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
    * @param {string} req.query.endDate - End date (YYYY-MM-DD)
-   * @param {import('express').Response} res - Express response object
+   * @param {Object} res - Express response object
    * @returns {Promise<void>} Sends JSON response with summary statistics
    * 
    * @throws {401} If user is not authenticated
@@ -360,11 +360,11 @@ class SurgicalGuideOrdersController {
    * - startDate (required): Start date in YYYY-MM-DD format
    * - endDate (required): End date in YYYY-MM-DD format
    * 
-   * @param {import('express').Request} req - Express request object
+   * @param {Object} req - Express request object
    * @param {Object} req.query - Query parameters
    * @param {string} req.query.startDate - Start date (YYYY-MM-DD)
    * @param {string} req.query.endDate - End date (YYYY-MM-DD)
-   * @param {import('express').Response} res - Express response object
+   * @param {Object} res - Express response object
    * @returns {Promise<void>} Sends CSV file as download
    * 
    * @throws {401} If user is not authenticated
@@ -496,8 +496,8 @@ class SurgicalGuideOrdersController {
    * 
    * Route: GET /api/reports/surgical_guide/access
    * 
-   * @param {import('express').Request} req - Express request object
-   * @param {import('express').Response} res - Express response object
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
    * @returns {Promise<void>} Sends JSON response with access permissions
    * 
    * Response Format:

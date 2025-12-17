@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server/src/services/reportLogging.service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server/src/services/reportLogging.service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file reportLogging.service.js
+ * @description Service for logging report access events
+ * @author InsightHub Development Team
+ * @created 2025-01-XX
+ * @version 1.2.0
+ * @copyright 2025 InsightHub. All rights reserved.
+ */
+
+import databaseService from './database.js';
+import { createContextLogger } from './logger.js';
+
+const logger = createContextLogger('reportLogging.service.js');
+
+/**
+ * Report Logging Service
+ * Handles logging of all report access events for audit trails and troubleshooting
+ */
+class ReportLoggingService {
+  /**
+   * Log a report access event
+   * @param {Object} logData - Log entry data
+   * @param {string} logData.reportId - Report identifier
+   * @param {string} logData.reportName - Report name
+   * @param {string} logData.requesterEmail - Requester email
+   * @param {string} [logData.requesterUsername] - Requester username
+   * @param {string} logData.accessType - Type: manual, scheduled, export, api
+   * @param {number} logData.requestDurationMs - Request duration in milliseconds
+   * @param {Object} [logData.metadata] - Additional metadata
+   * @returns {Promise&lt;number|null>} Log entry ID or null if logging failed
+   */
+  async logReportAccess(logData) {
+    try {
+      const {
+        reportId,
+        reportName,
+        requesterEmail,
+        requesterUsername,
+        accessType = 'manual',
+        requestMethod,
+        requestPath,
+        queryParameters,
+        requestDurationMs,
+        responseStatus,
+        recordsReturned,
+        ipAddress,
+        userAgent,
+        errorMessage,
+        metadata
+      } = logData;
+
+      // Validate required fields
+      if (!reportId || !reportName || !requesterEmail) {
+        logger.warn('Incomplete log data provided', {
+          reportId: !!reportId,
+          reportName: !!reportName,
+          requesterEmail: !!requesterEmail
+        });
+        return null;
+      }
+
+      const query = `
+        INSERT INTO report_access_logs (
+          report_id, report_name, requester_email, requester_username,
+          access_type, request_method, request_path, query_parameters,
+          request_duration_ms, response_status, records_returned,
+          ip_address, user_agent, error_message, metadata
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      const values = [
+        reportId,
+        reportName,
+        requesterEmail,
+        requesterUsername || null,
+        accessType,
+        requestMethod || null,
+        requestPath || null,
+        queryParameters ? JSON.stringify(queryParameters) : null,
+        requestDurationMs || null,
+        responseStatus || null,
+        recordsReturned || null,
+        ipAddress || null,
+        userAgent || null,
+        errorMessage || null,
+        metadata ? JSON.stringify(metadata) : null
+      ];
+
+      const result = await databaseService.query(query, values);
+      
+      logger.info('Report access logged successfully', {
+        logId: result.insertId,
+        reportId,
+        requesterEmail,
+        accessType,
+        requestDurationMs
+      });
+      
+      return result.insertId;
+    } catch (error) {
+      logger.error('Failed to log report access', {
+        error: error.message,
+        reportId: logData.reportId,
+        requesterEmail: logData.requesterEmail,
+        stack: error.stack
+      });
+      // Don't throw - logging failures shouldn't break the application
+      return null;
+    }
+  }
+
+  /**
+   * Get report access logs with filtering
+   * @param {Object} filters - Filter criteria
+   * @param {string} [filters.reportId] - Filter by report ID
+   * @param {string} [filters.requesterEmail] - Filter by requester email
+   * @param {string} [filters.accessType] - Filter by access type
+   * @param {Date|string} [filters.startDate] - Filter by start date
+   * @param {Date|string} [filters.endDate] - Filter by end date
+   * @param {number} [limit=100] - Maximum number of logs to return
+   * @returns {Promise&lt;Array>} Array of log entries
+   */
+  async getReportAccessLogs(filters = {}, limit = 100) {
+    try {
+      let query = 'SELECT * FROM report_access_logs WHERE 1=1';
+      const values = [];
+
+      if (filters.reportId) {
+        query += ' AND report_id = ?';
+        values.push(filters.reportId);
+      }
+
+      if (filters.requesterEmail) {
+        query += ' AND requester_email = ?';
+        values.push(filters.requesterEmail);
+      }
+
+      if (filters.accessType) {
+        query += ' AND access_type = ?';
+        values.push(filters.accessType);
+      }
+
+      if (filters.startDate) {
+        query += ' AND access_time >= ?';
+        values.push(filters.startDate);
+      }
+
+      if (filters.endDate) {
+        query += ' AND access_time &lt;= ?';
+        values.push(filters.endDate);
+      }
+
+      query += ' ORDER BY access_time DESC LIMIT ?';
+      values.push(limit);
+
+      const logs = await databaseService.query(query, values);
+      
+      // Parse JSON fields
+      return logs.map(log => ({
+        ...log,
+        query_parameters: log.query_parameters ? JSON.parse(log.query_parameters) : null,
+        metadata: log.metadata ? JSON.parse(log.metadata) : null
+      }));
+    } catch (error) {
+      logger.error('Failed to get report access logs', {
+        error: error.message,
+        filters,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get report access statistics
+   * @param {Object} filters - Filter criteria (same as getReportAccessLogs)
+   * @returns {Promise&lt;Object>} Statistics object
+   */
+  async getReportAccessStatistics(filters = {}) {
+    try {
+      let query = `
+        SELECT 
+          COUNT(*) as total_accesses,
+          COUNT(DISTINCT requester_email) as unique_users,
+          AVG(request_duration_ms) as avg_duration_ms,
+          MIN(request_duration_ms) as min_duration_ms,
+          MAX(request_duration_ms) as max_duration_ms,
+          SUM(CASE WHEN response_status >= 400 THEN 1 ELSE 0 END) as error_count
+        FROM report_access_logs
+        WHERE 1=1
+      `;
+      const values = [];
+
+      if (filters.reportId) {
+        query += ' AND report_id = ?';
+        values.push(filters.reportId);
+      }
+
+      if (filters.requesterEmail) {
+        query += ' AND requester_email = ?';
+        values.push(filters.requesterEmail);
+      }
+
+      if (filters.startDate) {
+        query += ' AND access_time >= ?';
+        values.push(filters.startDate);
+      }
+
+      if (filters.endDate) {
+        query += ' AND access_time &lt;= ?';
+        values.push(filters.endDate);
+      }
+
+      const result = await databaseService.query(query, values);
+      
+      return result[0] || {
+        total_accesses: 0,
+        unique_users: 0,
+        avg_duration_ms: 0,
+        min_duration_ms: 0,
+        max_duration_ms: 0,
+        error_count: 0
+      };
+    } catch (error) {
+      logger.error('Failed to get report access statistics', {
+        error: error.message,
+        filters,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+}
+
+export default new ReportLoggingService();
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -37,6 +37,17 @@ export const NAVIGATION_CONFIG = [
   },
 
   // ========================================
+  // DASHBOARD
+  // ========================================
+  {
+    id: "dashboard",
+    title: "Dashboard", // Uses translation key: navigation.dashboard
+    icon: "mdi-view-dashboard",
+    route: "/dashboard",
+    permissions: ["*"], // Available to all authenticated users
+  },
+
+  // ========================================
   // REPORTS & ANALYTICS (Live Pages Only)
   // ========================================
   {
@@ -72,7 +83,15 @@ export const NAVIGATION_CONFIG = [
 
 /**
  * Get required groups for restricted navigation access
- * @returns {string[]} Array of group names that grant access to restricted features
+ * 
+ * Returns the list of user groups that have access to restricted/developer-only
+ * navigation items throughout the application.
+ * 
+ * @returns {string[]} Array of group names: ['admin', 'SWD', 'developers']
+ * 
+ * @example
+ * const restrictedGroups = getRequiredGroupsForNavigation();
+ * // Returns: ['admin', 'SWD', 'developers']
  */
 export function getRequiredGroupsForNavigation() {
   return ["admin", "SWD", "developers"];
@@ -80,9 +99,29 @@ export function getRequiredGroupsForNavigation() {
 
 /**
  * Check if a navigation item is accessible based on user groups
- * @param {string[]} itemPermissions - Required permissions for the nav item
- * @param {string[]} userGroups - User's current groups
- * @returns {boolean} Whether the item is accessible
+ * 
+ * Determines whether a user has permission to access a specific navigation item
+ * by comparing the item's required permissions against the user's groups.
+ * Special case: '*' permission grants access to all users.
+ * 
+ * @param {string[]} itemPermissions - Required permissions/groups for the navigation item
+ * @param {string[]} userGroups - Current user's group memberships
+ * @returns {boolean} True if user can access the item, false otherwise
+ * 
+ * @example
+ * // Check if user can access admin menu
+ * const canAccess = hasNavigationAccess(['admin'], ['admin', 'user']);
+ * // Returns: true
+ * 
+ * @example
+ * // Check wildcard permission (accessible to all)
+ * const canAccess = hasNavigationAccess(['*'], []);
+ * // Returns: true
+ * 
+ * @example
+ * // User without required permissions
+ * const canAccess = hasNavigationAccess(['admin'], ['user']);
+ * // Returns: false
  */
 export function hasNavigationAccess(itemPermissions, userGroups) {
   if (!itemPermissions || itemPermissions.length === 0) return false;
@@ -97,10 +136,24 @@ export function hasNavigationAccess(itemPermissions, userGroups) {
 }
 
 /**
- * Filter navigation items based on user permissions
- * @param {Array} navigationItems - Full navigation structure
- * @param {string[]} userGroups - User's current groups
- * @returns {Array} Filtered navigation items
+ * Filter navigation items based on user permissions (recursive)
+ * 
+ * Filters the entire navigation structure to show only items accessible to the current user.
+ * Recursively processes nested children and removes parent items that have no accessible
+ * children and no direct route. This ensures the navigation menu only shows relevant items.
+ * 
+ * @param {Array<Object>} navigationItems - Full navigation structure with nested items
+ * @param {string[]} userGroups - Current user's group memberships
+ * @returns {Array<Object>} Filtered navigation items with only accessible entries
+ * 
+ * @example
+ * // Filter navigation for a regular user
+ * const userNav = filterNavigationByPermissions(navigationConfig, ['user', 'viewer']);
+ * 
+ * @example
+ * // Filter navigation for admin
+ * const adminNav = filterNavigationByPermissions(navigationConfig, ['admin']);
+ * // Returns all items including restricted ones
  */
 export function filterNavigationByPermissions(navigationItems, userGroups) {
   return navigationItems
@@ -128,10 +181,25 @@ export function filterNavigationByPermissions(navigationItems, userGroups) {
 }
 
 /**
- * Find navigation item by route
- * @param {Array} navigationItems - Navigation structure
- * @param {string} route - Route to find
- * @returns {Object|null} Navigation item or null
+ * Find navigation item by route path (recursive search)
+ * 
+ * Searches through the navigation structure (including nested children) to find
+ * an item matching the specified route. Used for determining active navigation
+ * state and breadcrumb generation.
+ * 
+ * @param {Array<Object>} navigationItems - Navigation structure to search
+ * @param {string} route - Route path to find (e.g., '/dashboard' or '/reports/surgical-guide')
+ * @returns {Object|null} Matching navigation item object, or null if not found
+ * 
+ * @example
+ * // Find dashboard item
+ * const item = findNavigationItemByRoute(navigationConfig, '/dashboard');
+ * // Returns: { title: 'Dashboard', route: '/dashboard', ... }
+ * 
+ * @example
+ * // Route not found
+ * const item = findNavigationItemByRoute(navigationConfig, '/nonexistent');
+ * // Returns: null
  */
 export function findNavigationItemByRoute(navigationItems, route) {
   for (const item of navigationItems) {
@@ -146,10 +214,28 @@ export function findNavigationItemByRoute(navigationItems, route) {
 }
 
 /**
- * Get breadcrumb trail for a route
- * @param {Array} navigationItems - Navigation structure
- * @param {string} route - Current route
- * @returns {Array} Breadcrumb trail
+ * Get breadcrumb trail for current route
+ * 
+ * Generates a breadcrumb trail by finding the path from root to the current route
+ * through the navigation structure. Useful for displaying hierarchical navigation
+ * context (e.g., Home > Reports > Surgical Guide Report).
+ * 
+ * @param {Array<Object>} navigationItems - Full navigation structure
+ * @param {string} route - Current route path
+ * @returns {Array<Object>} Array of navigation items representing the breadcrumb trail
+ * 
+ * @example
+ * // Get breadcrumb for nested route
+ * const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/reports/surgical-guide');
+ * // Returns: [
+ * //   { title: 'Reports', route: '/reports', ... },
+ * //   { title: 'Surgical Guide', route: '/reports/surgical-guide', ... }
+ * // ]
+ * 
+ * @example
+ * // Top-level route
+ * const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/dashboard');
+ * // Returns: [{ title: 'Dashboard', route: '/dashboard', ... }]
  */
 export function getBreadcrumbTrail(navigationItems, route) {
   const trail = [];

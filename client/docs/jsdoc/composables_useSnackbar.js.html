@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: composables/useSnackbar.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: composables/useSnackbar.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Snackbar composable for displaying user notifications
+ * @module composables/useSnackbar
+ * @author InsightHub Development Team
+ * @copyright 2025 InsightHub. All rights reserved.
+ * @requires vue
+ */
+
+import { reactive } from "vue";
+
+/**
+ * Composable for managing snackbar notifications throughout the application
+ * 
+ * Provides a reactive snackbar state and a helper function to display notifications
+ * with different types (success, error, warning, info) and custom durations.
+ * The snackbar automatically hides after the specified timeout.
+ * 
+ * @returns {Object} Snackbar API object
+ * @returns {Function} returns.showSnackbar - Function to display a notification
+ * @returns {Object} returns.snackbar - Reactive snackbar state for v-snackbar binding
+ * @returns {boolean} returns.snackbar.show - Whether snackbar is visible
+ * @returns {string} returns.snackbar.message - Message to display
+ * @returns {string} returns.snackbar.color - Color/type (success, error, warning, info)
+ * @returns {number} returns.snackbar.timeout - Duration in milliseconds
+ * 
+ * @example
+ * // In a Vue component
+ * import { useSnackbar } from '@/composables/useSnackbar';
+ * 
+ * const { showSnackbar, snackbar } = useSnackbar();
+ * 
+ * // Show success message
+ * showSnackbar('Operation completed!', 'success');
+ * 
+ * // Show error message with custom duration
+ * showSnackbar('Something went wrong', 'error', 6000);
+ * 
+ * @example
+ * // Template usage
+ * &lt;template>
+ *   &lt;v-snackbar
+ *     v-model="snackbar.show"
+ *     :color="snackbar.color"
+ *     :timeout="snackbar.timeout"
+ *   >
+ *     {{ snackbar.message }}
+ *   &lt;/v-snackbar>
+ * &lt;/template>
+ */
+export function useSnackbar() {
+  const snackbar = reactive({
+    show: false,
+    message: "",
+    color: "info", // success, error, warning, info
+    timeout: 4000,
+  });
+
+  /**
+   * Display a snackbar notification
+   * 
+   * @param {string} message - The message to display in the snackbar
+   * @param {('success'|'error'|'warning'|'info')} [type='info'] - The notification type/color
+   * @param {number} [duration=4000] - How long to display the message in milliseconds
+   * @returns {void}
+   * 
+   * @example
+   * showSnackbar('User saved successfully', 'success');
+   * showSnackbar('Failed to load data', 'error', 5000);
+   */
+  const showSnackbar = (message, type = "info", duration = 4000) => {
+    snackbar.message = message;
+    snackbar.color = type;
+    snackbar.timeout = duration;
+    snackbar.show = true;
+    
+    // Auto-hide after duration
+    setTimeout(() => {
+      snackbar.show = false;
+    }, duration);
+  };
+
+  return {
+    showSnackbar,
+    snackbar, // Export reactive state for v-snackbar binding
+  };
+}
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#parseDate">parseDate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:24:27 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
