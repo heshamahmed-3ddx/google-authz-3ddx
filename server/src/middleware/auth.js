@@ -20,9 +20,9 @@ const logger = createContextLogger('/server/src/middleware/auth.js', 'AuthMiddle
  * and does not call `next()`.
  *
  * @name requireAuth
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {Promise<void>}
  */
 export const requireAuth = async (req, res, next) => {

@@ -17,6 +17,30 @@ const logger = createContextLogger('/server/src/services/security.js');
 
 /**
  * Middleware to protect documentation endpoints (Swagger, JSDoc)
+ * 
+ * Enforces access control for API and code documentation based on configuration.
+ * Checks if documentation is enabled, validates authentication if required, and
+ * verifies user has authorized roles (developer, admin, SWD).
+ * 
+ * Configuration controlled by:
+ * - CONFIG.documentation.swagger.enabled
+ * - CONFIG.documentation.jsdoc.enabled  
+ * - CONFIG.documentation.swagger.requireAuth
+ * - CONFIG.documentation.swagger.authorizedRoles
+ * 
+ * @async
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<void>}
+ * 
+ * @example
+ * // Protect Swagger documentation
+ * app.use('/api-docs', protectDocumentation, swaggerUi.serve, swaggerUi.setup(spec));
+ * 
+ * @example
+ * // Protect JSDoc documentation
+ * app.use('/jsdoc', protectDocumentation, express.static('docs/jsdoc'));
  */
 export async function protectDocumentation(req, res, next) {
   // Check if documentation is enabled
@@ -83,7 +107,33 @@ export async function protectDocumentation(req, res, next) {
 }
 
 /**
- * Middleware to protect admin endpoints
+ * Middleware to protect admin-only endpoints
+ * 
+ * Verifies that the authenticated user has admin privileges via Casbin.
+ * Rejects requests from non-admin users with 403 Forbidden.
+ * Must be used after requireAuth middleware.
+ * 
+ * @async
+ * @param {Object} req - Express request object with session
+ * @param {Object} req.session - Express session
+ * @param {Object} req.session.user - Authenticated user
+ * @param {string} req.session.user.email - User email for admin check
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Promise<void>}
+ * 
+ * @example
+ * // Protect admin-only routes
+ * router.get('/admin/users', requireAuth, requireAdmin, adminController.getUsers);
+ * 
+ * @example
+ * // Combine with other middleware
+ * router.post('/admin/settings', 
+ *   requireAuth,        // 1. Check authentication
+ *   requireAdmin,       // 2. Check admin status  
+ *   validateRequest,    // 3. Validate request body
+ *   adminController.updateSettings
+ * );
  */
 export async function requireAdmin(req, res, next) {
   if (!req.session?.user) {

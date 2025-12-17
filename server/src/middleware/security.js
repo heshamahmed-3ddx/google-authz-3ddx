@@ -28,7 +28,7 @@ const logger = createContextLogger('/server/src/middleware/security.js', 'Securi
  * - Permissions Policy to restrict browser features
  * 
  * @module securityHeaders
- * @type {import('express').RequestHandler}
+ * @type {Function}
  * @see https://helmetjs.github.io/
  * 
  * @example
@@ -135,7 +135,7 @@ export const securityHeaders = helmet({
  * response headers (RateLimit-*).
  * 
  * @name generalRateLimit
- * @type {import('express').RequestHandler}
+ * @type {Function}
  * 
  * @example
  * // Mount as global middleware (after security headers, before routes)
@@ -175,7 +175,7 @@ export const generalRateLimit = rateLimit({
  * stuffing and brute force attempts.
  *
  * @name authRateLimit
- * @type {import('express').RequestHandler}
+ * @type {Function}
  */
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -206,7 +206,7 @@ export const authRateLimit = rateLimit({
  * Introduces incremental delays for repetitive requests from the same IP.
  *
  * @name speedLimiter
- * @type {import('express').RequestHandler}
+ * @type {Function}
  */
 export const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -228,7 +228,7 @@ export const speedLimiter = slowDown({
  * tokens from common locations (body, query, headers).
  *
  * @name csrfProtection
- * @type {import('express').RequestHandler}
+ * @type {Function}
  * @throws {Error} When csurf cannot initialize (rare)
  */
 export const csrfProtection = csrf({
@@ -254,9 +254,9 @@ export const csrfProtection = csrf({
  * detected, this middleware responds with HTTP 400 and a structured error.
  *
  * @name requestValidation
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware function
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware function
  * @returns {void}
  */
 export const requestValidation = (req, res, next) => {
@@ -390,9 +390,9 @@ export const corsOptions = {
  * exchange.
  *
  * @name sanitizeInput
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {void}
  */
 export const sanitizeInput = (req, res, next) => {
@@ -449,9 +449,9 @@ export const sanitizeInput = (req, res, next) => {
  * prevent aggressive caching.
  *
  * @name apiSecurityHeaders
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {void}
  */
 export const apiSecurityHeaders = (req, res, next) => {
@@ -476,9 +476,9 @@ export const apiSecurityHeaders = (req, res, next) => {
  *
  * @name securityErrorHandler
  * @param {Error} err - The error thrown by previous middleware
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {void}
  */
 export const securityErrorHandler = (err, req, res, next) => {

@@ -9,6 +9,7 @@ module.exports = [
       { text: 'Dev Mode Guide', link: '/DEV_MODE_GUIDE' },
       { text: 'Deployment', link: '/deployment' },
       { text: 'Development Roadmap', link: '/development-roadmap' },
+      { text: 'Roadmap 2025 (Detailed)', link: '/DEVELOPMENT_ROADMAP_2025' },
     ]
   },
   {
@@ -66,9 +67,11 @@ module.exports = [
     ]
   },
   {
-    text: 'Admin & Testing',
+    text: 'Testing & Quality',
     collapsible: true,
     items: [
+      { text: 'Testing & QA Report', link: '/TESTING_AND_QUALITY_REPORT' },
+      { text: 'Manager Meeting Presentation', link: '/MANAGER_MEETING_PRESENTATION' },
       { text: 'Admin Testing Guide', link: '/admin-testing-guide' },
       { text: 'Code Review Checklist', link: '/CODE_REVIEW_CHECKLIST' },
     ]

@@ -98,6 +98,130 @@
 
         
             
+<h4 class="name" id="API_COMPATIBILITY"><span class="type-signature">(constant) </span>API_COMPATIBILITY<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>API compatibility information</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_config_version.js.html">server/src/config/version.js</a>, <a href="server_src_config_version.js.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="CONFIG"><span class="type-signature">(constant) </span>CONFIG<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Application configuration constants</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_config_config.js.html">server/src/config/config.js</a>, <a href="server_src_config_config.js.html#line19">line 19</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="DASHBOARD_ACCESS_CONFIG"><span class="type-signature">(constant) </span>DASHBOARD_ACCESS_CONFIG<span class="type-signature"></span></h4>
 
 
@@ -154,7 +278,93 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_dashboardAccess.js.html">config/dashboardAccess.js</a>, <a href="config_dashboardAccess.js.html#line26">line 26</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// Allow only admin group
+userRights: ['admin']
+
+// Allow multiple groups
+technicalInfo: ['SWD', 'admin', 'developers']
+
+// Allow all users
+userDetails: ['*']</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="DASHBOARD_ACCESS_CONFIG"><span class="type-signature">(constant) </span>DASHBOARD_ACCESS_CONFIG<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Dashboard Access Control Configuration</p>
+<p>This file defines which user groups have access to different dashboard sections.</p>
+<p>Special values:</p>
+<ul>
+<li>'*' : All authenticated users have access</li>
+<li>['group1', 'group2'] : Only users in these groups have access</li>
+</ul>
+<p>To modify access:</p>
+<ol>
+<li>Add/remove group names from the arrays</li>
+<li>Use '*' to allow all users</li>
+<li>Use empty array [] to deny all users</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -238,7 +448,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line27">line 27</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -256,13 +466,23 @@ divider: boolean - Show divider after item
 
         
             
-<h4 class="name" id="logger"><span class="type-signature">(constant) </span>logger<span class="type-signature"></span></h4>
+<h4 class="name" id="NAVIGATION_CONFIG"><span class="type-signature">(constant) </span>NAVIGATION_CONFIG<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Default logger instance</p>
+    <p>Navigation Item Structure:
+{
+id: string - Unique identifier
+title: string - Display name
+icon: string - Material Design Icon name
+route: string - Vue Router path (optional for groups)
+permissions: string[] - Required groups/roles (* for public)
+children: array - Nested navigation items
+badge: object - Optional badge configuration { text, color }
+divider: boolean - Show divider after item
+}</p>
 </div>
 
 
@@ -300,7 +520,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line147">line 147</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -318,13 +538,13 @@ divider: boolean - Show divider after item
 
         
             
-<h4 class="name" id="logger"><span class="type-signature">(constant) </span>logger<span class="type-signature"></span></h4>
+<h4 class="name" id="RELEASE_NOTES"><span class="type-signature">(constant) </span>RELEASE_NOTES<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Default logger instance</p>
+    <p>Release notes for current version</p>
 </div>
 
 
@@ -362,7 +582,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line147">line 147</a>
+        <a href="server_src_config_version.js.html">server/src/config/version.js</a>, <a href="server_src_config_version.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -375,6 +595,1094 @@ divider: boolean - Show divider after item
 
 
 
+
+
+
+        
+            
+<h4 class="name" id="VERSION"><span class="type-signature">(constant) </span>VERSION<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Application version information
+Increment with every meaningful change:</p>
+<ul>
+<li>MAJOR: Breaking changes, API incompatibility</li>
+<li>MINOR: New features, backwards compatible</li>
+<li>PATCH: Bug fixes, minor improvements</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_config_version.js.html">server/src/config/version.js</a>, <a href="server_src_config_version.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="coloredLogFormat"><span class="type-signature">(constant) </span>coloredLogFormat<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Colored log format for console output with colored [SERVER] prefix</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="connectionConfig"><span class="type-signature">(constant) </span>connectionConfig<span class="type-signature"> :<a href="global.html#ConnectionConfig">ConnectionConfig</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Connection configuration (passed to each connection in the pool)</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#ConnectionConfig">ConnectionConfig</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_database.js.html">server/src/services/database.js</a>, <a href="server_src_services_database.js.html#line35">line 35</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="errorHandler"><span class="type-signature"></span>errorHandler<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Centralized error handling middleware</p>
+<p>This function normalizes errors thrown anywhere in the request chain into
+a structured JSON response. It maps known error types to HTTP status
+codes and standardized error codes, logs the error using the logging
+service, and avoids leaking stack traces in production.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_middleware_errorHandler.js.html">server/src/middleware/errorHandler.js</a>, <a href="server_src_middleware_errorHandler.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// Registered as the last middleware
+app.use(errorHandler)</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="lightTheme"><span class="type-signature">(constant) </span>lightTheme<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Enhanced Vuetify Configuration with Enterprise Color System</p>
+<p>This configuration implements the Fortune 500-level color palette
+following Material Design 3 principles.</p>
+<p>To use: Replace the import in main.js from './plugins/vuetify.js'
+to './plugins/vuetify.enhanced.js'</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_plugins_vuetify.enhanced.js.html">client/src/plugins/vuetify.enhanced.js</a>, <a href="client_src_plugins_vuetify.enhanced.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="lightTheme"><span class="type-signature">(constant) </span>lightTheme<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Enhanced Vuetify Configuration with Enterprise Color System</p>
+<p>This configuration implements the Fortune 500-level color palette
+following Material Design 3 principles.</p>
+<p>To use: Replace the import in main.js from './plugins/vuetify.js'
+to './plugins/vuetify.enhanced.js'</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_plugins_vuetify.enhanced.js.html">client/src/plugins/vuetify.enhanced.js</a>, <a href="client_src_plugins_vuetify.enhanced.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="logFormat"><span class="type-signature">(constant) </span>logFormat<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Custom log format matching exact specification: [SERVER]|timestamp|LEVEL|[filename:line]|message</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line20">line 20</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="logger"><span class="type-signature">(constant) </span>logger<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Create enhanced logger instance</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="messageCache"><span class="type-signature">(constant) </span>messageCache<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Message cache for loaded languages</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="pool"><span class="type-signature"></span>pool<span class="type-signature"> :mysql.Pool</span></h4>
+
+
+
+
+<div class="description">
+    <p>Connection pool instance</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">mysql.Pool</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_database.js.html">server/src/services/database.js</a>, <a href="server_src_services_database.js.html#line78">line 78</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="poolConfig"><span class="type-signature">(constant) </span>poolConfig<span class="type-signature"> :<a href="global.html#PoolConfig">PoolConfig</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Pool configuration
+mysql2 createPool() accepts both pool options and connection options in one object.
+However, pool-specific options like acquireTimeout trigger warnings when passed to connections.
+We'll create the pool with all options, but mysql2 will only use pool options for the pool.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#PoolConfig">PoolConfig</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_database.js.html">server/src/services/database.js</a>, <a href="server_src_services_database.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="requestIdMiddleware"><span class="type-signature"></span>requestIdMiddleware<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Middleware to generate a unique request ID for each incoming request.
+Adds <code>requestId</code> to the request object and sets the <code>X-Request-ID</code>
+response header so frontend telemetry and logs can be correlated.
+Also copies the authenticated user's email into <code>req.userEmail</code> when
+available to simplify logging context.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_middleware_requestId.js.html">server/src/middleware/requestId.js</a>, <a href="server_src_middleware_requestId.js.html#line11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="requireAuth"><span class="type-signature"></span>requireAuth<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Authentication guard middleware
+Ensures a valid user session is present. If the session is missing or
+does not contain user information, the middleware responds with HTTP 401
+and does not call <code>next()</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_middleware_auth.js.html">server/src/middleware/auth.js</a>, <a href="server_src_middleware_auth.js.html#line16">line 16</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="requireAuth"><span class="type-signature"></span>requireAuth<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Authentication guard middleware
+Ensures a valid user session is present. If the session is missing or
+does not contain user information the middleware responds with HTTP 401
+and does not call <code>next()</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="requireGroups"><span class="type-signature">(constant) </span>requireGroups<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Group-based authorization middleware factory</p>
+<p>Creates a middleware function that checks if the authenticated user belongs to
+any of the specified groups. If the user is not in any of the allowed groups,
+the middleware responds with HTTP 403 and does not call <code>next()</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_middleware_auth.js.html">server/src/middleware/auth.js</a>, <a href="server_src_middleware_auth.js.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Protect a route to only allow Finance22 and admin groups
+router.get('/reports', requireGroups(['Finance22', 'admin']), getReports);</code></pre>
+
+    <pre class="prettyprint"><code>// Protect a route to only allow Developers22 group
+router.get('/api-docs', requireGroups(['Developers22', 'admin']), showApiDocs);</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="userDetailsCache"><span class="type-signature">(constant) </span>userDetailsCache<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Get authenticated user details including groups, roles, and organization
+US-003: Show Authenticated User Details</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line345">line 345</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>GET /api/user/details
+Response: {
+  "data": {
+    "fullName": "John Doe",
+    "email": "john@3ddiagnostix.com", 
+    "groups": ["Engineering", "R&amp;D"],
+    "roles": ["engineer", "team_lead"],
+    "orgUnit": "Software Development",
+    "department": "Engineering",
+    "twoStepEnabled": true
+  }
+}</code></pre>
 
 
 
@@ -390,7 +1698,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="createClientLogger"><span class="type-signature"></span>createClientLogger<span class="signature">(context)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="GET/api/health"><span class="type-signature"></span>GET /api/health<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -398,7 +1706,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Create a client logger with [CLIENT] prefix and colors</p>
+    <p>Returns system health status and metrics for monitoring.</p>
 </div>
 
 
@@ -434,13 +1742,13 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>context</code></td>
+                <td class="name"><code>req</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -450,7 +1758,30 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Context or component name</p></td>
+            <td class="description last"><p>Express request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
         </tr>
 
     
@@ -491,7 +1822,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line70">line 70</a>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line1373">line 1373</a>
     </li></ul></dd>
     
 
@@ -514,13 +1845,42 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>On server error</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">500</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>Logger object with info, warn, error methods</p>
+    <p>JSON with status, timestamp, uptime, memoryUsage, cpuUsage, requestId</p>
 </div>
 
 
@@ -549,7 +1909,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="createClientLogger"><span class="type-signature"></span>createClientLogger<span class="signature">(context)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="GET/api/session/info"><span class="type-signature"></span>GET /api/session/info<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -557,7 +1917,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Create a client logger with [CLIENT] prefix and colors</p>
+    <p>Returns current session and token info for authenticated user.</p>
 </div>
 
 
@@ -593,13 +1953,13 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>context</code></td>
+                <td class="name"><code>req</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -609,7 +1969,30 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Context or component name</p></td>
+            <td class="description last"><p>Express request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
         </tr>
 
     
@@ -650,7 +2033,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line70">line 70</a>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line1323">line 1323</a>
     </li></ul></dd>
     
 
@@ -673,13 +2056,42 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>On server error</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">500</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>Logger object with info, warn, error methods</p>
+    <p>JSON with user, tokenInfo, sessionId, timestamp</p>
 </div>
 
 
@@ -708,7 +2120,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="debug"><span class="type-signature"></span>debug<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="GET/api/test"><span class="type-signature"></span>GET /api/test<span class="signature">(req, res)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -716,7 +2128,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log debug messages (only in development)</p>
+    <p>Returns a test message and server time for API status checks.</p>
 </div>
 
 
@@ -752,30 +2164,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
+                <td class="name"><code>req</code></td>
             
 
             <td class="type">
@@ -791,7 +2180,30 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Additional metadata</p></td>
+            <td class="description last"><p>Express request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
         </tr>
 
     
@@ -832,7 +2244,117 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line138">line 138</a>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line1510">line 1510</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>JSON with message, timestamp, authenticated</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="clearMessageCache"><span class="type-signature"></span>clearMessageCache<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Clear message cache (useful for hot reloading in development)</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line158">line 158</a>
     </li></ul></dd>
     
 
@@ -868,7 +2390,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="debug"><span class="type-signature"></span>debug<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="createApiResponse"><span class="type-signature"></span>createApiResponse<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -876,7 +2398,97 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log debug messages (only in development)</p>
+    <p>Create standardized API response</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line123">line 123</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createContextLogger"><span class="type-signature"></span>createContextLogger<span class="signature">(filename, functionName<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function|function|function|function}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Create a context-aware logger instance with automatic file/line tracking</p>
+<p>This function creates a logger wrapper that automatically includes filename and line number
+information in log entries. It filters non-critical info-level logs to reduce noise.</p>
 </div>
 
 
@@ -900,7 +2512,11 @@ divider: boolean - Show divider after item
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -912,7 +2528,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>filename</code></td>
             
 
             <td class="type">
@@ -925,33 +2541,64 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Log message</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Full path or filename for logging context</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>meta</code></td>
+                <td class="name"><code>functionName</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Additional metadata</p></td>
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>Optional function name for additional context</p></td>
         </tr>
 
     
@@ -992,7 +2639,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line138">line 138</a>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -1017,8 +2664,117 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+<ul>
+        <li>
+<div class="param-desc">
+    <p>Logger object with info, warn, error, and debug methods</p>
+</div>
 
 
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    <p>returns.info - Log info-level messages (filtered for critical events only)</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    <p>returns.warn - Log warning messages</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    <p>returns.error - Log error messages with stack trace</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+</li>
+    
+        <li>
+<div class="param-desc">
+    <p>returns.debug - Log debug messages (development only)</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+</li>
+    </ul>
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const logger = createContextLogger(__filename, 'myFunction');
+logger.info('System initialized'); // Only logs if message contains critical keywords
+logger.error('Operation failed', { error: err.message });</code></pre>
 
 
 
@@ -1028,7 +2784,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="error"><span class="type-signature"></span>error<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="createErrorResponse"><span class="type-signature"></span>createErrorResponse<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -1036,7 +2792,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log error messages</p>
+    <p>Create standardized error response</p>
 </div>
 
 
@@ -1045,78 +2801,6 @@ divider: boolean - Show divider after item
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional metadata</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1152,7 +2836,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line129">line 129</a>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line135">line 135</a>
     </li></ul></dd>
     
 
@@ -1188,7 +2872,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="error"><span class="type-signature"></span>error<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="createRateLimiter"><span class="type-signature"></span>createRateLimiter<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -1196,7 +2880,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log error messages</p>
+    <p>Rate limiting middleware</p>
 </div>
 
 
@@ -1205,78 +2889,6 @@ divider: boolean - Show divider after item
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional metadata</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1312,7 +2924,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line129">line 129</a>
+        <a href="server_src_services_security.js.html">server/src/services/security.js</a>, <a href="server_src_services_security.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
@@ -1348,7 +2960,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="filterNavigationByPermissions"><span class="type-signature"></span>filterNavigationByPermissions<span class="signature">(navigationItems, userGroups)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    <h4 class="name" id="errorRedirect"><span class="type-signature"></span>errorRedirect<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -1356,7 +2968,98 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Filter navigation items based on user permissions</p>
+    <p>Helper function to standardize error redirects</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_routes_auth.routes.js.html">server/src/routes/auth.routes.js</a>, <a href="server_src_routes_auth.routes.js.html#line84">line 84</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="filterNavigationByPermissions"><span class="type-signature"></span>filterNavigationByPermissions<span class="signature">(navigationItems, userGroups)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Filter navigation items based on user permissions (recursive)</p>
+<p>Filters the entire navigation structure to show only items accessible to the current user.
+Recursively processes nested children and removes parent items that have no accessible
+children and no direct route. This ensures the navigation menu only shows relevant items.</p>
 </div>
 
 
@@ -1398,7 +3101,7 @@ divider: boolean - Show divider after item
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">Array.&lt;Object></span>
 
 
             
@@ -1408,7 +3111,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Full navigation structure</p></td>
+            <td class="description last"><p>Full navigation structure with nested items</p></td>
         </tr>
 
     
@@ -1431,7 +3134,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>User's current groups</p></td>
+            <td class="description last"><p>Current user's group memberships</p></td>
         </tr>
 
     
@@ -1472,7 +3175,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line462">line 462</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line147">line 147</a>
     </li></ul></dd>
     
 
@@ -1501,7 +3204,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Filtered navigation items</p>
+    <p>Filtered navigation items with only accessible entries</p>
 </div>
 
 
@@ -1512,7 +3215,7 @@ divider: boolean - Show divider after item
     </dt>
     <dd>
         
-<span class="param-type">Array</span>
+<span class="param-type">Array.&lt;Object></span>
 
 
     </dd>
@@ -1523,6 +3226,16 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Filter navigation for a regular user
+const userNav = filterNavigationByPermissions(navigationConfig, ['user', 'viewer']);</code></pre>
+
+    <pre class="prettyprint"><code>// Filter navigation for admin
+const adminNav = filterNavigationByPermissions(navigationConfig, ['admin']);
+// Returns all items including restricted ones</code></pre>
+
+
 
         
             
@@ -1530,7 +3243,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="findNavigationItemByRoute"><span class="type-signature"></span>findNavigationItemByRoute<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+    <h4 class="name" id="filterNavigationByPermissions"><span class="type-signature"></span>filterNavigationByPermissions<span class="signature">(navigationItems, userGroups)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
     
 
     
@@ -1538,7 +3251,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Find navigation item by route</p>
+    <p>Filter navigation items based on user permissions (recursive)</p>
+<p>Filters the entire navigation structure to show only items accessible to the current user.
+Recursively processes nested children and removes parent items that have no accessible
+children and no direct route. This ensures the navigation menu only shows relevant items.</p>
 </div>
 
 
@@ -1580,7 +3296,7 @@ divider: boolean - Show divider after item
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">Array.&lt;Object></span>
 
 
             
@@ -1590,20 +3306,20 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Navigation structure</p></td>
+            <td class="description last"><p>Full navigation structure with nested items</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>route</code></td>
+                <td class="name"><code>userGroups</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -1613,7 +3329,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Route to find</p></td>
+            <td class="description last"><p>Current user's group memberships</p></td>
         </tr>
 
     
@@ -1654,7 +3370,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line490">line 490</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line147">line 147</a>
     </li></ul></dd>
     
 
@@ -1683,7 +3399,202 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Navigation item or null</p>
+    <p>Filtered navigation items with only accessible entries</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Filter navigation for a regular user
+const userNav = filterNavigationByPermissions(navigationConfig, ['user', 'viewer']);</code></pre>
+
+    <pre class="prettyprint"><code>// Filter navigation for admin
+const adminNav = filterNavigationByPermissions(navigationConfig, ['admin']);
+// Returns all items including restricted ones</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="findNavigationItemByRoute"><span class="type-signature"></span>findNavigationItemByRoute<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Find navigation item by route path (recursive search)</p>
+<p>Searches through the navigation structure (including nested children) to find
+an item matching the specified route. Used for determining active navigation
+state and breadcrumb generation.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>navigationItems</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Navigation structure to search</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>route</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Route path to find (e.g., '/dashboard' or '/reports/surgical-guide')</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line193">line 193</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Matching navigation item object, or null if not found</p>
 </div>
 
 
@@ -1708,6 +3619,17 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Find dashboard item
+const item = findNavigationItemByRoute(navigationConfig, '/dashboard');
+// Returns: { title: 'Dashboard', route: '/dashboard', ... }</code></pre>
+
+    <pre class="prettyprint"><code>// Route not found
+const item = findNavigationItemByRoute(navigationConfig, '/nonexistent');
+// Returns: null</code></pre>
+
+
 
         
             
@@ -1715,7 +3637,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getBreadcrumbTrail"><span class="type-signature"></span>getBreadcrumbTrail<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    <h4 class="name" id="findNavigationItemByRoute"><span class="type-signature"></span>findNavigationItemByRoute<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
     
 
     
@@ -1723,7 +3645,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get breadcrumb trail for a route</p>
+    <p>Find navigation item by route path (recursive search)</p>
+<p>Searches through the navigation structure (including nested children) to find
+an item matching the specified route. Used for determining active navigation
+state and breadcrumb generation.</p>
 </div>
 
 
@@ -1765,7 +3690,7 @@ divider: boolean - Show divider after item
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">Array.&lt;Object></span>
 
 
             
@@ -1775,7 +3700,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Navigation structure</p></td>
+            <td class="description last"><p>Navigation structure to search</p></td>
         </tr>
 
     
@@ -1798,7 +3723,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Current route</p></td>
+            <td class="description last"><p>Route path to find (e.g., '/dashboard' or '/reports/surgical-guide')</p></td>
         </tr>
 
     
@@ -1839,7 +3764,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line508">line 508</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -1868,7 +3793,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Breadcrumb trail</p>
+    <p>Matching navigation item object, or null if not found</p>
 </div>
 
 
@@ -1879,7 +3804,10 @@ divider: boolean - Show divider after item
     </dt>
     <dd>
         
-<span class="param-type">Array</span>
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
 
 
     </dd>
@@ -1890,6 +3818,17 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Find dashboard item
+const item = findNavigationItemByRoute(navigationConfig, '/dashboard');
+// Returns: { title: 'Dashboard', route: '/dashboard', ... }</code></pre>
+
+    <pre class="prettyprint"><code>// Route not found
+const item = findNavigationItemByRoute(navigationConfig, '/nonexistent');
+// Returns: null</code></pre>
+
+
 
         
             
@@ -1897,7 +3836,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getCallerInfo"><span class="type-signature"></span>getCallerInfo<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="formatDate"><span class="type-signature"></span>formatDate<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -1905,7 +3844,2088 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get caller file and line information</p>
+    <p>Format date to standard format: 31/Dec/2025</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDate(new Date('2025-12-31')) // Returns "31/Dec/2025"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDate"><span class="type-signature"></span>formatDate<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format date to standard format: 31/Dec/2025</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDate(new Date('2025-12-31')) // Returns "31/Dec/2025"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDate"><span class="type-signature"></span>formatDate<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format date to standard format: 31/Dec/2025</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_utils_dateFormatter.js.html">server/src/utils/dateFormatter.js</a>, <a href="server_src_utils_dateFormatter.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDate(new Date('2025-12-31')) // Returns "31/Dec/2025"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDateTime"><span class="type-signature"></span>formatDateTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format date and time together: 31/Dec/2025 10:02p</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date and time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDateTime(new Date('2025-12-31T22:02:00')) // Returns "31/Dec/2025 10:02p"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDateTime"><span class="type-signature"></span>formatDateTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format date and time together: 31/Dec/2025 10:02p</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date and time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDateTime(new Date('2025-12-31T22:02:00')) // Returns "31/Dec/2025 10:02p"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDateTime"><span class="type-signature"></span>formatDateTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format date and time together: 31/Dec/2025 10:02p</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_utils_dateFormatter.js.html">server/src/utils/dateFormatter.js</a>, <a href="server_src_utils_dateFormatter.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted date and time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDateTime(new Date('2025-12-31T22:02:00')) // Returns "31/Dec/2025 10:02p"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatTime"><span class="type-signature"></span>formatTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format time to standard format: hh:mma/p (e.g., 10:02p)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatTime(new Date('2025-12-31T22:02:00')) // Returns "10:02p"
+formatTime(new Date('2025-12-31T10:02:00')) // Returns "10:02a"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatTime"><span class="type-signature"></span>formatTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format time to standard format: hh:mma/p (e.g., 10:02p)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatTime(new Date('2025-12-31T22:02:00')) // Returns "10:02p"
+formatTime(new Date('2025-12-31T10:02:00')) // Returns "10:02a"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatTime"><span class="type-signature"></span>formatTime<span class="signature">(date)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Format time to standard format: hh:mma/p (e.g., 10:02p)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Date object or date string</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_utils_dateFormatter.js.html">server/src/utils/dateFormatter.js</a>, <a href="server_src_utils_dateFormatter.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Formatted time string</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatTime(new Date('2025-12-31T22:02:00')) // Returns "10:02p"
+formatTime(new Date('2025-12-31T10:02:00')) // Returns "10:02a"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getBreadcrumbTrail"><span class="type-signature"></span>getBreadcrumbTrail<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get breadcrumb trail for current route</p>
+<p>Generates a breadcrumb trail by finding the path from root to the current route
+through the navigation structure. Useful for displaying hierarchical navigation
+context (e.g., Home &gt; Reports &gt; Surgical Guide Report).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>navigationItems</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Full navigation structure</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>route</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current route path</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line229">line 229</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Array of navigation items representing the breadcrumb trail</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Get breadcrumb for nested route
+const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/reports/surgical-guide');
+// Returns: [
+//   { title: 'Reports', route: '/reports', ... },
+//   { title: 'Surgical Guide', route: '/reports/surgical-guide', ... }
+// ]</code></pre>
+
+    <pre class="prettyprint"><code>// Top-level route
+const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/dashboard');
+// Returns: [{ title: 'Dashboard', route: '/dashboard', ... }]</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getBreadcrumbTrail"><span class="type-signature"></span>getBreadcrumbTrail<span class="signature">(navigationItems, route)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get breadcrumb trail for current route</p>
+<p>Generates a breadcrumb trail by finding the path from root to the current route
+through the navigation structure. Useful for displaying hierarchical navigation
+context (e.g., Home &gt; Reports &gt; Surgical Guide Report).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>navigationItems</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Full navigation structure</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>route</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Current route path</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line229">line 229</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Array of navigation items representing the breadcrumb trail</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Get breadcrumb for nested route
+const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/reports/surgical-guide');
+// Returns: [
+//   { title: 'Reports', route: '/reports', ... },
+//   { title: 'Surgical Guide', route: '/reports/surgical-guide', ... }
+// ]</code></pre>
+
+    <pre class="prettyprint"><code>// Top-level route
+const breadcrumbs = getBreadcrumbTrail(navigationConfig, '/dashboard');
+// Returns: [{ title: 'Dashboard', route: '/dashboard', ... }]</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getConfig"><span class="type-signature"></span>getConfig<span class="signature">(path)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get configuration value by dot-notation path</p>
+<p>Safely retrieves nested configuration values using string path notation.
+Returns undefined if path doesn't exist. Useful for accessing deeply
+nested config without multiple null checks.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>path</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Dot-notation path to config value (e.g., 'server.port', 'security.cors.origin')</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_config_config.js.html">server/src/config/config.js</a>, <a href="server_src_config_config.js.html#line260">line 260</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Configuration value at path, or undefined if not found</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Get server port
+const port = getConfig('server.port');
+// Returns: 3001</code></pre>
+
+    <pre class="prettyprint"><code>// Get nested security setting
+const corsOrigin = getConfig('security.cors.origin');
+// Returns: 'http://localhost:3000'</code></pre>
+
+    <pre class="prettyprint"><code>// Non-existent path
+const value = getConfig('does.not.exist');
+// Returns: undefined</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getErrorMessage"><span class="type-signature"></span>getErrorMessage<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get error message with details</p>
 </div>
 
 
@@ -1949,7 +5969,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line30">line 30</a>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -1974,28 +5994,6 @@ divider: boolean - Show divider after item
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Object with filename and line number</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -2007,7 +6005,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getCallerInfo"><span class="type-signature"></span>getCallerInfo<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getHttpStatusForError"><span class="type-signature"></span>getHttpStatusForError<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -2015,7 +6013,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get caller file and line information</p>
+    <p>Map error codes to HTTP status codes</p>
 </div>
 
 
@@ -2059,7 +6057,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line30">line 30</a>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line102">line 102</a>
     </li></ul></dd>
     
 
@@ -2084,28 +6082,94 @@ divider: boolean - Show divider after item
 
 
 
-<h5>Returns:</h5>
+
+
+
+
 
         
-<div class="param-desc">
-    <p>Object with filename and line number</p>
+            
+
+    
+
+    
+    <h4 class="name" id="getMessage"><span class="type-signature"></span>getMessage<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get a localized message by key path</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
 
 
-    </dd>
-</dl>
+
+
+
+
+
+
+
+
+<dl class="details">
 
     
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2126,6 +6190,8 @@ divider: boolean - Show divider after item
 
 <div class="description">
     <p>Get required groups for restricted navigation access</p>
+<p>Returns the list of user groups that have access to restricted/developer-only
+navigation items throughout the application.</p>
 </div>
 
 
@@ -2169,7 +6235,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line434">line 434</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -2198,7 +6264,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Array of group names that grant access to restricted features</p>
+    <p>Array of group names: ['admin', 'SWD', 'developers']</p>
 </div>
 
 
@@ -2218,6 +6284,130 @@ divider: boolean - Show divider after item
     
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const restrictedGroups = getRequiredGroupsForNavigation();
+// Returns: ['admin', 'SWD', 'developers']</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getRequiredGroupsForNavigation"><span class="type-signature"></span>getRequiredGroupsForNavigation<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get required groups for restricted navigation access</p>
+<p>Returns the list of user groups that have access to restricted/developer-only
+navigation items throughout the application.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Array of group names: ['admin', 'SWD', 'developers']</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const restrictedGroups = getRequiredGroupsForNavigation();
+// Returns: ['admin', 'SWD', 'developers']</code></pre>
 
 
 
@@ -2235,7 +6425,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get a human-readable list of groups that can access restricted features</p>
+    <p>Get unique list of groups that can access any restricted dashboard features</p>
+<p>Aggregates all group names from restricted sections (those not using wildcard '*'),
+providing a complete list of groups with special dashboard access privileges.
+Useful for admin interfaces showing which groups have elevated permissions.</p>
 </div>
 
 
@@ -2279,7 +6472,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_dashboardAccess.js.html">config/dashboardAccess.js</a>, <a href="config_dashboardAccess.js.html#line107">line 107</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line121">line 121</a>
     </li></ul></dd>
     
 
@@ -2308,7 +6501,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Array of unique group names (excluding '*')</p>
+    <p>Array of unique group names (excludes '*' wildcard)</p>
 </div>
 
 
@@ -2330,6 +6523,16 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>const restrictedGroups = getRequiredGroupsForRestrictedAccess();
+// Returns: ['admin', 'SWD', 'developers', 'Finance22', ...]</code></pre>
+
+    <pre class="prettyprint"><code>// Use to display in admin panel
+const groups = getRequiredGroupsForRestrictedAccess();
+console.log(`Groups with special access: ${groups.join(', ')}`);</code></pre>
+
+
 
         
             
@@ -2337,7 +6540,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getRestrictedSections"><span class="type-signature"></span>getRestrictedSections<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+    <h4 class="name" id="getRequiredGroupsForRestrictedAccess"><span class="type-signature"></span>getRequiredGroupsForRestrictedAccess<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
     
 
     
@@ -2345,7 +6548,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get all section names that are restricted</p>
+    <p>Get unique list of groups that can access any restricted dashboard features</p>
+<p>Aggregates all group names from restricted sections (those not using wildcard '*'),
+providing a complete list of groups with special dashboard access privileges.
+Useful for admin interfaces showing which groups have elevated permissions.</p>
 </div>
 
 
@@ -2389,7 +6595,130 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_dashboardAccess.js.html">config/dashboardAccess.js</a>, <a href="config_dashboardAccess.js.html#line134">line 134</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Array of unique group names (excludes '*' wildcard)</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>const restrictedGroups = getRequiredGroupsForRestrictedAccess();
+// Returns: ['admin', 'SWD', 'developers', 'Finance22', ...]</code></pre>
+
+    <pre class="prettyprint"><code>// Use to display in admin panel
+const groups = getRequiredGroupsForRestrictedAccess();
+console.log(`Groups with special access: ${groups.join(', ')}`);</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getRestrictedSections"><span class="type-signature"></span>getRestrictedSections<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get all dashboard section names that have access restrictions</p>
+<p>Returns a filtered list of dashboard sections that require specific group
+membership (i.e., not open to all users via '*'). Useful for generating
+reports on restricted features or admin interfaces.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line178">line 178</a>
     </li></ul></dd>
     
 
@@ -2440,6 +6769,17 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>const restricted = getRestrictedSections();
+// Returns: ['developerDocumentation', 'surgicalGuideReport', 'adminPanel', ...]</code></pre>
+
+    <pre class="prettyprint"><code>// Display restricted sections
+getRestrictedSections().forEach(section => {
+  console.log(`${section} requires specific group access`);
+});</code></pre>
+
+
 
         
             
@@ -2447,7 +6787,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getTimestamp"><span class="type-signature"></span>getTimestamp<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="getRestrictedSections"><span class="type-signature"></span>getRestrictedSections<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span></h4>
     
 
     
@@ -2455,7 +6795,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get current timestamp in YYYY-MM-DD HH:mm:ss format</p>
+    <p>Get all dashboard section names that have access restrictions</p>
+<p>Returns a filtered list of dashboard sections that require specific group
+membership (i.e., not open to all users via '*'). Useful for generating
+reports on restricted features or admin interfaces.</p>
 </div>
 
 
@@ -2499,7 +6842,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line14">line 14</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line178">line 178</a>
     </li></ul></dd>
     
 
@@ -2528,7 +6871,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Formatted timestamp</p>
+    <p>Array of restricted section names</p>
 </div>
 
 
@@ -2539,7 +6882,7 @@ divider: boolean - Show divider after item
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">Array.&lt;string></span>
 
 
     </dd>
@@ -2550,6 +6893,17 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>const restricted = getRestrictedSections();
+// Returns: ['developerDocumentation', 'surgicalGuideReport', 'adminPanel', ...]</code></pre>
+
+    <pre class="prettyprint"><code>// Display restricted sections
+getRestrictedSections().forEach(section => {
+  console.log(`${section} requires specific group access`);
+});</code></pre>
+
+
 
         
             
@@ -2557,7 +6911,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="getTimestamp"><span class="type-signature"></span>getTimestamp<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="getSuccessMessage"><span class="type-signature"></span>getSuccessMessage<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -2565,7 +6919,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Get current timestamp in YYYY-MM-DD HH:mm:ss format</p>
+    <p>Get success message</p>
 </div>
 
 
@@ -2609,7 +6963,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line14">line 14</a>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line88">line 88</a>
     </li></ul></dd>
     
 
@@ -2634,28 +6988,94 @@ divider: boolean - Show divider after item
 
 
 
-<h5>Returns:</h5>
+
+
+
+
 
         
-<div class="param-desc">
-    <p>Formatted timestamp</p>
+            
+
+    
+
+    
+    <h4 class="name" id="getValidationMessage"><span class="type-signature"></span>getValidationMessage<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get validation message</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
 
 
-    </dd>
-</dl>
+
+
+
+
+
+
+
+
+<dl class="details">
 
     
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line95">line 95</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2676,6 +7096,9 @@ divider: boolean - Show divider after item
 
 <div class="description">
     <p>Check if a navigation item is accessible based on user groups</p>
+<p>Determines whether a user has permission to access a specific navigation item
+by comparing the item's required permissions against the user's groups.
+Special case: '*' permission grants access to all users.</p>
 </div>
 
 
@@ -2727,7 +7150,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Required permissions for the nav item</p></td>
+            <td class="description last"><p>Required permissions/groups for the navigation item</p></td>
         </tr>
 
     
@@ -2750,7 +7173,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>User's current groups</p></td>
+            <td class="description last"><p>Current user's group memberships</p></td>
         </tr>
 
     
@@ -2791,7 +7214,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_navigationConfig.js.html">config/navigationConfig.js</a>, <a href="config_navigationConfig.js.html#line444">line 444</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -2820,7 +7243,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>Whether the item is accessible</p>
+    <p>True if user can access the item, false otherwise</p>
 </div>
 
 
@@ -2842,6 +7265,21 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Check if user can access admin menu
+const canAccess = hasNavigationAccess(['admin'], ['admin', 'user']);
+// Returns: true</code></pre>
+
+    <pre class="prettyprint"><code>// Check wildcard permission (accessible to all)
+const canAccess = hasNavigationAccess(['*'], []);
+// Returns: true</code></pre>
+
+    <pre class="prettyprint"><code>// User without required permissions
+const canAccess = hasNavigationAccess(['admin'], ['user']);
+// Returns: false</code></pre>
+
+
 
         
             
@@ -2849,7 +7287,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="info"><span class="type-signature"></span>info<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="hasNavigationAccess"><span class="type-signature"></span>hasNavigationAccess<span class="signature">(itemPermissions, userGroups)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -2857,7 +7295,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log info messages (only critical ones)</p>
+    <p>Check if a navigation item is accessible based on user groups</p>
+<p>Determines whether a user has permission to access a specific navigation item
+by comparing the item's required permissions against the user's groups.
+Special case: '*' permission grants access to all users.</p>
 </div>
 
 
@@ -2893,13 +7334,13 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>itemPermissions</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -2909,20 +7350,20 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Log message</p></td>
+            <td class="description last"><p>Required permissions/groups for the navigation item</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>meta</code></td>
+                <td class="name"><code>userGroups</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -2932,7 +7373,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Additional metadata</p></td>
+            <td class="description last"><p>Current user's group memberships</p></td>
         </tr>
 
     
@@ -2973,327 +7414,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line111">line 111</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="info"><span class="type-signature"></span>info<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Log info messages (only critical ones)</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional metadata</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line111">line 111</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="isCriticalLog"><span class="type-signature"></span>isCriticalLog<span class="signature">(message, level)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Check if a log message is critical enough to log</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>level</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log level</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line52">line 52</a>
+        <a href="client_src_config_navigationConfig.js.html">client/src/config/navigationConfig.js</a>, <a href="client_src_config_navigationConfig.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -3322,7 +7443,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>True if should log</p>
+    <p>True if user can access the item, false otherwise</p>
 </div>
 
 
@@ -3344,6 +7465,21 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Check if user can access admin menu
+const canAccess = hasNavigationAccess(['admin'], ['admin', 'user']);
+// Returns: true</code></pre>
+
+    <pre class="prettyprint"><code>// Check wildcard permission (accessible to all)
+const canAccess = hasNavigationAccess(['*'], []);
+// Returns: true</code></pre>
+
+    <pre class="prettyprint"><code>// User without required permissions
+const canAccess = hasNavigationAccess(['admin'], ['user']);
+// Returns: false</code></pre>
+
+
 
         
             
@@ -3351,7 +7487,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="isCriticalLog"><span class="type-signature"></span>isCriticalLog<span class="signature">(message, level)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="initializeSystem"><span class="type-signature">(async) </span>initializeSystem<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;boolean>}</span></h4>
     
 
     
@@ -3359,7 +7495,14 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Check if a log message is critical enough to log</p>
+    <p>Initialize system components during server startup</p>
+<p>Performs critical initialization tasks in sequence:</p>
+<ol>
+<li>Logs server startup event</li>
+<li>Preloads i18n message system</li>
+<li>Initializes security middleware</li>
+</ol>
+<p>Any failure during initialization will throw an error and prevent server start.</p>
 </div>
 
 
@@ -3368,78 +7511,6 @@ divider: boolean - Show divider after item
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>level</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log level</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -3475,7 +7546,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line52">line 52</a>
+        <a href="server_src_index.js.html">server/src/index.js</a>, <a href="server_src_index.js.html#line68">line 68</a>
     </li></ul></dd>
     
 
@@ -3498,13 +7569,42 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>If any initialization step fails</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>True if should log</p>
+    <p>Returns true on successful initialization</p>
 </div>
 
 
@@ -3515,7 +7615,7 @@ divider: boolean - Show divider after item
     </dt>
     <dd>
         
-<span class="param-type">boolean</span>
+<span class="param-type">Promise.&lt;boolean></span>
 
 
     </dd>
@@ -3524,6 +7624,18 @@ divider: boolean - Show divider after item
     
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// Called during server startup
+try {
+  await initializeSystem();
+  console.log('System initialized successfully');
+} catch (error) {
+  console.error('Initialization failed:', error);
+  process.exit(1);
+}</code></pre>
 
 
 
@@ -3541,7 +7653,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Check if a section is restricted (not open to all users)</p>
+    <p>Check if a dashboard section is restricted (not open to all users)</p>
+<p>Determines whether a section requires specific group membership by checking
+if its access configuration includes the '<em>' wildcard. Sections with '</em>'
+are accessible to all authenticated users.</p>
 </div>
 
 
@@ -3593,7 +7708,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Section name from DASHBOARD_ACCESS_CONFIG</p></td>
+            <td class="description last"><p>Section name from DASHBOARD_ACCESS_CONFIG keys</p></td>
         </tr>
 
     
@@ -3634,7 +7749,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="config_dashboardAccess.js.html">config/dashboardAccess.js</a>, <a href="config_dashboardAccess.js.html#line125">line 125</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line154">line 154</a>
     </li></ul></dd>
     
 
@@ -3663,7 +7778,7 @@ divider: boolean - Show divider after item
 
         
 <div class="param-desc">
-    <p>True if section is restricted</p>
+    <p>True if section requires specific groups, false if open to all</p>
 </div>
 
 
@@ -3685,6 +7800,17 @@ divider: boolean - Show divider after item
 
 
 
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Check if developer documentation is restricted
+const restricted = isSectionRestricted('developerDocumentation');
+// Returns: true (requires specific groups)</code></pre>
+
+    <pre class="prettyprint"><code>// Check if general reports are restricted
+const restricted = isSectionRestricted('generalReports');
+// Returns: false (if config includes '*')</code></pre>
+
+
 
         
             
@@ -3692,7 +7818,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logApiCall"><span class="type-signature"></span>logApiCall<span class="signature">(method, url, data, status)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="isSectionRestricted"><span class="type-signature"></span>isSectionRestricted<span class="signature">(section)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -3700,7 +7826,10 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log API requests and responses (disabled)</p>
+    <p>Check if a dashboard section is restricted (not open to all users)</p>
+<p>Determines whether a section requires specific group membership by checking
+if its access configuration includes the '<em>' wildcard. Sections with '</em>'
+are accessible to all authenticated users.</p>
 </div>
 
 
@@ -3736,7 +7865,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>method</code></td>
+                <td class="name"><code>section</code></td>
             
 
             <td class="type">
@@ -3752,76 +7881,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>HTTP method</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>url</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Request URL</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Request/response data</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>status</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Request status (success/error)</p></td>
+            <td class="description last"><p>Section name from DASHBOARD_ACCESS_CONFIG keys</p></td>
         </tr>
 
     
@@ -3862,7 +7922,128 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line163">line 163</a>
+        <a href="client_src_config_dashboardAccess.js.html">client/src/config/dashboardAccess.js</a>, <a href="client_src_config_dashboardAccess.js.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>True if section requires specific groups, false if open to all</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Check if developer documentation is restricted
+const restricted = isSectionRestricted('developerDocumentation');
+// Returns: true (requires specific groups)</code></pre>
+
+    <pre class="prettyprint"><code>// Check if general reports are restricted
+const restricted = isSectionRestricted('generalReports');
+// Returns: false (if config includes '*')</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="loadMessages"><span class="type-signature">(async) </span>loadMessages<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Load messages for a specific language</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -3898,7 +8079,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logApiCall"><span class="type-signature"></span>logApiCall<span class="signature">(method, url, data, status)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="logExternalService"><span class="type-signature"></span>logExternalService<span class="signature">(service, operation, status, details<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -3906,7 +8087,9 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log API requests and responses (disabled)</p>
+    <p>Log external service interactions</p>
+<p>Records interactions with external services (APIs, databases, etc.)
+for monitoring and debugging purposes.</p>
 </div>
 
 
@@ -3930,7 +8113,11 @@ divider: boolean - Show divider after item
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -3942,7 +8129,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>method</code></td>
+                <td class="name"><code>service</code></td>
             
 
             <td class="type">
@@ -3955,17 +8142,29 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>HTTP method</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>External service name (e.g., 'Google API', 'Database')</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>url</code></td>
+                <td class="name"><code>operation</code></td>
             
 
             <td class="type">
@@ -3978,33 +8177,22 @@ divider: boolean - Show divider after item
             </td>
 
             
-
-            
-
-            <td class="description last"><p>Request URL</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type">Object</span>
 
+                
 
-            
-            </td>
-
-            
-
+                
+                </td>
             
 
-            <td class="description last"><p>Request/response data</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Operation performed (e.g., 'getUser', 'query')</p></td>
         </tr>
 
     
@@ -4024,10 +8212,155 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Operation status ('success', 'failed', 'timeout')</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>details</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Additional operation details</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>duration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Request status (success/error)</p></td>
+            <td class="description last"><p>Operation duration in milliseconds</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Error message if operation failed</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -4068,7 +8401,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line163">line 163</a>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line384">line 384</a>
     </li></ul></dd>
     
 
@@ -4093,8 +8426,31 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+
+        
 
 
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>logExternalService('Google API', 'getUser', 'success', { duration: 150 });</code></pre>
 
 
 
@@ -4104,7 +8460,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logAuth"><span class="type-signature"></span>logAuth<span class="signature">(event, details)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="logSecurityEvent"><span class="type-signature"></span>logSecurityEvent<span class="signature">(event, details<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -4112,7 +8468,9 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log authentication events (disabled)</p>
+    <p>Log security-related events for monitoring and alerting</p>
+<p>Records security events such as failed authentication attempts,
+authorization denials, rate limit violations, etc.</p>
 </div>
 
 
@@ -4136,7 +8494,11 @@ divider: boolean - Show divider after item
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -4161,10 +8523,22 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Auth event (login, logout, etc.)</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Security event type (e.g., 'auth_failed', 'rate_limit', 'unauthorized_access')</p></td>
         </tr>
 
     
@@ -4184,10 +8558,186 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Event details</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Event details</p></td>
+            <td class="description last"><p>Client IP address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userEmail</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>User email (if applicable)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reason</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Reason for the security event</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metadata</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional event metadata</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -4228,7 +8778,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line186">line 186</a>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -4253,8 +8803,31 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+
+        
 
 
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>logSecurityEvent('auth_failed', { ip: '192.168.1.1', reason: 'Invalid credentials' });</code></pre>
 
 
 
@@ -4264,7 +8837,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logAuth"><span class="type-signature"></span>logAuth<span class="signature">(event, details)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="logSystemInit"><span class="type-signature"></span>logSystemInit<span class="signature">(component, status, details<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -4272,7 +8845,8 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log authentication events (disabled)</p>
+    <p>Log system initialization events</p>
+<p>Records component initialization status during application startup.</p>
 </div>
 
 
@@ -4296,7 +8870,11 @@ divider: boolean - Show divider after item
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -4308,7 +8886,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>event</code></td>
+                <td class="name"><code>component</code></td>
             
 
             <td class="type">
@@ -4321,10 +8899,57 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Auth event (login, logout, etc.)</p></td>
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Component name being initialized</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>status</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Initialization status ('started', 'initialized', 'failed', etc.)</p></td>
         </tr>
 
     
@@ -4344,10 +8969,26 @@ divider: boolean - Show divider after item
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
+
+                
+                </td>
             
 
-            <td class="description last"><p>Event details</p></td>
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Additional initialization details</p></td>
         </tr>
 
     
@@ -4388,7 +9029,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line186">line 186</a>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line356">line 356</a>
     </li></ul></dd>
     
 
@@ -4413,8 +9054,31 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+
+        
 
 
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>logSystemInit('Database', 'initialized', { host: 'localhost', port: 3306 });</code></pre>
 
 
 
@@ -4424,7 +9088,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logNavigation"><span class="type-signature"></span>logNavigation<span class="signature">(from, to, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="logUserAccess"><span class="type-signature"></span>logUserAccess<span class="signature">(action, userInfo<span class="signature-attributes">opt</span>, metadata<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -4432,7 +9096,390 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log navigation events (disabled)</p>
+    <p>Log user access events for audit trail</p>
+<p>Records user actions such as login, logout, resource access, etc.
+for compliance and security auditing purposes.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Action performed (e.g., 'login', 'logout', 'resource_access')</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userInfo</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>User information object</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>User email address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>User ID</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>username</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Username</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metadata</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"><p>Additional metadata for the event</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line304">line 304</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>logUserAccess('login', { email: 'user@example.com' }, { ip: '192.168.1.1' });</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="parseDate"><span class="type-signature"></span>parseDate<span class="signature">(dateString)</span><span class="type-signature"> &rarr; {Date|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Parse date string in various formats and return Date object</p>
 </div>
 
 
@@ -4468,7 +9515,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>from</code></td>
+                <td class="name"><code>dateString</code></td>
             
 
             <td class="type">
@@ -4484,53 +9531,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Previous route</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>to</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Target route</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional route metadata</p></td>
+            <td class="description last"><p>Date string in various formats</p></td>
         </tr>
 
     
@@ -4571,7 +9572,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line177">line 177</a>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -4596,6 +9597,31 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Date object or null if invalid</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -4607,7 +9633,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="logNavigation"><span class="type-signature"></span>logNavigation<span class="signature">(from, to, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="parseDate"><span class="type-signature"></span>parseDate<span class="signature">(dateString)</span><span class="type-signature"> &rarr; {Date|null}</span></h4>
     
 
     
@@ -4615,7 +9641,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log navigation events (disabled)</p>
+    <p>Parse date string in various formats and return Date object</p>
 </div>
 
 
@@ -4651,7 +9677,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>from</code></td>
+                <td class="name"><code>dateString</code></td>
             
 
             <td class="type">
@@ -4667,53 +9693,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Previous route</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>to</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Target route</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional route metadata</p></td>
+            <td class="description last"><p>Date string in various formats</p></td>
         </tr>
 
     
@@ -4754,7 +9734,7 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line177">line 177</a>
+        <a href="client_src_utils_dateFormatter.js.html">client/src/utils/dateFormatter.js</a>, <a href="client_src_utils_dateFormatter.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -4779,6 +9759,31 @@ divider: boolean - Show divider after item
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Date object or null if invalid</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -4790,7 +9795,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="warn"><span class="type-signature"></span>warn<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="parseDate"><span class="type-signature"></span>parseDate<span class="signature">(dateString)</span><span class="type-signature"> &rarr; {Date|null}</span></h4>
     
 
     
@@ -4798,7 +9803,7 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log warning messages</p>
+    <p>Parse date string in various formats and return Date object</p>
 </div>
 
 
@@ -4834,7 +9839,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>dateString</code></td>
             
 
             <td class="type">
@@ -4850,30 +9855,7 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Additional metadata</p></td>
+            <td class="description last"><p>Date string in various formats</p></td>
         </tr>
 
     
@@ -4914,7 +9896,120 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line120">line 120</a>
+        <a href="server_src_utils_dateFormatter.js.html">server/src/utils/dateFormatter.js</a>, <a href="server_src_utils_dateFormatter.js.html#line73">line 73</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Date object or null if invalid</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Date</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="preloadMessages"><span class="type-signature"></span>preloadMessages<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Preload all supported languages</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_messages.js.html">server/src/services/messages.js</a>, <a href="server_src_services_messages.js.html#line149">line 149</a>
     </li></ul></dd>
     
 
@@ -4950,7 +10045,7 @@ divider: boolean - Show divider after item
     
 
     
-    <h4 class="name" id="warn"><span class="type-signature"></span>warn<span class="signature">(message, meta)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="processOAuthCallback"><span class="type-signature">(async) </span>processOAuthCallback<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -4958,7 +10053,106 @@ divider: boolean - Show divider after item
 
 
 <div class="description">
-    <p>Log warning messages</p>
+    <p>Shared OAuth callback processing logic
+Handles token exchange, user data fetching, and session creation</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_routes_auth.routes.js.html">server/src/routes/auth.routes.js</a>, <a href="server_src_routes_auth.routes.js.html#line94">line 94</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="protectDocumentation"><span class="type-signature">(async) </span>protectDocumentation<span class="signature">(req, res, next)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Middleware to protect documentation endpoints (Swagger, JSDoc)</p>
+<p>Enforces access control for API and code documentation based on configuration.
+Checks if documentation is enabled, validates authentication if required, and
+verifies user has authorized roles (developer, admin, SWD).</p>
+<p>Configuration controlled by:</p>
+<ul>
+<li>CONFIG.documentation.swagger.enabled</li>
+<li>CONFIG.documentation.jsdoc.enabled</li>
+<li>CONFIG.documentation.swagger.requireAuth</li>
+<li>CONFIG.documentation.swagger.authorizedRoles</li>
+</ul>
 </div>
 
 
@@ -4994,30 +10188,7 @@ divider: boolean - Show divider after item
 
         <tr>
             
-                <td class="name"><code>message</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Log message</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>meta</code></td>
+                <td class="name"><code>req</code></td>
             
 
             <td class="type">
@@ -5033,7 +10204,53 @@ divider: boolean - Show divider after item
 
             
 
-            <td class="description last"><p>Additional metadata</p></td>
+            <td class="description last"><p>Express request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express next middleware function</p></td>
         </tr>
 
     
@@ -5074,7 +10291,331 @@ divider: boolean - Show divider after item
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_logger.js.html">services/logger.js</a>, <a href="services_logger.js.html#line120">line 120</a>
+        <a href="server_src_services_security.js.html">server/src/services/security.js</a>, <a href="server_src_services_security.js.html#line45">line 45</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Protect Swagger documentation
+app.use('/api-docs', protectDocumentation, swaggerUi.serve, swaggerUi.setup(spec));</code></pre>
+
+    <pre class="prettyprint"><code>// Protect JSDoc documentation
+app.use('/jsdoc', protectDocumentation, express.static('docs/jsdoc'));</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="requestLogger"><span class="type-signature"></span>requestLogger<span class="signature">(req, res, next)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Express middleware for HTTP request logging with enhanced details</p>
+<p>Logs HTTP requests with method, URL, status code, duration, and user context.
+Only logs critical requests (auth, API, admin) to reduce log volume.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express request object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express next middleware function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_logger.js.html">server/src/services/logger.js</a>, <a href="server_src_services_logger.js.html#line219">line 219</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>app.use(requestLogger);</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="requireAdmin"><span class="type-signature">(async) </span>requireAdmin<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Admin authentication middleware
+Ensures the current user has admin privileges</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_routes_api.routes.js.html">server/src/routes/api.routes.js</a>, <a href="server_src_routes_api.routes.js.html#line1534">line 1534</a>
     </li></ul></dd>
     
 
@@ -5105,8 +10646,1031 @@ divider: boolean - Show divider after item
 
 
         
+            
+
     
 
+    
+    <h4 class="name" id="requireAdmin"><span class="type-signature">(async) </span>requireAdmin<span class="signature">(req, res, next)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Middleware to protect admin-only endpoints</p>
+<p>Verifies that the authenticated user has admin privileges via Casbin.
+Rejects requests from non-admin users with 403 Forbidden.
+Must be used after requireAuth middleware.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express request object with session</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express session</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Authenticated user</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>email</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>User email for admin check</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express response object</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Express next middleware function</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_security.js.html">server/src/services/security.js</a>, <a href="server_src_services_security.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Protect admin-only routes
+router.get('/admin/users', requireAuth, requireAdmin, adminController.getUsers);</code></pre>
+
+    <pre class="prettyprint"><code>// Combine with other middleware
+router.post('/admin/settings', 
+  requireAuth,        // 1. Check authentication
+  requireAdmin,       // 2. Check admin status  
+  validateRequest,    // 3. Validate request body
+  adminController.updateSettings
+);</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="validateConfig"><span class="type-signature"></span>validateConfig<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Validate that all required environment variables are present</p>
+<p>Checks for critical environment variables needed for application startup
+(Google OAuth credentials, session secret). Throws an error with specific
+missing variables if validation fails. Should be called during app initialization.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_config_config.js.html">server/src/config/config.js</a>, <a href="server_src_config_config.js.html#line220">line 220</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>If any required environment variables are missing</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// At application startup
+try {
+  validateConfig();
+  console.log('Configuration valid');
+} catch (error) {
+  console.error('Configuration error:', error.message);
+  process.exit(1);
+}</code></pre>
+
+    <pre class="prettyprint"><code>// Missing variables
+// Throws: Error('Missing required environment variables: GOOGLE_CLIENT_ID, SESSION_SECRET')</code></pre>
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="ConnectionConfig">ConnectionConfig</h4>
+
+
+
+
+<div class="description">
+    <p>Connection configuration object for MySQL connections</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>host</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Database host address</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Database port number</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Database username</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>password</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Database password</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>database</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Database name</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>connectTimeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Connection timeout in milliseconds (default: 10000)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>enableKeepAlive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Enable keep-alive for connections</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>keepAliveInitialDelay</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Initial delay for keep-alive</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>multipleStatements</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Allow multiple statements (disabled for security)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dateStrings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Return dates as strings instead of Date objects</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_database.js.html">server/src/services/database.js</a>, <a href="server_src_services_database.js.html#line16">line 16</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="PoolConfig">PoolConfig</h4>
+
+
+
+
+<div class="description">
+    <p>Pool configuration object extending connection config with pool-specific options</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#ConnectionConfig">ConnectionConfig</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>waitForConnections</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Wait for available connections when pool is full</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Maximum number of connections in pool (default: 10)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>queueLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Maximum number of queued connection requests (0 = unlimited)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server_src_services_database.js.html">server/src/services/database.js</a>, <a href="server_src_services_database.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
     
 
     
@@ -5120,13 +11684,13 @@ divider: boolean - Show divider after item
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-services_api.html">services/api</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#createClientLogger">createClientLogger</a></li><li><a href="global.html#debug">debug</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getCallerInfo">getCallerInfo</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#isCriticalLog">isCriticalLog</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#logApiCall">logApiCall</a></li><li><a href="global.html#logAuth">logAuth</a></li><li><a href="global.html#logNavigation">logNavigation</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#warn">warn</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Nov 03 2025 15:32:30 GMT+0200 (Eastern European Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server/src/config/config.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server/src/config/config.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file config.js
+ * @description InsightHub application configuration constants and settings
+ * @author InsightHub Development Team
+ * @created 2025-10-20
+ * @version 1.2.0
+ * @copyright 2025 InsightHub. All rights reserved.
+ */
+
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Application configuration constants
+ */
+export const CONFIG = {
+  // Server Configuration
+  server: {
+    port: process.env.PORT || 3001,
+    host: process.env.HOST || 'localhost',
+    environment: process.env.NODE_ENV || 'development'
+  },
+
+  // Date and Time Formats
+  dateFormats: {
+    display: 'DD/MMM/YYYY', // Keep for backwards compatibility
+    standard: '31/Dec/2025', // New standard format: day/month name/year
+    timeStandard: 'hh:mma/p', // New time format: hours:minutesam/pm (e.g., 10:02p)
+    timestamp: 'DD/MM/YYYY HH:mm:ss',
+    iso: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+    log: 'DD/MM/YYYY HH:mm:ss'
+  },
+
+  // API Configuration
+  api: {
+    version: '1.2.0',
+    basePath: '/api',
+    timeout: 30000,
+    rateLimit: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100 // limit each IP to 100 requests per windowMs
+    }
+  },
+
+  // Authentication &amp; Authorization
+  auth: {
+    sessionSecret: process.env.SESSION_SECRET || 'default-secret-change-me',
+    sessionMaxAge: 24 * 60 * 60 * 1000, // 24 hours
+    tokenExpiry: 3600, // 1 hour in seconds
+    requireHttps: process.env.NODE_ENV === 'production'
+  },
+
+  // Google OAuth Configuration
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/admin.directory.user.readonly',
+      'https://www.googleapis.com/auth/admin.directory.group.readonly',
+      'https://www.googleapis.com/auth/admin.directory.group.member.readonly',
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/calendar.readonly'
+    ]
+  },
+
+  // Casbin Configuration
+  casbin: {
+    modelPath: path.resolve(__dirname, 'casbin/model.conf'),
+    policyPath: path.resolve(__dirname, 'casbin/policy.csv'),
+    usersPath: path.resolve(__dirname, 'casbin/users.json'),
+    tableName: process.env.CASBIN_TABLE_NAME || 'casbin_rule', // Database table name for policies
+    usersTableName: process.env.CASBIN_USERS_TABLE_NAME || 'casbin_users', // Database table name for users
+    autoSave: true,
+    syncInterval: 300000, // 5 minutes
+    useEnhancedAdapter: process.env.CASBIN_USE_ENHANCED !== 'false', // Use enhanced adapter with caching (default: true)
+    batchSize: parseInt(process.env.CASBIN_BATCH_SIZE) || 100, // Batch size for bulk operations
+    maxRetries: parseInt(process.env.CASBIN_MAX_RETRIES) || 3, // Max retry attempts for transient failures
+    cache: {
+      enabled: process.env.CASBIN_CACHE_ENABLED !== 'false', // Enable policy caching (default: true)
+      ttl: parseInt(process.env.CASBIN_CACHE_TTL) || 300000 // Cache TTL in milliseconds (default: 5 minutes)
+    },
+    /**
+     * Test authorization config (used for Casbin service self-test)
+     * DO NOT use real user emails or sensitive data in production
+     */
+    test: {
+      email: process.env.CASBIN_TEST_EMAIL || 'test@localhost',
+      resource: process.env.CASBIN_TEST_RESOURCE || 'dashboard',
+      action: process.env.CASBIN_TEST_ACTION || 'read'
+    }
+  },
+
+  // Logging Configuration
+  logging: {
+    level: process.env.LOG_LEVEL || 'info',
+    maxFiles: 10,
+    maxSize: '10m',
+    logDir: path.resolve(process.cwd(), 'server/logs'),
+    enableConsole: true,
+    enableFile: true
+  },
+
+  // Documentation Configuration
+  documentation: {
+    swagger: {
+      enabled: process.env.NODE_ENV !== 'production',
+      path: '/api-docs',
+      requireAuth: true,
+      authorizedRoles: ['admin', 'developer']
+    },
+    jsdoc: {
+      enabled: process.env.NODE_ENV !== 'production',
+      path: '/docs',
+      requireAuth: true,
+      authorizedRoles: ['admin', 'developer']
+    },
+    github: {
+      repositoryUrl: process.env.GITHUB_REPOSITORY_URL || 'https://github.com/3ddx/InsightHub',
+      repositoryName: process.env.GITHUB_REPOSITORY_NAME || 'InsightHub',
+      displayInDocs: process.env.GITHUB_DISPLAY_IN_DOCS !== 'false' // Default: true
+    }
+  },
+
+  // Database/Storage Configuration
+  storage: {
+    type: process.env.STORAGE_TYPE || 'database', // 'file' | 'database' - can be overridden by STORAGE_TYPE env var
+    backupInterval: 24 * 60 * 60 * 1000, // 24 hours
+    retentionDays: 30
+  },
+
+  // Security Configuration
+  security: {
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          scriptSrc: ["'self'"]
+        }
+      }
+    },
+    cors: {
+      origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    }
+  },
+
+  // Feature Flags
+  features: {
+    enableGroupSync: true,
+    enableAutoUserCreation: true,
+    enableAuditLogging: true,
+    enableRealTimeSync: false
+  },
+
+  // Prometheus Metrics Configuration
+  prometheus: {
+    enabled: process.env.PROMETHEUS_ENABLED !== 'false',
+    metricsPath: process.env.PROMETHEUS_METRICS_PATH || '/metrics',
+    metricsPort: parseInt(process.env.PROMETHEUS_METRICS_PORT) || process.env.PORT || 3001,
+    instanceName: process.env.PROMETHEUS_INSTANCE_NAME || `insighthub-backend-${process.env.NODE_ENV || 'development'}`,
+    jobName: process.env.PROMETHEUS_JOB_NAME || 'insighthub-sg-report',
+    environment: process.env.PROMETHEUS_ENVIRONMENT || process.env.NODE_ENV || 'development',
+    scrapeInterval: process.env.PROMETHEUS_SCRAPE_INTERVAL || '15s',
+    scrapeTimeout: process.env.PROMETHEUS_SCRAPE_TIMEOUT || '10s'
+  },
+
+  // Localization
+  i18n: {
+    defaultLanguage: 'en',
+    supportedLanguages: ['en', 'es', 'fr'],
+  messagesPath: path.join(__dirname, 'messages')
+  }
+};
+
+/**
+ * Environment-specific overrides
+ */
+if (CONFIG.server.environment === 'production') {
+  CONFIG.logging.level = 'warn';
+  CONFIG.documentation.swagger.enabled = false;
+  CONFIG.documentation.jsdoc.enabled = false;
+  CONFIG.security.helmet.contentSecurityPolicy.directives.scriptSrc = ["'self'"];
+}
+
+/**
+ * Validate that all required environment variables are present
+ * 
+ * Checks for critical environment variables needed for application startup
+ * (Google OAuth credentials, session secret). Throws an error with specific
+ * missing variables if validation fails. Should be called during app initialization.
+ * 
+ * @throws {Error} If any required environment variables are missing
+ * @returns {void}
+ * 
+ * @example
+ * // At application startup
+ * try {
+ *   validateConfig();
+ *   console.log('Configuration valid');
+ * } catch (error) {
+ *   console.error('Configuration error:', error.message);
+ *   process.exit(1);
+ * }
+ * 
+ * @example
+ * // Missing variables
+ * // Throws: Error('Missing required environment variables: GOOGLE_CLIENT_ID, SESSION_SECRET')
+ */
+export function validateConfig() {
+  const required = [
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_REDIRECT_URI',
+    'SESSION_SECRET'
+  ];
+
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+/**
+ * Get configuration value by dot-notation path
+ * 
+ * Safely retrieves nested configuration values using string path notation.
+ * Returns undefined if path doesn't exist. Useful for accessing deeply
+ * nested config without multiple null checks.
+ * 
+ * @param {string} path - Dot-notation path to config value (e.g., 'server.port', 'security.cors.origin')
+ * @returns {*} Configuration value at path, or undefined if not found
+ * 
+ * @example
+ * // Get server port
+ * const port = getConfig('server.port');
+ * // Returns: 3001
+ * 
+ * @example
+ * // Get nested security setting
+ * const corsOrigin = getConfig('security.cors.origin');
+ * // Returns: 'http://localhost:3000'
+ * 
+ * @example
+ * // Non-existent path
+ * const value = getConfig('does.not.exist');
+ * // Returns: undefined
+ */
+export function getConfig(path) {
+  return path.split('.').reduce((obj, key) => obj?.[key], CONFIG);
+}
+
+export default CONFIG;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

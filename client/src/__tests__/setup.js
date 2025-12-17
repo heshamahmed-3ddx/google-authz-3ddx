@@ -18,6 +18,7 @@ class LocalStorageMock {
 }
 
 global.localStorage = new LocalStorageMock();
+global.sessionStorage = new LocalStorageMock();
 
 // Pinia and I18n setup for unit tests
 import { createPinia, setActivePinia } from "pinia";

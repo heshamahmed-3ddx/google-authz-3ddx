@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server/src/middleware/reportLogging.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server/src/middleware/reportLogging.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Middleware for automatic logging of report access and usage
+ * @module middleware/reportLogging
+ * @description Tracks all report access events including views, exports, and API requests.
+ *              Logs comprehensive details: user, timing, query parameters, response status,
+ *              and metadata for audit trails and usage analytics.
+ * @author InsightHub Development Team
+ * @created 2025-01-XX
+ * @version 1.2.0
+ * @copyright 2025 InsightHub. All rights reserved.
+ * @requires ../services/reportLogging.service
+ * @requires ../services/logger
+ */
+
+import reportLoggingService from '../services/reportLogging.service.js';
+import { createContextLogger } from '../services/logger.js';
+
+const logger = createContextLogger('reportLogging.js');
+
+/**
+ * Extract report ID from request path
+ * 
+ * Parses the URL path to identify which report is being accessed.
+ * Used for categorizing report access logs.
+ * 
+ * @private
+ * @param {string} path - Request URL path (e.g., '/api/reports/surgical_guide')
+ * @returns {string} Report ID (e.g., 'surgical_guide') or 'unknown' if not found
+ * 
+ * @example
+ * extractReportId('/api/reports/surgical_guide/export');
+ * // Returns: 'surgical_guide'
+ * 
+ * @example
+ * extractReportId('/api/reports/powerbi');
+ * // Returns: 'powerbi'
+ */
+function extractReportId(path) {
+  // Extract report ID from path like /api/reports/surgical_guide
+  const match = path.match(/\/reports\/([^/]+)/);
+  return match ? match[1] : 'unknown';
+}
+
+/**
+ * Get human-readable report name from report ID
+ * 
+ * Maps internal report IDs to user-friendly display names for logging
+ * and reporting purposes.
+ * 
+ * @private
+ * @param {string} reportId - Internal report identifier
+ * @returns {string} Human-readable report name
+ * 
+ * @example
+ * getReportName('surgical_guide');
+ * // Returns: 'Surgical Guide Report'
+ * 
+ * @example
+ * getReportName('unknown_report');
+ * // Returns: 'unknown_report' (fallback to ID)
+ */
+function getReportName(reportId) {
+  const reportNames = {
+    'surgical_guide': 'Surgical Guide Report',
+    'powerbi': 'PowerBI Dashboard',
+    'grafana': 'Grafana Monitoring'
+  };
+  return reportNames[reportId] || reportId;
+}
+
+/**
+ * Determine access type from request characteristics
+ * 
+ * Categorizes report access by analyzing request properties (path, query params).
+ * Categories: 'scheduled' (automated), 'export' (CSV/file download), 
+ * 'api' (programmatic), or 'manual' (user-initiated).
+ * 
+ * @private
+ * @param {Object} req - Express request object
+ * @returns {('scheduled'|'export'|'api'|'manual')} Access type category
+ * 
+ * @example
+ * // Export request
+ * determineAccessType({ path: '/api/reports/surgical_guide/export', query: {} });
+ * // Returns: 'export'
+ * 
+ * @example
+ * // Scheduled report
+ * determineAccessType({ path: '/api/reports/data', query: { scheduled: 'true' } });
+ * // Returns: 'scheduled'
+ */
+function determineAccessType(req) {
+  if (req.query.scheduled === 'true') {
+    return 'scheduled';
+  }
+  if (req.path.includes('/export')) {
+    return 'export';
+  }
+  if (req.path.includes('/api/')) {
+    return 'api';
+  }
+  return 'manual';
+}
+
+/**
+ * Middleware factory for automatic report access logging
+ * 
+ * Creates Express middleware that captures comprehensive report access information including:
+ * - User identity (email, username)
+ * - Request timing and duration
+ * - Query parameters and filters applied
+ * - Response status and record counts
+ * - IP address and user agent
+ * - Access type categorization
+ * 
+ * The middleware intercepts response methods (send/json) to capture response data
+ * and logs asynchronously after response is sent to avoid blocking.
+ * 
+ * **Important**: Must be placed AFTER authentication middleware to capture user info.
+ * Only processes requests matching '/reports/' path pattern.
+ * 
+ * @returns {Function} Express middleware function (req, res, next) => Promise&lt;void>
+ * 
+ * @example
+ * // Register middleware in Express app
+ * import { reportAccessLogger } from './middleware/reportLogging.js';
+ * 
+ * app.use('/api/reports', requireAuth, reportAccessLogger());
+ * 
+ * @example
+ * // Middleware chain
+ * router.get('/surgical_guide', 
+ *   requireAuth,           // 1. Authenticate user first
+ *   reportAccessLogger(),  // 2. Enable logging
+ *   controller.getData     // 3. Handle request
+ * );
+ */
+export function reportAccessLogger() {
+  return async (req, res, next) => {
+    // Only log report-related endpoints
+    if (!req.path.includes('/reports/')) {
+      return next();
+    }
+
+    const startTime = Date.now();
+    const originalSend = res.send;
+    const originalJson = res.json;
+    let responseData = null;
+    let responseStatus = null;
+
+    // Capture response data and status
+    res.send = function(body) {
+      responseData = body;
+      responseStatus = res.statusCode;
+      return originalSend.call(this, body);
+    };
+
+    res.json = function(body) {
+      responseData = body;
+      responseStatus = res.statusCode;
+      return originalJson.call(this, body);
+    };
+
+    // Log after response is sent
+    res.on('finish', async () => {
+      try {
+        const duration = Date.now() - startTime;
+        const reportId = extractReportId(req.path);
+        const reportName = getReportName(reportId);
+        const accessType = determineAccessType(req);
+
+        // Parse response to get record count
+        let recordsReturned = null;
+        try {
+          if (responseData) {
+            const parsed = typeof responseData === 'string' 
+              ? JSON.parse(responseData) 
+              : responseData;
+            if (parsed.data &amp;&amp; Array.isArray(parsed.data)) {
+              recordsReturned = parsed.data.length;
+            } else if (parsed.pagination &amp;&amp; parsed.pagination.total !== undefined) {
+              recordsReturned = parsed.pagination.total;
+            }
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+
+        await reportLoggingService.logReportAccess({
+          reportId,
+          reportName,
+          requesterEmail: req.session?.user?.email || 'unknown',
+          requesterUsername: req.session?.user?.name || req.session?.user?.fullName || null,
+          accessType,
+          requestMethod: req.method,
+          requestPath: req.path,
+          queryParameters: req.query,
+          requestDurationMs: duration,
+          responseStatus: responseStatus || res.statusCode,
+          recordsReturned,
+          ipAddress: req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || null,
+          userAgent: req.get('user-agent') || null,
+          errorMessage: (responseStatus || res.statusCode) >= 400 
+            ? `HTTP ${responseStatus || res.statusCode}` 
+            : null,
+          metadata: {
+            dateRange: req.query.startDate &amp;&amp; req.query.endDate 
+              ? { start: req.query.startDate, end: req.query.endDate }
+              : null,
+            filters: {
+              searchQuery: req.query.searchQuery || null,
+              orderTypeFilter: req.query.orderTypeFilter || null,
+              sortBy: req.query.sortBy || null,
+              sortOrder: req.query.sortOrder || null,
+              page: req.query.page || null,
+              limit: req.query.limit || null
+            }
+          }
+        });
+      } catch (error) {
+        logger.error('Error in report access logger', {
+          error: error.message,
+          path: req.path,
+          stack: error.stack
+        });
+        // Don't throw - logging errors shouldn't affect the request
+      }
+    });
+
+    next();
+  };
+}
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

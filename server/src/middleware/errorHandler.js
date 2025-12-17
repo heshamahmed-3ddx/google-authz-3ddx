@@ -63,9 +63,9 @@ function getErrorCodeFromStatus(status) {
  *
  * @name errorHandler
  * @param {Error} err - The error thrown by earlier middleware or route handlers
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
- * @param {import('express').NextFunction} next - Express next middleware
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware
  * @returns {void}
  * @example
  * // Registered as the last middleware

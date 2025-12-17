@@ -1,25 +1,73 @@
+/**
+ * @fileoverview Global loading state manager with debounced display and auto-cleanup
+ * @module services/loader
+ * @author InsightHub Development Team
+ * @copyright 2025 InsightHub. All rights reserved.
+ * @requires vue
+ */
+
 import { ref, computed } from "vue";
 
-// Track active loader IDs to avoid mismatched increments/decrements
+/**
+ * Track active loader IDs to avoid mismatched increments/decrements
+ * @type {Map<string, number>}
+ * @private
+ */
 const activeIds = new Map();
+
+/**
+ * Counter for generating unique loader IDs
+ * @type {number}
+ * @private
+ */
 let nextId = 1;
+
+/**
+ * Reactive ref tracking the count of active loaders
+ * @type {Object}
+ * @private
+ */
 const loadingCount = ref(0);
 
+/**
+ * Computed property indicating if any loader is active
+ * @type {Object}
+ * @public
+ * @example
+ * import { isLoading } from '@/services/loader';
+ * if (isLoading.value) { console.log('Loading...'); }
+ */
 export const isLoading = computed(() => loadingCount.value > 0);
 
-// Debounce configuration (ms) - show overlay only if request lasts longer
+/**
+ * Debounce delay in milliseconds - show overlay only if request lasts longer
+ * @constant {number}
+ * @private
+ */
 const SHOW_DELAY = 150;
 
-// Dev-only debug toggle
+/**
+ * Dev-only debug toggle based on NODE_ENV
+ * @constant {boolean}
+ * @private
+ */
 const DEBUG =
   typeof process !== "undefined" &&
   process.env &&
   process.env.NODE_ENV !== "production";
 
-// Internal map of pending show timers per id
+/**
+ * Internal map of pending show timers per loader ID
+ * @type {Map<string, NodeJS.Timeout>}
+ * @private
+ */
 const showTimers = new Map();
 
-// If the page was reloaded, show the first loader immediately (no debounce).
+/**
+ * Flag to show the first loader immediately after page reload (no debounce)
+ * @type {boolean}
+ * @private
+ */
 let immediateOnFirstRequest = false;
 try {
   if (typeof performance !== "undefined" && performance.getEntriesByType) {
@@ -32,6 +80,12 @@ try {
   // ignore
 }
 
+/**
+ * Debug logger that only logs in development mode
+ * @private
+ * @param {...*} args - Arguments to log
+ * @returns {void}
+ */
 function debugLog(...args) {
   if (DEBUG) console.debug("[loader]", ...args);
   if (DEBUG) {
@@ -40,7 +94,33 @@ function debugLog(...args) {
   }
 }
 
-// Start loading and return an id that should be passed to stopLoading
+/**
+ * Start loading indicator with debounced display and automatic cleanup
+ * 
+ * Creates a unique loader ID and activates the global loading state after a short delay
+ * (150ms) to prevent flicker for very fast operations. The first loader after a page
+ * reload is shown immediately. Includes automatic cleanup after 30 seconds to prevent
+ * stuck loaders.
+ * 
+ * @returns {string} Unique loader ID to be passed to stopLoading() when done
+ * 
+ * @example
+ * // Basic usage
+ * const loaderId = startLoading();
+ * try {
+ *   await fetchData();
+ * } finally {
+ *   stopLoading(loaderId);
+ * }
+ * 
+ * @example
+ * // With API request
+ * import { startLoading, stopLoading } from '@/services/loader';
+ * const id = startLoading();
+ * apiService.get('/data')
+ *   .then(response => { / process / })
+ *   .finally(() => stopLoading(id));
+ */
 export function startLoading() {
   const id = `ldr_${Date.now()}_${nextId++}`;
   try {
@@ -84,7 +164,26 @@ export function startLoading() {
   return id;
 }
 
-// Stop loading for a specific id. If no id provided, clear one entry.
+/**
+ * Stop loading indicator for a specific loader ID
+ * 
+ * Removes the loader from active state. If the loader was still pending (within the
+ * 150ms debounce window), cancels its activation. If no ID is provided or the ID
+ * is not found, removes any one active loader as fallback.
+ * 
+ * @param {string} [id] - The loader ID returned from startLoading()
+ * @returns {void}
+ * 
+ * @example
+ * // Standard usage with ID
+ * const loaderId = startLoading();
+ * // ... do work ...
+ * stopLoading(loaderId);
+ * 
+ * @example
+ * // Fallback (not recommended - always pass the ID)
+ * stopLoading(); // Removes any one active loader
+ */
 export function stopLoading(id) {
   try {
     // If the id was pending (not yet activated), cancel the show timer

@@ -9,14 +9,13 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// Mock the logging service
-jest.mock('../../server/src/services/logging.js', () => ({
-  createLogger: jest.fn(() => ({
+// Mock the logger service (updated path)
+jest.mock('../../server/src/services/logger.js', () => ({
+  createContextLogger: jest.fn(() => ({
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn()
-  })),
-  logAuthz: jest.fn()
+  }))
 }))
 
 
@@ -33,6 +32,7 @@ const mockEnforcer = {
   removeGroupingPolicy: jest.fn(),
   getRolesForUser: jest.fn(),
   getUsersForRole: jest.fn(),
+  getPermissionsForUser: jest.fn(),
   getFilteredPolicy: jest.fn(),
   getAllSubjects: jest.fn(),
   getAllObjects: jest.fn(),
@@ -315,11 +315,11 @@ describe('CasbinService', () => {
     })
 
     test('should return user rights for existing user', async () => {
-      mockEnforcer.getPolicy.mockResolvedValue([
-        ['p', 'Engineering', 'patient_data', 'read'],
-        ['p', 'Engineering', 'patient_data', 'write'],
-        ['p', 'Engineering', 'imaging_systems', 'read'],
-        ['p', 'Finance', 'financial_reports', 'read']
+      // Mock getPermissionsForUser (used by getUserRights)
+      mockEnforcer.getPermissionsForUser.mockResolvedValue([
+        ['john.doe@3ddiagnostix.com', 'imaging_systems', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'write']
       ])
 
       const result = await casbinService.getUserRights('john.doe@3ddiagnostix.com')
@@ -357,11 +357,20 @@ describe('CasbinService', () => {
         .rejects.toThrow('Casbin enforcer not initialized')
     })
 
-    test('should handle enforcer errors', async () => {
-      mockEnforcer.getPolicy.mockRejectedValue(new Error('Policy error'))
+    test('should handle enforcer errors gracefully with fallback', async () => {
+      // Mock getPermissionsForUser to fail, triggering fallback to getPolicy
+      mockEnforcer.getPermissionsForUser.mockRejectedValue(new Error('Permission error'))
+      mockEnforcer.getPolicy.mockResolvedValue([
+        ['john.doe@3ddiagnostix.com', 'imaging_systems', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'write']
+      ])
 
-      await expect(casbinService.getUserRights('john.doe@3ddiagnostix.com'))
-        .rejects.toThrow('Policy error')
+      const result = await casbinService.getUserRights('john.doe@3ddiagnostix.com')
+      
+      // Should still return user rights using fallback mechanism
+      expect(result.found).toBe(true)
+      expect(result.rights.length).toBeGreaterThan(0)
     })
   })
 

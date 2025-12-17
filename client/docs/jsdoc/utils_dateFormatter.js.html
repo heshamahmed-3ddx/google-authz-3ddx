@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/dateFormatter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/dateFormatter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file dateFormatter.js
+ * @description Client-side date formatting utilities for InsightHub
+ * Standard format: Date: 31/Dec/2025, Time: hh:mma/p (e.g., 10:02p)
+ * @author InsightHub Development Team
+ * @created 2025-01-XX
+ * @version 1.2.0
+ */
+
+/**
+ * Format date to standard format: 31/Dec/2025
+ * @param {Date|string} date - Date object or date string
+ * @returns {string} Formatted date string
+ * @example
+ * formatDate(new Date('2025-12-31')) // Returns "31/Dec/2025"
+ */
+export function formatDate(date) {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!d || isNaN(d?.getTime?.())) return '';
+  
+  const day = d.getDate();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+}
+
+/**
+ * Format time to standard format: hh:mma/p (e.g., 10:02p)
+ * @param {Date|string} date - Date object or date string
+ * @returns {string} Formatted time string
+ * @example
+ * formatTime(new Date('2025-12-31T22:02:00')) // Returns "10:02p"
+ * formatTime(new Date('2025-12-31T10:02:00')) // Returns "10:02a"
+ */
+export function formatTime(date) {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!d || isNaN(d?.getTime?.())) return '';
+  
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours >= 12 ? 'p' : 'a';
+  hours = hours % 12;
+  hours = hours || 12; // 0 should be 12
+  const minutesStr = minutes.toString().padStart(2, '0');
+  
+  return `${hours}:${minutesStr}${ampm}`;
+}
+
+/**
+ * Format date and time together: 31/Dec/2025 10:02p
+ * @param {Date|string} date - Date object or date string
+ * @returns {string} Formatted date and time string
+ * @example
+ * formatDateTime(new Date('2025-12-31T22:02:00')) // Returns "31/Dec/2025 10:02p"
+ */
+export function formatDateTime(date) {
+  if (!date) return '';
+  return `${formatDate(date)} ${formatTime(date)}`;
+}
+
+/**
+ * Parse date string in various formats and return Date object
+ * @param {string} dateString - Date string in various formats
+ * @returns {Date|null} Date object or null if invalid
+ */
+export function parseDate(dateString) {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#parseDate">parseDate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:24:27 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

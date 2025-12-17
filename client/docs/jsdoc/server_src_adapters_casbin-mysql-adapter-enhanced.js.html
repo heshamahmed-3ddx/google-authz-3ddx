@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server/src/adapters/casbin-mysql-adapter-enhanced.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server/src/adapters/casbin-mysql-adapter-enhanced.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file casbin-mysql-adapter-enhanced.js
+ * @description Enhanced MySQL adapter for Casbin with caching, batch operations, and performance optimizations
+ * @author InsightHub Development Team
+ * @created 2025-01-XX
+ * @version 2.0.0
+ * @copyright 2025 InsightHub. All rights reserved.
+ */
+
+import databaseService from '../services/database.js';
+import { createContextLogger } from '../services/logger.js';
+
+const logger = createContextLogger('CasbinMySQLAdapter', 'CasbinMySQLAdapterEnhanced');
+
+/**
+ * Enhanced MySQL Adapter for Casbin
+ * Features:
+ * - Policy caching to reduce database queries
+ * - Batch operations for bulk updates
+ * - Connection health checks
+ * - Performance monitoring
+ * - Optimized bulk inserts
+ * - Retry logic for transient failures
+ */
+class MySQLAdapterEnhanced {
+  /**
+   * @param {string} tableName - Name of the casbin_rule table (default: 'casbin_rule')
+   * @param {Object} options - Configuration options
+   * @param {boolean} options.enableCache - Enable policy caching (default: true)
+   * @param {number} options.cacheTTL - Cache TTL in milliseconds (default: 60000 = 1 minute)
+   * @param {number} options.batchSize - Batch size for bulk operations (default: 100)
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 3)
+   */
+  constructor(tableName = 'casbin_rule', options = {}) {
+    this.tableName = tableName;
+    this.filtered = false;
+    
+    // Configuration
+    this.enableCache = options.enableCache !== false; // Default: true
+    this.cacheTTL = options.cacheTTL || 60000; // 1 minute default
+    this.batchSize = options.batchSize || 100;
+    this.maxRetries = options.maxRetries || 3;
+    
+    // Cache
+    this.policyCache = null;
+    this.cacheTimestamp = null;
+    
+    // Performance metrics
+    this.metrics = {
+      loadPolicyCount: 0,
+      savePolicyCount: 0,
+      addPolicyCount: 0,
+      removePolicyCount: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      queryTime: {
+        total: 0,
+        count: 0
+      }
+    };
+  }
+
+  /**
+   * Load all policy rules from database into Casbin model
+   * Uses caching to reduce database queries
+   * @param {Object} model - Casbin model instance
+   * @returns {Promise&lt;void>}
+   */
+  async loadPolicy(model) {
+    const startTime = Date.now();
+    
+    try {
+      // Check cache first
+      if (this.enableCache &amp;&amp; this.isCacheValid()) {
+        logger.debug('Loading policies from cache', { 
+          cacheAge: Date.now() - this.cacheTimestamp 
+        });
+        this.metrics.cacheHits++;
+        this.loadPoliciesFromCache(model);
+        return;
+      }
+
+      this.metrics.cacheMisses++;
+      logger.debug('Loading policies from database', { tableName: this.tableName });
+
+      // Load from database
+      const query = `SELECT ptype, v0, v1, v2, v3, v4, v5 FROM ${this.tableName} ORDER BY id`;
+      const rows = await this.executeWithRetry(() => databaseService.query(query));
+
+      // Update cache
+      if (this.enableCache) {
+        this.policyCache = rows;
+        this.cacheTimestamp = Date.now();
+      }
+
+      // Load into model
+      for (const row of rows) {
+        this.loadPolicyLine(row, model);
+      }
+
+      const duration = Date.now() - startTime;
+      this.updateMetrics('loadPolicy', duration);
+      
+      logger.info('Policies loaded from database', { 
+        count: rows.length,
+        duration: `${duration}ms`,
+        fromCache: false
+      });
+      
+      this.metrics.loadPolicyCount++;
+    } catch (error) {
+      logger.error('Failed to load policies from database', {
+        error: error.message,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Load policies from cache into model
+   * @param {Object} model - Casbin model instance
+   */
+  loadPoliciesFromCache(model) {
+    if (!this.policyCache) return;
+    
+    for (const row of this.policyCache) {
+      this.loadPolicyLine(row, model);
+    }
+  }
+
+  /**
+   * Check if cache is valid
+   * @returns {boolean}
+   */
+  isCacheValid() {
+    if (!this.policyCache || !this.cacheTimestamp) return false;
+    return (Date.now() - this.cacheTimestamp) &lt; this.cacheTTL;
+  }
+
+  /**
+   * Invalidate cache
+   */
+  invalidateCache() {
+    this.policyCache = null;
+    this.cacheTimestamp = null;
+    logger.debug('Policy cache invalidated');
+  }
+
+  /**
+   * Convert database row to Casbin policy line and load into model
+   * @param {Object} row - Database row
+   * @param {Object} model - Casbin model
+   */
+  loadPolicyLine(row, model) {
+    const line = [];
+    
+    // Build rule array with non-null values
+    if (row.v0 !== null &amp;&amp; row.v0 !== undefined) line.push(row.v0);
+    if (row.v1 !== null &amp;&amp; row.v1 !== undefined) line.push(row.v1);
+    if (row.v2 !== null &amp;&amp; row.v2 !== undefined) line.push(row.v2);
+    if (row.v3 !== null &amp;&amp; row.v3 !== undefined) line.push(row.v3);
+    if (row.v4 !== null &amp;&amp; row.v4 !== undefined) line.push(row.v4);
+    if (row.v5 !== null &amp;&amp; row.v5 !== undefined) line.push(row.v5);
+    
+    // Load into model based on ptype
+    if (row.ptype === 'p') {
+      model.addPolicy('p', 'p', line);
+    } else if (row.ptype === 'g') {
+      model.addPolicy('g', 'g', line);
+    } else if (row.ptype === 'g2') {
+      model.addPolicy('g', 'g2', line);
+    }
+  }
+
+  /**
+   * Save all policies from model to database
+   * Uses batch inserts for better performance
+   * @param {Object} model - Casbin model instance
+   * @returns {Promise&lt;boolean>} Success status
+   */
+  async savePolicy(model) {
+    const startTime = Date.now();
+    let policiesCount = 0; // Track policy count outside transaction scope
+    
+    try {
+      logger.debug('Saving all policies to database', { tableName: this.tableName });
+
+      // Check if database is available
+      if (!databaseService.isAvailable()) {
+        throw new Error('Database service is not available');
+      }
+
+      // Use transaction for atomicity
+      await databaseService.transaction(async (connection) => {
+        // Clear existing policies (use TRUNCATE for better performance, fallback to DELETE)
+        try {
+          await connection.execute(`TRUNCATE TABLE ${this.tableName}`);
+        } catch (truncateError) {
+          // If TRUNCATE fails (e.g., foreign key constraints), use DELETE
+          logger.debug('TRUNCATE failed, using DELETE instead', { error: truncateError.message });
+          await connection.execute(`DELETE FROM ${this.tableName}`);
+        }
+
+        // Get all policies from model
+        const policies = [];
+        
+        // Get 'p' policies
+        const pPolicies = model.model.get('p')?.get('p')?.policy || [];
+        for (const policy of pPolicies) {
+          policies.push({ ptype: 'p', rule: policy });
+        }
+
+        // Get 'g' policies (groupings)
+        const gPolicies = model.model.get('g')?.get('g')?.policy || [];
+        for (const policy of gPolicies) {
+          policies.push({ ptype: 'g', rule: policy });
+        }
+
+        // Get 'g2' policies if they exist
+        const g2Policies = model.model.get('g')?.get('g2')?.policy || [];
+        for (const policy of g2Policies) {
+          policies.push({ ptype: 'g2', rule: policy });
+        }
+
+        // Store count for logging outside transaction
+        policiesCount = policies.length;
+
+        // Batch insert for better performance
+        if (policies.length > 0) {
+          await this.batchInsert(connection, policies);
+        } else {
+          logger.debug('No policies to save', { tableName: this.tableName });
+        }
+      });
+
+      // Invalidate cache after save
+      this.invalidateCache();
+
+      const duration = Date.now() - startTime;
+      this.updateMetrics('savePolicy', duration);
+      
+      logger.info('Policies saved to database successfully', { 
+        count: policiesCount,
+        duration: `${duration}ms`
+      });
+      
+      this.metrics.savePolicyCount++;
+      return true;
+    } catch (error) {
+      // Log full error details for debugging
+      const errorDetails = {
+        error: error.message,
+        errorCode: error.code,
+        sqlState: error.sqlState,
+        errno: error.errno,
+        tableName: this.tableName,
+        adapterType: 'MySQLAdapterEnhanced',
+        storageType: this.storageType || 'unknown'
+      };
+      
+      logger.error('Failed to save policies to database', errorDetails);
+      logger.error('Full error details:', {
+        ...errorDetails,
+        stack: error.stack,
+        fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+      });
+      
+      // Provide more helpful error messages
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        const helpfulError = new Error(`Casbin table '${this.tableName}' does not exist. Please run database migrations.`);
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        const helpfulError = new Error('Database connection failed. Please check database configuration and connectivity.');
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      } else if (error.code === 'ER_LOCK_WAIT_TIMEOUT' || error.code === 'ER_LOCK_DEADLOCK') {
+        const helpfulError = new Error('Database lock timeout. Another operation may be in progress. Please try again.');
+        logger.error(helpfulError.message, errorDetails);
+        throw helpfulError;
+      }
+      
+      // For any other error, log it and re-throw
+      logger.error(`Unexpected error saving policies: ${error.message}`, errorDetails);
+      throw error;
+    }
+  }
+
+  /**
+   * Batch insert policies for better performance
+   * @param {Object} connection - Database connection
+   * @param {Array} policies - Array of policy objects
+   */
+  async batchInsert(connection, policies) {
+    if (!policies || policies.length === 0) {
+      logger.debug('No policies to insert', { tableName: this.tableName });
+      return;
+    }
+
+    // Use INSERT IGNORE to handle duplicate key violations gracefully
+    // This prevents errors when the same policy exists multiple times in the model
+    const insertQuery = `
+      INSERT IGNORE INTO ${this.tableName} (ptype, v0, v1, v2, v3, v4, v5)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    try {
+      // Remove duplicates before inserting (based on ptype + all rule values)
+      const seen = new Set();
+      const uniquePolicies = policies.filter(({ ptype, rule }) => {
+        if (!rule || !Array.isArray(rule)) {
+          logger.warn('Invalid policy rule format', { ptype, rule });
+          return false;
+        }
+        const key = `${ptype}:${rule.join(':')}`;
+        if (seen.has(key)) {
+          return false; // Duplicate
+        }
+        seen.add(key);
+        return true;
+      });
+
+      logger.debug('Filtered duplicate policies', {
+        original: policies.length,
+        unique: uniquePolicies.length,
+        duplicates: policies.length - uniquePolicies.length
+      });
+
+      // Process in batches
+      for (let i = 0; i &lt; uniquePolicies.length; i += this.batchSize) {
+        const batch = uniquePolicies.slice(i, i + this.batchSize);
+        
+        // Use prepared statement for batch
+        const values = batch.map(({ ptype, rule }) => [
+          ptype,
+          rule[0] || null,
+          rule[1] || null,
+          rule[2] || null,
+          rule[3] || null,
+          rule[4] || null,
+          rule[5] || null
+        ]);
+
+        // Execute batch insert
+        for (const valueSet of values) {
+          try {
+            await connection.execute(insertQuery, valueSet);
+          } catch (insertError) {
+            // Even with INSERT IGNORE, log any unexpected errors
+            if (insertError.code !== 'ER_DUP_ENTRY') {
+              logger.error('Failed to insert policy', {
+                error: insertError.message,
+                errorCode: insertError.code,
+                sqlState: insertError.sqlState,
+                values: valueSet,
+                tableName: this.tableName
+              });
+              throw insertError;
+            }
+            // ER_DUP_ENTRY is expected and ignored with INSERT IGNORE
+            logger.debug('Duplicate policy ignored', { values: valueSet });
+          }
+        }
+      }
+
+      logger.debug('Batch insert completed', { 
+        total: uniquePolicies.length,
+        batches: Math.ceil(uniquePolicies.length / this.batchSize)
+      });
+    } catch (error) {
+      logger.error('Batch insert failed', {
+        error: error.message,
+        errorCode: error.code,
+        sqlState: error.sqlState,
+        errno: error.errno,
+        tableName: this.tableName,
+        policyCount: policies.length,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Add a policy rule
+   * Invalidates cache after addition
+   * @param {string} sec - Section ('p' or 'g')
+   * @param {string} ptype - Policy type
+   * @param {Array&lt;string>} rule - Policy rule
+   * @returns {Promise&lt;boolean>} Success status
+   */
+  async addPolicy(sec, ptype, rule) {
+    const startTime = Date.now();
+    
+    try {
+      logger.debug('Adding policy', { sec, ptype, rule });
+
+      const values = [
+        ptype,
+        rule[0] || null,
+        rule[1] || null,
+        rule[2] || null,
+        rule[3] || null,
+        rule[4] || null,
+        rule[5] || null
+      ];
+      
+      const query = `
+        INSERT INTO ${this.tableName} (ptype, v0, v1, v2, v3, v4, v5)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP
+      `;
+
+      await this.executeWithRetry(() => databaseService.query(query, values));
+      
+      // Invalidate cache
+      this.invalidateCache();
+
+      const duration = Date.now() - startTime;
+      this.updateMetrics('addPolicy', duration);
+      
+      logger.debug('Policy added successfully', { sec, ptype, rule, duration: `${duration}ms` });
+      this.metrics.addPolicyCount++;
+      return true;
+    } catch (error) {
+      logger.error('Failed to add policy', {
+        error: error.message,
+        sec,
+        ptype,
+        rule,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a policy rule
+   * Invalidates cache after removal
+   * @param {string} sec - Section ('p' or 'g')
+   * @param {string} ptype - Policy type
+   * @param {Array&lt;string>} rule - Policy rule
+   * @returns {Promise&lt;boolean>} Success status
+   */
+  async removePolicy(sec, ptype, rule) {
+    const startTime = Date.now();
+    
+    try {
+      logger.debug('Removing policy', { sec, ptype, rule });
+
+      const conditions = ['ptype = ?'];
+      const params = [ptype];
+
+      for (let i = 0; i &lt; rule.length; i++) {
+        conditions.push(`v${i} = ?`);
+        params.push(rule[i]);
+      }
+
+      // Also check that remaining v fields are NULL
+      for (let i = rule.length; i &lt; 6; i++) {
+        conditions.push(`v${i} IS NULL`);
+      }
+
+      const query = `DELETE FROM ${this.tableName} WHERE ${conditions.join(' AND ')}`;
+      const result = await this.executeWithRetry(() => databaseService.query(query, params));
+
+      // Invalidate cache
+      this.invalidateCache();
+
+      const duration = Date.now() - startTime;
+      this.updateMetrics('removePolicy', duration);
+
+      logger.debug('Policy removed', { 
+        sec, 
+        ptype, 
+        rule, 
+        affected: result.affectedRows || 0,
+        duration: `${duration}ms`
+      });
+      
+      this.metrics.removePolicyCount++;
+      return true;
+    } catch (error) {
+      logger.error('Failed to remove policy', {
+        error: error.message,
+        sec,
+        ptype,
+        rule,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Remove filtered policies
+   * @param {string} sec - Section
+   * @param {string} ptype - Policy type
+   * @param {number} fieldIndex - Field index
+   * @param {string} fieldValue - Field value
+   * @returns {Promise&lt;boolean>} Success status
+   */
+  async removeFilteredPolicy(sec, ptype, fieldIndex, ...fieldValues) {
+    const startTime = Date.now();
+    
+    try {
+      logger.debug('Removing filtered policies', { sec, ptype, fieldIndex, fieldValues });
+
+      const conditions = ['ptype = ?'];
+      const params = [ptype];
+
+      for (let i = 0; i &lt; fieldValues.length; i++) {
+        if (fieldValues[i] !== null &amp;&amp; fieldValues[i] !== undefined) {
+          conditions.push(`v${fieldIndex + i} = ?`);
+          params.push(fieldValues[i]);
+        }
+      }
+
+      const query = `DELETE FROM ${this.tableName} WHERE ${conditions.join(' AND ')}`;
+      const result = await this.executeWithRetry(() => databaseService.query(query, params));
+
+      // Invalidate cache
+      this.invalidateCache();
+
+      const duration = Date.now() - startTime;
+      this.updateMetrics('removeFilteredPolicy', duration);
+
+      logger.debug('Filtered policies removed', {
+        sec,
+        ptype,
+        count: result.affectedRows || 0,
+        duration: `${duration}ms`
+      });
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to remove filtered policies', {
+        error: error.message,
+        sec,
+        ptype,
+        fieldIndex,
+        stack: error.stack
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Execute query with retry logic for transient failures
+   * @param {Function} queryFn - Function that returns a promise
+   * @param {number} attempt - Current attempt number
+   * @returns {Promise&lt;any>}
+   */
+  async executeWithRetry(queryFn, attempt = 1) {
+    try {
+      const startTime = Date.now();
+      const result = await queryFn();
+      const duration = Date.now() - startTime;
+      this.updateMetrics('query', duration);
+      return result;
+    } catch (error) {
+      // Retry on transient errors
+      const isTransient = this.isTransientError(error);
+      
+      if (isTransient &amp;&amp; attempt &lt; this.maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff
+        logger.warn(`Retrying query (attempt ${attempt}/${this.maxRetries})`, {
+          error: error.message,
+          delay: `${delay}ms`
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.executeWithRetry(queryFn, attempt + 1);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Check if error is transient (can be retried)
+   * @param {Error} error - Error object
+   * @returns {boolean}
+   */
+  isTransientError(error) {
+    const transientCodes = [
+      'ECONNRESET',
+      'ETIMEDOUT',
+      'ENOTFOUND',
+      'ECONNREFUSED',
+      'PROTOCOL_CONNECTION_LOST',
+      'ER_LOCK_WAIT_TIMEOUT',
+      'ER_LOCK_DEADLOCK'
+    ];
+    
+    return transientCodes.some(code => 
+      error.code === code || error.message.includes(code)
+    );
+  }
+
+  /**
+   * Update performance metrics
+   * @param {string} operation - Operation name
+   * @param {number} duration - Duration in milliseconds
+   */
+  updateMetrics(operation, duration) {
+    this.metrics.queryTime.total += duration;
+    this.metrics.queryTime.count++;
+  }
+
+  /**
+   * Get performance metrics
+   * @returns {Object} Metrics object
+   */
+  getMetrics() {
+    const avgQueryTime = this.metrics.queryTime.count > 0
+      ? this.metrics.queryTime.total / this.metrics.queryTime.count
+      : 0;
+    
+    return {
+      ...this.metrics,
+      averageQueryTime: `${avgQueryTime.toFixed(2)}ms`,
+      cacheHitRate: this.metrics.cacheHits + this.metrics.cacheMisses > 0
+        ? `${((this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses)) * 100).toFixed(2)}%`
+        : '0%'
+    };
+  }
+
+  /**
+   * Reset metrics
+   */
+  resetMetrics() {
+    this.metrics = {
+      loadPolicyCount: 0,
+      savePolicyCount: 0,
+      addPolicyCount: 0,
+      removePolicyCount: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      queryTime: {
+        total: 0,
+        count: 0
+      }
+    };
+  }
+
+  /**
+   * Check if adapter is filtered (not used in our implementation)
+   * @returns {boolean}
+   */
+  isFiltered() {
+    return this.filtered;
+  }
+}
+
+export default MySQLAdapterEnhanced;
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

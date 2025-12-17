@@ -16,9 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
  * available to simplify logging context.
  *
  * @name requestIdMiddleware
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {void}
  */
 export const requestIdMiddleware = (req, res, next) => {

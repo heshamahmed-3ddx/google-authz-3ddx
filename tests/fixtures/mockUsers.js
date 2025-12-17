@@ -447,9 +447,35 @@ export const mockUserRights = {
 };
 
 /**
- * Helper function to get mock user by type
- * @param {string} userType - Type of user (admin, swd, regular, suspended, finance, contractor)
- * @returns {object} Mock user object
+ * Get mock user object by user type for testing
+ * 
+ * Returns predefined mock user objects with realistic Google Workspace user data
+ * for different user roles and scenarios. Used in tests to simulate various
+ * user permissions and access levels.
+ * 
+ * @param {('admin'|'swd'|'regular'|'suspended'|'finance'|'contractor')} userType - User role type
+ * @returns {Object} Complete mock user object with Google Workspace user properties
+ * @returns {string} returns.id - User ID
+ * @returns {string} returns.email - Primary email
+ * @returns {string} returns.fullName - Full display name
+ * @returns {string[]} returns.groups - User's group memberships
+ * @returns {boolean} returns.isAdmin - Admin status
+ * @returns {boolean} returns.suspended - Account suspension status
+ * 
+ * @example
+ * // Get admin user for testing
+ * const admin = getMockUser('admin');
+ * // Returns: { id: 'mock-admin-001', groups: ['admin', 'SWD', 'developers'], ... }
+ * 
+ * @example
+ * // Get regular user with limited permissions
+ * const user = getMockUser('regular');
+ * // Returns: { id: 'mock-user-001', groups: ['users', 'sales'], ... }
+ * 
+ * @example
+ * // Invalid type defaults to regular user
+ * const user = getMockUser('invalid');
+ * // Returns: mockRegularUser
  */
 export function getMockUser(userType) {
   const users = {
@@ -465,18 +491,70 @@ export function getMockUser(userType) {
 }
 
 /**
- * Helper function to get mock user rights by type
- * @param {string} userType - Type of user (admin, swd, regular, finance, contractor)
- * @returns {object} Mock user rights object
+ * Get mock user rights/permissions by user type for testing
+ * 
+ * Returns predefined permission sets for different user roles, including
+ * groups, roles, and resource-level action permissions. Used to test
+ * authorization logic and access control.
+ * 
+ * @param {('admin'|'swd'|'regular'|'finance'|'contractor')} userType - User role type
+ * @returns {Object} Mock user rights object
+ * @returns {string} returns.userEmail - User's email address
+ * @returns {string[]} returns.groups - User's group memberships
+ * @returns {string[]} returns.roles - User's role assignments
+ * @returns {Array<Object>} returns.rights - Resource-level permissions
+ * 
+ * @example
+ * // Get admin rights
+ * const rights = getMockUserRights('admin');
+ * // Returns: {
+ * //   userEmail: 'test.admin@3ddx.com',
+ * //   groups: ['admin', 'SWD', 'developers'],
+ * //   roles: ['system-admin', 'user-manager'],
+ * //   rights: [{ resource: 'users', actions: ['read', 'create', ...] }]
+ * // }
+ * 
+ * @example
+ * // Invalid type defaults to regular user rights
+ * const rights = getMockUserRights('invalid');
+ * // Returns: mockUserRights.regular
  */
 export function getMockUserRights(userType) {
   return mockUserRights[userType] || mockUserRights.regular;
 }
 
 /**
- * Generate a complete mock session for testing
- * @param {string} userType - Type of user
- * @returns {object} Complete mock session with user details and rights
+ * Generate complete mock session with user data and authentication tokens
+ * 
+ * Creates a full mock session object combining user details, rights/permissions,
+ * and authentication tokens. Perfect for simulating authenticated requests in tests
+ * without actually going through OAuth flow.
+ * 
+ * @param {('admin'|'swd'|'regular'|'suspended'|'finance'|'contractor')} [userType='regular'] - User role type
+ * @returns {Object} Complete mock session object
+ * @returns {Object} returns.user - User details from getMockUser()
+ * @returns {Object} returns.rights - User permissions from getMockUserRights()
+ * @returns {string} returns.accessToken - Mock OAuth access token
+ * @returns {string} returns.refreshToken - Mock OAuth refresh token
+ * @returns {number} returns.expiresAt - Token expiration timestamp (1 hour from now)
+ * @returns {string} returns.sessionId - Unique session identifier
+ * 
+ * @example
+ * // Generate admin session for testing protected routes
+ * const session = generateMockSession('admin');
+ * req.session = session;
+ * // Session includes: user object, rights, tokens, expiration
+ * 
+ * @example
+ * // Default to regular user
+ * const session = generateMockSession();
+ * // Returns session for regular user with limited permissions
+ * 
+ * @example
+ * // Use in Express test
+ * const session = generateMockSession('finance');
+ * const req = { session, user: session.user };
+ * const canAccess = checkPermission(req, 'financial-reports', 'read');
  */
 export function generateMockSession(userType = 'regular') {
   const user = getMockUser(userType);
