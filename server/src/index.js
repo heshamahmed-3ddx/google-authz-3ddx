@@ -86,6 +86,9 @@ async function initializeSystem() {
   }
 }
 
+// Trust proxy (for sessions behind Nginx/reverse proxy)
+app.set('trust proxy', 1)
+
 // Security headers (must be first)
 app.use(securityHeaders)
 
