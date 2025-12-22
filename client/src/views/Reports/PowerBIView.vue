@@ -134,7 +134,7 @@
           </v-card-title>
           <div ref="powerbiContainer" class="powerbi-report-container position-relative">
             <!-- Loading overlay -->
-            <div v-if="loading" class="loading-overlay">
+            <div v-show="loading" class="loading-overlay">
               <div class="loading-content">
                 <v-progress-circular
                   indeterminate
@@ -149,7 +149,7 @@
             </div>
 
             <!-- Error overlay -->
-            <div v-if="error" class="error-overlay d-flex align-center justify-center pa-4">
+            <div v-show="error" class="error-overlay d-flex align-center justify-center pa-4">
               <v-alert type="error" variant="tonal" class="max-width-600">
                 <v-alert-title>Failed to Load Report</v-alert-title>
                 <p class="mb-0">{{ error }}</p>
@@ -164,17 +164,12 @@
               </v-alert>
             </div>
 
-            <!-- PowerBI Report iframe -->
-            <iframe
-              ref="powerbiFrame"
-              :src="embedUrl"
+            <!-- PowerBI Report Container -->
+            <div
+              ref="powerbiContainer"
+              v-once
               class="powerbi-iframe"
-              frameborder="0"
-              allowfullscreen
-              allow="clipboard-read; clipboard-write"
-              @load="onIframeLoad"
-              @error="handleIframeError"
-            ></iframe>
+            ></div>
           </div>
         </v-card>
       </v-col>
@@ -199,14 +194,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
+import apiService from "@/services/api";
 
-// PowerBI Configuration
-const WORKSPACE_ID = "dc346d84-7c7f-483d-92a0-66fdc5465ca3";
-const REPORT_ID = "42e28bd8-16a8-44c8-9ee6-e0fe827199d9";
-const DATASET_ID = "61249bfd-e2c2-466c-b687-e746ddda991e";
-const TENANT_ID = "16f6921f-fafa-40cc-bc2b-7c6487e5ada4";
+// PowerBI Configuration - Load from environment variables
+const WORKSPACE_ID = import.meta.env.VITE_POWERBI_WORKSPACE_ID || "dc128709-2496-4000-9f38-8e154f91fb0d";
+const REPORT_ID = import.meta.env.VITE_POWERBI_REPORT_ID || "0d2261f5-b24f-4696-91ab-655a833e42f0";
+const TENANT_ID = import.meta.env.VITE_POWERBI_TENANT_ID || "7153c4ca-59f2-4386-8d08-aa17f2f345ef";
+const CLIENT_ID = import.meta.env.VITE_POWERBI_CLIENT_ID || "69fd2c72-0e78-4524-ba35-23168f80153c";
 
 // i18n
 const { t } = useI18n();
@@ -214,133 +210,133 @@ const { t } = useI18n();
 // Report name - can be set via environment variable or use default
 const REPORT_NAME = import.meta.env.VITE_POWERBI_REPORT_NAME || t("reports.powerbi.dashboard") || "PowerBI Dashboard";
 
-/**
- * PowerBI Embed URL Configuration
- * 
- * To completely eliminate authentication prompts, you have these options:
- * 
- * 1. PUBLISH TO WEB (Simplest - No Auth Required):
- *    - Set VITE_POWERBI_PUBLIC_EMBED_URL in your .env file
- *    - In PowerBI service, publish the report to web and get the embed URL
- *    - ⚠️ WARNING: Report becomes publicly accessible (no authentication)
- *    - Example: VITE_POWERBI_PUBLIC_EMBED_URL=https://app.powerbi.com/view?r=...
- * 
- * 2. SERVICE PRINCIPAL (Recommended for production with security):
- *    - Create a service principal in Azure AD
- *    - Grant it access to the PowerBI workspace
- *    - Install: npm install @azure/msal-node powerbi-client
- *    - Create backend endpoint to generate embed tokens
- *    - Use embed tokens instead of direct URL embedding
- * 
- * 3. CURRENT APPROACH (User-based embedding):
- *    - Uses autoAuth=true to attempt automatic authentication
- *    - May still prompt if user isn't signed in to PowerBI
- *    - Works best when users are already authenticated to PowerBI
- */
-
-// Check if public embed URL is configured (no auth required)
-const publicEmbedUrl = import.meta.env.VITE_POWERBI_PUBLIC_EMBED_URL;
-
-// Use public URL if configured, otherwise use authenticated embed
-const embedUrl = computed(() => {
-  if (publicEmbedUrl) {
-    // Public embed URL - no authentication required
-    return publicEmbedUrl;
-  }
-  
-  // Authenticated embed URL with parameters to minimize auth prompts
-  return `https://app.powerbi.com/reportEmbed?reportId=${REPORT_ID}&autoAuth=true&ctid=${TENANT_ID}&filterPaneEnabled=false&navContentPaneEnabled=false`;
-});
-
 // Component state
 const loading = ref(true);
 const error = ref(null);
-const powerbiFrame = ref(null);
 const powerbiContainer = ref(null);
 const isFullscreen = ref(false);
-const reportName = ref(REPORT_NAME); // Start with config value, can be updated from API if needed
+const reportName = ref(REPORT_NAME);
+const embedUrl = ref('');
+const embedToken = ref('');
 
-// Methods
-function onIframeLoad() {
-  loading.value = false;
-  error.value = null;
-  // Try to get report name from iframe title or postMessage
-  tryGetReportName();
+// Computed property for the full embed URL with token
+const fullEmbedUrl = computed(() => {
+  if (!embedUrl.value || !embedToken.value) return '';
+  return `${embedUrl.value}&tokenType=Embed&accessToken=${embedToken.value}`;
+});
+
+/**
+ * Fetch embed token from backend API
+ */
+async function fetchEmbedToken() {
+  try {
+    loading.value = true;
+    error.value = null;
+    
+    const response = await apiService.post('/api/powerbi/embed-token', {
+      reportId: REPORT_ID,
+      workspaceId: WORKSPACE_ID,
+    });
+    
+    // Axios returns data in response.data
+    if (response.data.success && response.data.data) {
+      const { embedUrl: url, embedToken: token, reportName: name } = response.data.data;
+      
+      embedUrl.value = url;
+      embedToken.value = token;
+      reportName.value = name || REPORT_NAME;
+      
+      // Use PowerBI SDK to embed the report
+      embedReport(url, token);
+    } else {
+      throw new Error('Failed to get embed token');
+    }
+  } catch (err) {
+    console.error('Error fetching embed token:', err);
+    error.value = err.message || 'Failed to load PowerBI report. Please try again.';
+    loading.value = false;
+  }
 }
 
-// Listen for PowerBI postMessage events to get report metadata
-function handlePowerBIMessage(event) {
-  // Only process messages from PowerBI domain
-  if (!event.origin.includes('powerbi.com')) {
+/**
+ * Embed PowerBI report using the PowerBI Client SDK
+ */
+async function embedReport(embedUrl, embedToken) {
+  if (!powerbiContainer.value) {
+    console.error('PowerBI container not found');
     return;
   }
-
-  try {
-    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-    
-    // PowerBI sends various events, look for report metadata
-    if (data && data.type) {
-      // Handle different PowerBI event types
-      switch (data.type) {
-        case 'loaded':
-          // Report loaded event might contain metadata
-          if (data.reportName) {
-            reportName.value = data.reportName;
-          }
-          break;
-        case 'reportLoaded':
-          if (data.reportName) {
-            reportName.value = data.reportName;
-          }
-          break;
-        case 'pageChanged':
-          // Page change events might have report info
-          if (data.reportName) {
-            reportName.value = data.reportName;
-          }
-          break;
-      }
-    }
-  } catch (e) {
-    // Ignore parsing errors
-  }
-}
-
-// Try to get report name from iframe title or other methods
-function tryGetReportName() {
-  if (!powerbiFrame.value) return;
-
-  // Method 1: Try to get from iframe title (if PowerBI sets it)
-  setTimeout(() => {
-    try {
-      if (powerbiFrame.value.contentDocument?.title) {
-        const title = powerbiFrame.value.contentDocument.title;
-        if (title && title !== 'about:blank' && !title.includes('Power BI')) {
-          reportName.value = title;
-        }
-      }
-    } catch (e) {
-      // Cross-origin restriction - can't access iframe content directly
-      // This is expected for PowerBI embeds
-    }
-  }, 2000); // Wait a bit for iframe to load
-}
-
-function loadReport() {
-  loading.value = true;
-  error.value = null;
   
-  // Reset iframe src to reload
-  if (powerbiFrame.value) {
-    // Use computed embedUrl which handles both public and authenticated URLs
-    powerbiFrame.value.src = embedUrl.value;
+  // Wait for Vue to finish DOM updates
+  await nextTick();
+  
+  try {
+    // Get the powerbi service - it should be available globally
+    let powerbi = window.powerbi;
+    
+    // Clear the container first to avoid conflicts
+    if (powerbiContainer.value) {
+      powerbiContainer.value.innerHTML = '';
+    }
+    
+    // Configuration for PowerBI report  
+    const config = {
+      type: 'report',
+      tokenType: 1, // models.TokenType.Embed = 1 (for GenerateToken API)
+      accessToken: embedToken,
+      embedUrl: embedUrl,
+      id: REPORT_ID,
+      settings: {
+        filterPaneEnabled: true,
+        navContentPaneEnabled: true
+      }
+    };
+    
+    // Embed using the global powerbi instance
+    const report = powerbi.embed(powerbiContainer.value, config);
+    
+    // Handle report loaded event
+    report.on('loaded', async () => {
+      // Use nextTick to avoid DOM manipulation conflicts
+      await nextTick();
+      loading.value = false;
+      error.value = null;
+    });
+    
+    // Handle report rendered event
+    report.on('rendered', async () => {
+      await nextTick();
+      // Clear any lingering errors once rendered successfully
+      error.value = null;
+    });
+    
+    // Handle errors - only show critical errors
+    report.on('error', async (event) => {
+      const errorDetail = event.detail;
+      console.error('PowerBI report error:', errorDetail);
+      
+      // Only show error for critical failures (not transient loading issues)
+      if (errorDetail?.message === 'LoadReportFailed' || 
+          errorDetail?.errorCode === '403' ||
+          errorDetail?.errorCode === '404') {
+        await nextTick();
+        loading.value = false;
+        error.value = 'Failed to load PowerBI report. Please try again.';
+      }
+      // Ignore other transient errors that happen during initialization
+    });
+    
+  } catch (err) {
+    console.error('Error embedding PowerBI report:', err);
+    loading.value = false;
+    error.value = 'Failed to initialize PowerBI report. Please refresh the page.';
   }
 }
 
-// Handle iframe errors
-function handleIframeError() {
-  loading.value = false;
-  error.value = "Unable to load PowerBI report. Please check your connection and try again.";
+// Methods
+function loadReport() {
+  // Fetch new embed token and load report
+  fetchEmbedToken();
 }
 
 // Toggle fullscreen mode
@@ -372,43 +368,106 @@ function handleFullscreenChange() {
   isFullscreen.value = !!document.fullscreenElement;
 }
 
-// Lifecycle
-let timeout = null;
-
-onMounted(() => {
-  // Set a timeout to handle cases where iframe doesn't load or load event doesn't fire
-  timeout = setTimeout(() => {
-    if (loading.value) {
-      // If still loading after timeout, hide loading (iframe might still be loading)
-      // PowerBI reports can take time to fully load, so we'll show the iframe anyway
-      loading.value = false;
+// Wait for PowerBI SDK to be loaded
+function waitForPowerBISDK() {
+  return new Promise((resolve, reject) => {
+    // Check if already loaded
+    if (window.powerbi) {
+      resolve();
+      return;
     }
-  }, 10000); // 10 second timeout - hide loading spinner but keep iframe visible
+    
+    // Wait with timeout
+    let attempts = 0;
+    const maxAttempts = 40; // 20 seconds max
+    const checkInterval = setInterval(() => {
+      attempts++;
+      
+      if (window.powerbi) {
+        clearInterval(checkInterval);
+        resolve();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        // Try to load it dynamically as fallback
+        loadPowerBISDKDynamically()
+          .then(resolve)
+          .catch(reject);
+      }
+    }, 500);
+  });
+}
+
+// Dynamically load PowerBI SDK if not loaded via script tag
+function loadPowerBISDKDynamically() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/powerbi-client@2.23.1/dist/powerbi.min.js';
+    script.async = false;
+    
+    script.onload = () => {
+      // Wait a bit for the SDK to initialize
+      setTimeout(() => {
+        if (window.powerbi) {
+          resolve();
+        } else {
+          reject(new Error('PowerBI SDK script loaded but window.powerbi not available'));
+        }
+      }, 1000);
+    };
+    
+    script.onerror = () => {
+      reject(new Error('Failed to load PowerBI SDK from CDN'));
+    };
+    
+    document.head.appendChild(script);
+  });
+}
+
+// Lifecycle
+// Suppress PowerBI SDK console warnings
+const originalConsoleWarn = console.warn;
+console.warn = function(...args) {
+  const msg = args.join(' ');
+  // Filter out PowerBI-related violations
+  if (msg.includes('Violation') || 
+      msg.includes('passive event listener') ||
+      msg.includes('handler took') ||
+      msg.includes('Forced reflow')) {
+    return;
+  }
+  originalConsoleWarn.apply(console, args);
+};
+
+onMounted(async () => {
+  // Wait for PowerBI SDK to load
+  try {
+    await waitForPowerBISDK();
+  } catch (err) {
+    console.error('Failed to load PowerBI SDK:', err);
+    error.value = 'Failed to load PowerBI library. Please refresh the page.';
+    loading.value = false;
+    return;
+  }
+  
+  // Fetch embed token when component mounts
+  fetchEmbedToken();
 
   // Listen for fullscreen changes
   document.addEventListener('fullscreenchange', handleFullscreenChange);
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.addEventListener('mozfullscreenchange', handleFullscreenChange);
   document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-  // Listen for PowerBI postMessage events to get report metadata
-  window.addEventListener('message', handlePowerBIMessage);
 });
 
 onUnmounted(() => {
-  // Cleanup timeout on unmount
-  if (timeout) {
-    clearTimeout(timeout);
-  }
+  // Restore original console.warn
+  console.warn = originalConsoleWarn;
 
   // Remove fullscreen listeners
   document.removeEventListener('fullscreenchange', handleFullscreenChange);
   document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
   document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
   document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-
-  // Remove PowerBI message listener
-  window.removeEventListener('message', handlePowerBIMessage);
 });
 </script>
 

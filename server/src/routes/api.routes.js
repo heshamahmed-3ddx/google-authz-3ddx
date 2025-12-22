@@ -23,6 +23,7 @@ import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
 import surgicalGuideOrdersRoutes from './surgicalGuideOrders.routes.js'
+import powerbiRoutes from './powerbi.routes.js'
 
 // SWD-only page access middleware
 const requireSWD = async (req, res, next) => {
@@ -2160,6 +2161,12 @@ router.get('/config/github', async (req, res) => {
 // ========================================
 // Mount surgical guide report routes at /api/reports/*
 router.use('/reports', surgicalGuideOrdersRoutes);
+
+// ========================================
+// POWERBI ROUTES
+// ========================================
+// Mount PowerBI routes at /api/powerbi/*
+router.use('/powerbi', powerbiRoutes);
 
 export default router
 
