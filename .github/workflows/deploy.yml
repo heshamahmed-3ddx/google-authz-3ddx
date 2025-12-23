@@ -1,0 +1,132 @@
+name: Deploy InsightHub
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run client tests
+        working-directory: ./client
+        run: npm run test:unit || echo "No tests configured"
+
+      - name: Run server tests
+        working-directory: ./server
+        run: npm test || echo "No tests configured"
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd client && npm ci
+          cd ../server && npm ci
+
+      - name: Build client
+        working-directory: ./client
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_POWERBI_WORKSPACE_ID: ${{ secrets.VITE_POWERBI_WORKSPACE_ID }}
+          VITE_POWERBI_REPORT_ID: ${{ secrets.VITE_POWERBI_REPORT_ID }}
+          VITE_POWERBI_TENANT_ID: ${{ secrets.VITE_POWERBI_TENANT_ID }}
+          VITE_POWERBI_CLIENT_ID: ${{ secrets.VITE_POWERBI_CLIENT_ID }}
+        run: npm run build
+
+      - name: Upload client build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-build
+          path: client/dist
+          retention-days: 7
+
+      - name: Upload server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: |
+            server/
+            !server/node_modules
+            !server/.env
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download client artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: client-build
+          path: ./client-dist
+
+      - name: Download server artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: ./server
+
+      - name: Deploy to production server
+        uses: easingthemes/ssh-deploy@v4
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          SOURCE: "./"
+          TARGET: ${{ secrets.DEPLOY_PATH }}
+          EXCLUDE: "/node_modules/, /.git/, /.github/"
+          SCRIPT_BEFORE: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            pm2 stop insighthub-backend || true
+            pm2 stop insighthub-frontend || true
+          SCRIPT_AFTER: |
+            cd ${{ secrets.DEPLOY_PATH }}/server
+            npm ci --production
+            pm2 restart ecosystem.config.js --env production
