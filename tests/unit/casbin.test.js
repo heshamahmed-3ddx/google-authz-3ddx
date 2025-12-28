@@ -9,15 +9,9 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-<<<<<<< HEAD
-// Mock the logging service
-jest.mock('../../server/src/services/logger.js', () => ({
-  createLogger: jest.fn(() => ({
-=======
 // Mock the logger service (updated path)
 jest.mock('../../server/src/services/logger.js', () => ({
   createContextLogger: jest.fn(() => ({
->>>>>>> company-origin/main
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn()
@@ -322,18 +316,11 @@ describe('CasbinService', () => {
     })
 
     test('should return user rights for existing user', async () => {
-<<<<<<< HEAD
-      mockEnforcer.getPermissionsForUser.mockResolvedValue([
-        ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
-        ['john.doe@3ddiagnostix.com', 'patient_data', 'write'],
-        ['Engineering', 'imaging_systems', 'read']
-=======
       // Mock getPermissionsForUser (used by getUserRights)
       mockEnforcer.getPermissionsForUser.mockResolvedValue([
         ['john.doe@3ddiagnostix.com', 'imaging_systems', 'read'],
         ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
         ['john.doe@3ddiagnostix.com', 'patient_data', 'write']
->>>>>>> company-origin/main
       ])
       mockEnforcer.getRolesForUser.mockResolvedValue(['Engineering', 'engineer'])
 
@@ -372,12 +359,6 @@ describe('CasbinService', () => {
         .rejects.toThrow('Casbin enforcer not initialized')
     })
 
-<<<<<<< HEAD
-    test('should handle enforcer errors', async () => {
-      mockEnforcer.getRolesForUser.mockResolvedValue([])
-      mockEnforcer.getPermissionsForUser.mockRejectedValue(new Error('Permissions error'))
-      mockEnforcer.getPolicy.mockRejectedValue(new Error('Policy error'))
-=======
     test('should handle enforcer errors gracefully with fallback', async () => {
       // Mock getPermissionsForUser to fail, triggering fallback to getPolicy
       mockEnforcer.getPermissionsForUser.mockRejectedValue(new Error('Permission error'))
@@ -386,7 +367,6 @@ describe('CasbinService', () => {
         ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
         ['john.doe@3ddiagnostix.com', 'patient_data', 'write']
       ])
->>>>>>> company-origin/main
 
       const result = await casbinService.getUserRights('john.doe@3ddiagnostix.com')
       

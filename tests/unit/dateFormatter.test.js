@@ -89,13 +89,9 @@ describe('Date Formatter Utilities', () => {
 
     test('returns empty string for invalid date', () => {
       expect(formatDateTime(null)).toBe('');
-<<<<<<< HEAD
-      expect(formatDateTime('invalid')).toBe(':');
-=======
       const invalid = formatDateTime('invalid');
       // Should return empty string or space for invalid dates
       expect(invalid.trim()).toBe('');
->>>>>>> company-origin/main
     });
   });
 
@@ -131,12 +127,8 @@ describe('Date Formatter Utilities', () => {
       // The year might differ by 1 day depending on timezone (2025 vs 2026)
       const date = new Date('2025-12-31T23:59:59Z');
       const formatted = formatDateTime(date);
-<<<<<<< HEAD
       // Format is now DD/MMM/YYYY:HH:mm:ss with leading zeros
       expect(formatted).toMatch(/\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2}/);
-=======
-      expect(formatted).toMatch(/\d{1,2}\/\w{3}\/(2025|2026) \d{1,2}:\d{2}[ap]/);
->>>>>>> company-origin/main
     });
   });
 });
