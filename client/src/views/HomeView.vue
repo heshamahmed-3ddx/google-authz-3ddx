@@ -24,7 +24,7 @@
         <div class="d-flex gap-4 justify-center flex-wrap">
           <v-btn
             v-if="!authStore.isAuthenticated"
-            color="primary"
+            color="black"
             size="large"
             variant="flat"
             prepend-icon="mdi-login"
@@ -34,7 +34,7 @@
           </v-btn>
           <v-btn
             v-else
-            color="primary"
+            color="black"
             size="large"
             variant="flat"
             prepend-icon="mdi-view-dashboard"
