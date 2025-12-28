@@ -3,9 +3,8 @@ import cors from 'cors'
 import session from 'express-session'
 import dotenv from 'dotenv';
 
-// Load environment-specific .env file
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-dotenv.config({ path: envFile });
+// Load environment variables from .env file
+dotenv.config();
 
 import authRoutes from './routes/auth.routes.js'
 import apiRoutes from './routes/api.routes.js'
