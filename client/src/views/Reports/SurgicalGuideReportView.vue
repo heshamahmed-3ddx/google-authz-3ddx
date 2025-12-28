@@ -136,8 +136,8 @@
 
     <!-- Main Report Interface (Finance22 only) -->
     <template v-if="accessInfo.hasReportAccess">
-      <!-- Enhanced Progress Bar -->
-      <v-row v-if="loading.table && loadingProgress > 0" no-gutters class="mb-4">
+      <!-- Enhanced Progress Bar (for table loading or export) -->
+      <v-row v-if="(loading.table || loading.export) && loadingProgress > 0" no-gutters class="mb-4">
         <v-col cols="12">
           <v-card elevation="1">
             <v-card-text class="pa-4">
@@ -225,7 +225,7 @@
                 <v-btn
                   color="primary"
                   size="default"
-                  :disabled="!isDateRangeValid || loading.table"
+                  :disabled="!isDateRangeValid || loading.table || loading.export"
                   variant="elevated"
                   class="flex-1"
                   @click="fetchReport"
@@ -240,7 +240,7 @@
                   size="default"
                   prepend-icon="mdi-download-outline"
                   variant="outlined"
-                  :disabled="!filteredReportData.length || loading.table"
+                  :disabled="!filteredReportData.length || loading.table || loading.export"
                   class="flex-1"
                   @click="exportToCSV"
                 >
@@ -283,9 +283,9 @@
                     class="enhanced-stat-card"
                     :class="{ 
                       'stat-card-active': activeFilter === stat.key,
-                      'stat-card-disabled': loading.table
+                      'stat-card-disabled': loading.table || loading.export
                     }"
-                    @click="!loading.table && filterByOrderType(stat.key)"
+                    @click="!loading.table && !loading.export && filterByOrderType(stat.key)"
                   >
                     <div class="stat-card-icon" :class="`stat-icon-${stat.color}`">
                       <v-icon size="18">{{ stat.icon }}</v-icon>
@@ -586,7 +586,7 @@
                     size="small"
                     style="margin-inline-end: 8px"
                     color="info"
-                    >mdi-hospital-box-outline</v-icon
+                    >mdi-office-building</v-icon
                   >
                   <a
                     v-if="
@@ -709,6 +709,7 @@
                   :theme="shouldUseWhiteText(item.typeLabel) ? 'dark' : 'light'"
                   size="small"
                   variant="flat"
+                  rounded
                 >
                   {{ item.typeLabel }}
                 </v-chip>
@@ -720,7 +721,7 @@
                   <v-icon size="x-small" class="mr-1" color="grey"
                     >mdi-calendar-outline</v-icon
                   >
-                  <span class="text-body-2 date-text">{{ item.createdTime }}</span>
+                  <span class="text-body-2 date-text">{{ formatDate(item.createdTime) }}</span>
                 </div>
               </template>
 
@@ -804,7 +805,7 @@
                               >
                               {{ t("reports.surgicalGuide.created") }}
                             </td>
-                            <td class="detail-value">{{ item.createdTime }}</td>
+                            <td class="detail-value">{{ formatDate(item.createdTime) }}</td>
                           </tr>
 
                           <!-- Designed -->
@@ -1025,6 +1026,7 @@ import { storeToRefs } from "pinia";
 import api from "@/services/api";
 import { useI18n } from "vue-i18n";
 import ProgressBarEnhanced from "@/components/ProgressBarEnhanced.vue";
+import { formatDate } from "@/utils/dateFormatter.js";
 
 const router = useRouter();
 const devModeStore = useDevModeStore();
@@ -1086,6 +1088,7 @@ const pagination = reactive({
 const loading = reactive({
   access: true,
   table: true, // Start as true to show skeleton immediately
+  export: false, // Export loading state
 });
 
 // Progress tracking for enhanced progress bar
@@ -1093,33 +1096,66 @@ const loadingProgress = ref(0);
 const loadingStartTime = ref(null);
 const estimatedDuration = ref(30000); // 30 seconds default estimate
 
-// Loading stages for progress bar
-const loadingStages = computed(() => [
-  { 
-    id: 1, 
-    label: t('reports.surgicalGuide.progress.validating') || 'Validating', 
-    completed: loadingProgress.value > 0, 
-    current: loadingProgress.value > 0 && loadingProgress.value <= 25 
-  },
-  { 
-    id: 2, 
-    label: t('reports.surgicalGuide.progress.fetching') || 'Fetching', 
-    completed: loadingProgress.value > 25, 
-    current: loadingProgress.value > 25 && loadingProgress.value <= 60 
-  },
-  { 
-    id: 3, 
-    label: t('reports.surgicalGuide.progress.processing') || 'Processing', 
-    completed: loadingProgress.value > 60, 
-    current: loadingProgress.value > 60 && loadingProgress.value <= 90 
-  },
-  { 
-    id: 4, 
-    label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
-    completed: loadingProgress.value === 100, 
-    current: loadingProgress.value > 90 
+// Loading stages for progress bar (dynamic based on loading type)
+const loadingStages = computed(() => {
+  if (loading.export) {
+    // Export stages
+    return [
+      { 
+        id: 1, 
+        label: t('reports.surgicalGuide.progress.preparing') || 'Preparing', 
+        completed: loadingProgress.value > 0, 
+        current: loadingProgress.value > 0 && loadingProgress.value <= 30 
+      },
+      { 
+        id: 2, 
+        label: t('reports.surgicalGuide.progress.generating') || 'Generating', 
+        completed: loadingProgress.value > 30, 
+        current: loadingProgress.value > 30 && loadingProgress.value <= 70 
+      },
+      { 
+        id: 3, 
+        label: t('reports.surgicalGuide.progress.downloading') || 'Downloading', 
+        completed: loadingProgress.value > 70, 
+        current: loadingProgress.value > 70 && loadingProgress.value <= 95 
+      },
+      { 
+        id: 4, 
+        label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
+        completed: loadingProgress.value === 100, 
+        current: loadingProgress.value > 95 
+      }
+    ];
   }
-]);
+  
+  // Table loading stages (default)
+  return [
+    { 
+      id: 1, 
+      label: t('reports.surgicalGuide.progress.validating') || 'Validating', 
+      completed: loadingProgress.value > 0, 
+      current: loadingProgress.value > 0 && loadingProgress.value <= 25 
+    },
+    { 
+      id: 2, 
+      label: t('reports.surgicalGuide.progress.fetching') || 'Fetching', 
+      completed: loadingProgress.value > 25, 
+      current: loadingProgress.value > 25 && loadingProgress.value <= 60 
+    },
+    { 
+      id: 3, 
+      label: t('reports.surgicalGuide.progress.processing') || 'Processing', 
+      completed: loadingProgress.value > 60, 
+      current: loadingProgress.value > 60 && loadingProgress.value <= 90 
+    },
+    { 
+      id: 4, 
+      label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
+      completed: loadingProgress.value === 100, 
+      current: loadingProgress.value > 90 
+    }
+  ];
+});
 
 const snackbar = reactive({
   show: false,
@@ -1195,8 +1231,8 @@ const filterNotificationText = computed(() => {
     filters.startDate !== "2014-01-01" ||
     filters.endDate !== "2020-12-31"
   ) {
-    const startFormatted = new Date(filters.startDate).toLocaleDateString();
-    const endFormatted = new Date(filters.endDate).toLocaleDateString();
+    const startFormatted = formatDate(new Date(filters.startDate));
+    const endFormatted = formatDate(new Date(filters.endDate));
     parts.push(
       t("reports.surgicalGuide.dateRangeLabel") +
         `: ${startFormatted} - ${endFormatted}`,
@@ -1742,19 +1778,36 @@ async function loadItems({ page, itemsPerPage, sortBy }) {
 }
 
 /**
- * Export report to CSV
- * Loading is handled by Vue Suspense (native Vue loader)
+ * Export report to CSV with progress bar
  */
 async function exportToCSV() {
   try {
+    // Start export loading with progress tracking
+    loading.export = true;
+    loadingProgress.value = 0;
+    loadingStartTime.value = Date.now();
+    estimatedDuration.value = 10000; // 10 seconds estimate for export
+
+    // Simulate progress: Preparing (0-30%)
+    loadingProgress.value = 10;
+    
     // Format dates to YYYY-MM-DD before sending to API
     const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
     const formattedEndDate = formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
+
+    loadingProgress.value = 30;
 
     const params = new URLSearchParams({
       startDate: formattedStartDate,
       endDate: formattedEndDate,
     });
+
+    // Simulate progress: Generating (30-70%)
+    const progressInterval = setInterval(() => {
+      if (loadingProgress.value < 70) {
+        loadingProgress.value += 5;
+      }
+    }, 200);
 
     const response = await fetch(
       `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/reports/surgical_guide/export?${params}`,
@@ -1764,13 +1817,20 @@ async function exportToCSV() {
       },
     );
 
+    clearInterval(progressInterval);
+    loadingProgress.value = 70;
+
     if (!response.ok) {
       throw new Error(
         t("reports.surgicalGuide.exportFailed") || "Export failed",
       );
     }
 
+    // Simulate progress: Downloading (70-95%)
+    loadingProgress.value = 80;
     const blob = await response.blob();
+    loadingProgress.value = 90;
+    
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -1779,10 +1839,17 @@ async function exportToCSV() {
     const today = new Date().toISOString().split("T")[0].replace(/-/g, "");
     a.download = `OSG_${today}.csv`;
 
+    loadingProgress.value = 95;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+
+    // Complete (100%)
+    loadingProgress.value = 100;
+    
+    // Small delay to show completion
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     showSnackbar(
       t("reports.surgicalGuide.reportExported") ||
@@ -1795,7 +1862,9 @@ async function exportToCSV() {
       "error",
     );
   } finally {
-    // Loading handled by Vue Suspense
+    loading.export = false;
+    loadingProgress.value = 0;
+    loadingStartTime.value = null;
   }
 }
 

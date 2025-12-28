@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the commit message
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Get current branch name
+branch_name=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Check if branch name starts with BF (bug fix) or CR (code review/change request)
+if [[ "$branch_name" =~ ^(BF|CR)- ]]; then
+  # Extract prefix (BF or CR)
+  prefix=$(echo "$branch_name" | grep -oE '^(BF|CR)')
+  
+  # Check if commit message already has the prefix
+  if [[ ! "$commit_msg" =~ ^\[$prefix\] ]]; then
+    # Prepend branch prefix to commit message
+    echo "[$prefix] $commit_msg" > "$commit_msg_file"
+    echo "✓ Added [$prefix] prefix to commit message"
+  fi
+fi

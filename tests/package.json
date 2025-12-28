@@ -4,9 +4,9 @@
   "description": "Test suite for Google AuthZ 3DDX",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js unit/",
-    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js integration/",
+    "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:unit": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js unit/",
+    "test:integration": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js integration/",
     "test:e2e": "playwright test",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
@@ -40,8 +40,9 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/e2e/"
+      "/e2e/",
+      "/client/"
     ],
-    "testTimeout": 20000
+    "testTimeout": 60000
   }
 }

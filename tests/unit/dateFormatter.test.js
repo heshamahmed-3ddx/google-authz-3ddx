@@ -16,15 +16,15 @@ describe('Date Formatter Utilities', () => {
       expect(formatDate('2025-12-31')).toBe('31/Dec/2025');
     });
 
-    test('handles single digit day correctly', () => {
+    test('handles single digit day correctly with leading zero', () => {
       const date = new Date('2025-01-05T10:02:00');
-      expect(formatDate(date)).toBe('5/Jan/2025');
+      expect(formatDate(date)).toBe('05/Jan/2025');
     });
 
     test('handles different months correctly', () => {
       expect(formatDate(new Date('2025-03-15'))).toBe('15/Mar/2025');
       expect(formatDate(new Date('2025-07-20'))).toBe('20/Jul/2025');
-      expect(formatDate(new Date('2025-11-01'))).toBe('1/Nov/2025');
+      expect(formatDate(new Date('2025-11-01'))).toBe('01/Nov/2025');
     });
 
     test('returns empty string for null/undefined', () => {
@@ -40,34 +40,34 @@ describe('Date Formatter Utilities', () => {
   });
 
   describe('formatTime', () => {
-    test('formats evening time correctly (10:02p)', () => {
+    test('formats evening time correctly (24-hour format)', () => {
       const date = new Date('2025-12-31T22:02:00');
-      expect(formatTime(date)).toBe('10:02p');
+      expect(formatTime(date)).toBe('22:02:00');
     });
 
-    test('formats morning time correctly (10:02a)', () => {
+    test('formats morning time correctly (24-hour format)', () => {
       const morning = new Date('2025-12-31T10:02:00');
-      expect(formatTime(morning)).toBe('10:02a');
+      expect(formatTime(morning)).toBe('10:02:00');
     });
 
-    test('formats midnight correctly (12:00a)', () => {
+    test('formats midnight correctly (00:00:00)', () => {
       const midnight = new Date('2025-12-31T00:00:00');
-      expect(formatTime(midnight)).toBe('12:00a');
+      expect(formatTime(midnight)).toBe('00:00:00');
     });
 
-    test('formats noon correctly (12:00p)', () => {
+    test('formats noon correctly (12:00:00)', () => {
       const noon = new Date('2025-12-31T12:00:00');
-      expect(formatTime(noon)).toBe('12:00p');
+      expect(formatTime(noon)).toBe('12:00:00');
     });
 
-    test('formats single digit hours correctly', () => {
+    test('formats single digit hours with leading zero', () => {
       const early = new Date('2025-12-31T09:05:00');
-      expect(formatTime(early)).toBe('9:05a');
+      expect(formatTime(early)).toBe('09:05:00');
     });
 
-    test('pads minutes correctly', () => {
+    test('formats afternoon time correctly', () => {
       const date = new Date('2025-12-31T14:05:00');
-      expect(formatTime(date)).toBe('2:05p');
+      expect(formatTime(date)).toBe('14:05:00');
     });
 
     test('returns empty string for invalid date', () => {
@@ -79,19 +79,19 @@ describe('Date Formatter Utilities', () => {
   describe('formatDateTime', () => {
     test('formats date and time together correctly', () => {
       const date = new Date('2025-12-31T22:02:00');
-      expect(formatDateTime(date)).toBe('31/Dec/2025 10:02p');
+      expect(formatDateTime(date)).toBe('31/Dec/2025:22:02:00');
     });
 
     test('formats morning datetime correctly', () => {
       const date = new Date('2025-12-31T10:02:00');
-      expect(formatDateTime(date)).toBe('31/Dec/2025 10:02a');
+      expect(formatDateTime(date)).toBe('31/Dec/2025:10:02:00');
     });
 
-    test('returns empty string for invalid date', () => {
+    test('returns empty string or separator for invalid date', () => {
       expect(formatDateTime(null)).toBe('');
       const invalid = formatDateTime('invalid');
-      // Should return empty string or space for invalid dates
-      expect(invalid.trim()).toBe('');
+      // Invalid dates return just the separator ':'
+      expect(invalid).toBe(':');
     });
   });
 
@@ -119,7 +119,7 @@ describe('Date Formatter Utilities', () => {
 
     test('handles year boundaries', () => {
       const newYear = new Date('2025-01-01T00:00:00');
-      expect(formatDateTime(newYear)).toBe('1/Jan/2025 12:00a');
+      expect(formatDateTime(newYear)).toBe('01/Jan/2025:00:00:00');
     });
 
     test('handles different timezones correctly', () => {
@@ -127,7 +127,8 @@ describe('Date Formatter Utilities', () => {
       // The year might differ by 1 day depending on timezone (2025 vs 2026)
       const date = new Date('2025-12-31T23:59:59Z');
       const formatted = formatDateTime(date);
-      expect(formatted).toMatch(/\d{1,2}\/\w{3}\/(2025|2026) \d{1,2}:\d{2}[ap]/);
+      // Format is now DD/MMM/YYYY:HH:mm:ss with leading zeros
+      expect(formatted).toMatch(/\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2}/);
     });
   });
 });

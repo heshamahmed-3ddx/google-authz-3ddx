@@ -451,7 +451,10 @@
         "validating": "Validating",
         "fetching": "Fetching",
         "processing": "Processing",
-        "complete": "Complete"
+        "complete": "Complete",
+        "preparing": "Preparing",
+        "generating": "Generating",
+        "downloading": "Downloading"
       },
       "status": {
         "qcShipping": "QC Shipping",

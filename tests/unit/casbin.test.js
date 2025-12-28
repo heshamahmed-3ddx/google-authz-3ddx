@@ -37,7 +37,8 @@ const mockEnforcer = {
   getAllSubjects: jest.fn(),
   getAllObjects: jest.fn(),
   getAllActions: jest.fn(),
-  getAllRoles: jest.fn()
+  getAllRoles: jest.fn(),
+  getPermissionsForUser: jest.fn()
 };
 
 jest.mock('casbin', () => ({
@@ -321,6 +322,7 @@ describe('CasbinService', () => {
         ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
         ['john.doe@3ddiagnostix.com', 'patient_data', 'write']
       ])
+      mockEnforcer.getRolesForUser.mockResolvedValue(['Engineering', 'engineer'])
 
       const result = await casbinService.getUserRights('john.doe@3ddiagnostix.com')
 

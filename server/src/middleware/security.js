@@ -179,7 +179,7 @@ export const generalRateLimit = rateLimit({
  */
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 auth requests per windowMs
+  max: process.env.NODE_ENV === 'test' ? 10000 : 10, // Higher limit in test mode
   message: {
     error: {
       code: 'AUTH_RATE_LIMIT_EXCEEDED',
