@@ -27,15 +27,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
-        run: npm ci
-
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm ci
-
-      - name: Install server dependencies
-        working-directory: ./server
+      - name: Install dependencies
         run: npm ci
 
       - name: Run client tests
@@ -62,10 +54,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          cd client && npm ci
-          cd ../server && npm ci
+        run: npm ci
 
       - name: Build client
         working-directory: ./client
