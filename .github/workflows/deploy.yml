@@ -99,6 +99,10 @@ jobs:
           name: client-build
           path: ./client/dist
 
+      - name: Copy built files to production directory
+        run: |
+          rsync -av --delete ./client/dist/ /home/hesham/InsightHub/client/dist/
+
       - name: Stop PM2 processes
         run: |
           pm2 stop insighthub-backend || true
