@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: server/src/config/swagger.config.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: server/src/config/swagger.config.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file swagger.config.js
+ * @description Enhanced Swagger/OpenAPI configuration with security and comprehensive documentation
+ * @author InsightHub Development Team
+ * @created 2025-10-20
+ * @version 1.2.0
+ */
+
+import { VERSION } from './src/config/version.js';
+import CONFIG from './src/config/config.js';
+
+export const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: '3D Diagnostix Google OAuth &amp; Casbin RBAC API',
+      version: VERSION.toString(),
+      description: `
+# 3D Diagnostix Authentication &amp; Authorization API
+
+This API provides comprehensive authentication and authorization services using Google OAuth 2.0 and Casbin RBAC.
+
+## Features
+- Google OAuth 2.0 integration
+- Role-based access control with Casbin
+- Google Groups and organizational unit synchronization
+- Comprehensive audit logging
+- Rate limiting and security controls
+
+## Authentication
+All protected endpoints require valid Google OAuth 2.0 authentication. Include session cookies in requests.
+
+## Rate Limiting
+API requests are limited to ${CONFIG.api.rateLimit.max} requests per ${CONFIG.api.rateLimit.windowMs / 1000 / 60} minutes per IP address.
+
+## Versioning
+API version: ${VERSION.toString()}
+Compatible client versions: ${CONFIG.api.compatibility?.supportedVersions?.join(', ') || 'N/A'}
+
+## Support
+For technical support, contact the 3D Diagnostix development team.
+      `,
+      contact: {
+        name: '3D Diagnostix Development Team',
+        email: 'dev@3ddiagnostix.com',
+        url: 'https://www.3ddiagnostix.com'
+      },
+      license: {
+        name: 'Proprietary',
+        url: 'https://www.3ddiagnostix.com/license'
+      }
+    },
+    
+    servers: [
+      {
+        url: `http://localhost:${CONFIG.server.port}`,
+        description: 'Development server'
+      },
+      {
+        url: 'https://api-staging.3ddiagnostix.com',
+        description: 'Staging server'
+      },
+      {
+        url: 'https://api.3ddiagnostix.com',
+        description: 'Production server'
+      }
+    ],
+    
+    components: {
+      securitySchemes: {
+        sessionAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'session',
+          description: 'Session-based authentication using Google OAuth 2.0'
+        },
+        googleOAuth: {
+          type: 'oauth2',
+          description: 'Google OAuth 2.0',
+          flows: {
+            authorizationCode: {
+              authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+              tokenUrl: 'https://oauth2.googleapis.com/token',
+              scopes: {
+                'https://www.googleapis.com/auth/userinfo.profile': 'Access user profile information',
+                'https://www.googleapis.com/auth/userinfo.email': 'Access user email address',
+                'https://www.googleapis.com/auth/admin.directory.user.readonly': 'Read user directory information',
+                'https://www.googleapis.com/auth/admin.directory.group.readonly': 'Read group directory information',
+                'https://www.googleapis.com/auth/drive.readonly': 'Read Google Drive files',
+                'https://www.googleapis.com/auth/calendar.readonly': 'Read calendar events'
+              }
+            }
+          }
+        }
+      },
+      
+      schemas: {
+        Error: {
+          type: 'object',
+          required: ['code', 'http', 'message'],
+          properties: {
+            code: {
+              type: 'string',
+              example: 'VALIDATION_ERROR',
+              description: 'Machine-readable error code'
+            },
+            http: {
+              type: 'integer',
+              example: 400,
+              description: 'HTTP status code'
+            },
+            message: {
+              type: 'string',
+              example: 'Invalid request parameters',
+              description: 'Human-readable error message'
+            },
+            details: {
+              type: 'string',
+              example: 'Resource is required',
+              description: 'Additional error details (optional)'
+            }
+          }
+        },
+        
+        ApiResponse: {
+          type: 'object',
+          required: ['requestId', 'timestamp'],
+          properties: {
+            requestId: {
+              type: 'string',
+              example: 'f4512178-0098-431f-bea9-de5bcc93c645',
+              description: 'Unique request identifier for tracking'
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-10-20T10:30:00.000Z',
+              description: 'Response timestamp in ISO 8601 format'
+            },
+            version: {
+              type: 'string',
+              example: '1.2.0',
+              description: 'API version'
+            }
+          }
+        },
+        
+        UserDetails: {
+          type: 'object',
+          required: ['fullName', 'email', 'groups', 'orgUnit'],
+          properties: {
+            fullName: {
+              type: 'string',
+              example: 'John Doe',
+              description: 'User\'s full name from Google profile'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'john.doe@3ddiagnostix.com',
+              description: 'User\'s email address'
+            },
+            groups: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['Engineering', 'SWD'],
+              description: 'Google Groups the user belongs to'
+            },
+            roles: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['MEMBER', 'OWNER'],
+              description: 'User\'s roles in Google Groups'
+            },
+            orgUnit: {
+              type: 'string',
+              example: 'Software Development',
+              description: 'User\'s organizational unit in Google Workspace'
+            },
+            department: {
+              type: 'string',
+              nullable: true,
+              example: 'Engineering',
+              description: 'User\'s department (if available)'
+            },
+            twoStepEnabled: {
+              type: 'boolean',
+              example: false,
+              description: 'Whether two-step verification is enabled'
+            },
+            picture: {
+              type: 'string',
+              format: 'uri',
+              nullable: true,
+              example: 'https://lh3.googleusercontent.com/...',
+              description: 'User\'s profile picture URL'
+            }
+          }
+        }
+      }
+    },
+    
+    security: [
+      {
+        sessionAuth: []
+      }
+    ],
+    
+    tags: [
+      {
+        name: 'Authentication',
+        description: 'User authentication and session management'
+      },
+      {
+        name: 'User Management',
+        description: 'User details and profile information'
+      },
+      {
+        name: 'Authorization',
+        description: 'Role-based access control and permissions'
+      },
+      {
+        name: 'Google Integration',
+        description: 'Google APIs integration (Drive, Calendar, etc.)'
+      },
+      {
+        name: 'Administration',
+        description: 'Admin-only endpoints for policy and user management'
+      },
+      {
+        name: 'System',
+        description: 'Health checks and system information'
+      }
+    ]
+  },
+  
+  apis: [
+    './src/routes/*.js',
+    './src/services/*.js'
+  ]
+};
+
+export const swaggerUiOptions = {
+  customCss: `
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info { margin: 50px 0; }
+    .swagger-ui .info .title { color: #2c3e50; }
+  `,
+  customSiteTitle: '3D Diagnostix API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    tryItOutEnabled: true,
+    supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+    docExpansion: 'list',
+    defaultModelsExpandDepth: 2,
+    defaultModelExpandDepth: 2
+  }
+};
+
+export default { swaggerOptions, swaggerUiOptions };</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-CasbinService.html">CasbinService</a></li><li><a href="module-composables_useLocaleToggle.html">composables/useLocaleToggle</a></li><li><a href="module-composables_useSnackbar.html">composables/useSnackbar</a></li><li><a href="module-middleware_reportLogging.html">middleware/reportLogging</a></li><li><a href="module-securityHeaders.html">securityHeaders</a></li><li><a href="module-services_api.html">services/api</a></li><li><a href="module-services_loader.html">services/loader</a></li><li><a href="module-services_logger.html">services/logger</a></li></ul><h3>Namespaces</h3><ul><li><a href="module-services_api-apiService.html">apiService</a></li></ul><h3>Classes</h3><ul><li><a href="DatabaseService.html">DatabaseService</a></li><li><a href="MySQLAdapter.html">MySQLAdapter</a></li><li><a href="MySQLAdapterEnhanced.html">MySQLAdapterEnhanced</a></li><li><a href="ReportLoggingService.html">ReportLoggingService</a></li><li><a href="SurgicalGuideOrdersController.html">SurgicalGuideOrdersController</a></li><li><a href="SurgicalGuideOrdersModel.html">SurgicalGuideOrdersModel</a></li><li><a href="SurgicalGuideOrdersService.html">SurgicalGuideOrdersService</a></li></ul><h3>Global</h3><ul><li><a href="global.html#API_COMPATIBILITY">API_COMPATIBILITY</a></li><li><a href="global.html#CONFIG">CONFIG</a></li><li><a href="global.html#DASHBOARD_ACCESS_CONFIG">DASHBOARD_ACCESS_CONFIG</a></li><li><a href="global.html#GET/api/health">GET /api/health</a></li><li><a href="global.html#GET/api/session/info">GET /api/session/info</a></li><li><a href="global.html#GET/api/test">GET /api/test</a></li><li><a href="global.html#NAVIGATION_CONFIG">NAVIGATION_CONFIG</a></li><li><a href="global.html#RELEASE_NOTES">RELEASE_NOTES</a></li><li><a href="global.html#VERSION">VERSION</a></li><li><a href="global.html#clearMessageCache">clearMessageCache</a></li><li><a href="global.html#coloredLogFormat">coloredLogFormat</a></li><li><a href="global.html#connectionConfig">connectionConfig</a></li><li><a href="global.html#createApiResponse">createApiResponse</a></li><li><a href="global.html#createContextLogger">createContextLogger</a></li><li><a href="global.html#createErrorResponse">createErrorResponse</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#errorHandler">errorHandler</a></li><li><a href="global.html#errorRedirect">errorRedirect</a></li><li><a href="global.html#filterNavigationByPermissions">filterNavigationByPermissions</a></li><li><a href="global.html#findNavigationItemByRoute">findNavigationItemByRoute</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateTime">formatDateTime</a></li><li><a href="global.html#formatTime">formatTime</a></li><li><a href="global.html#getBreadcrumbTrail">getBreadcrumbTrail</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getErrorMessage">getErrorMessage</a></li><li><a href="global.html#getHttpStatusForError">getHttpStatusForError</a></li><li><a href="global.html#getMessage">getMessage</a></li><li><a href="global.html#getRequiredGroupsForNavigation">getRequiredGroupsForNavigation</a></li><li><a href="global.html#getRequiredGroupsForRestrictedAccess">getRequiredGroupsForRestrictedAccess</a></li><li><a href="global.html#getRestrictedSections">getRestrictedSections</a></li><li><a href="global.html#getSuccessMessage">getSuccessMessage</a></li><li><a href="global.html#getValidationMessage">getValidationMessage</a></li><li><a href="global.html#hasNavigationAccess">hasNavigationAccess</a></li><li><a href="global.html#initializeSystem">initializeSystem</a></li><li><a href="global.html#isSectionRestricted">isSectionRestricted</a></li><li><a href="global.html#lightTheme">lightTheme</a></li><li><a href="global.html#loadMessages">loadMessages</a></li><li><a href="global.html#logExternalService">logExternalService</a></li><li><a href="global.html#logFormat">logFormat</a></li><li><a href="global.html#logSecurityEvent">logSecurityEvent</a></li><li><a href="global.html#logSystemInit">logSystemInit</a></li><li><a href="global.html#logUserAccess">logUserAccess</a></li><li><a href="global.html#logger">logger</a></li><li><a href="global.html#messageCache">messageCache</a></li><li><a href="global.html#parseDate">parseDate</a></li><li><a href="global.html#pool">pool</a></li><li><a href="global.html#poolConfig">poolConfig</a></li><li><a href="global.html#preloadMessages">preloadMessages</a></li><li><a href="global.html#processOAuthCallback">processOAuthCallback</a></li><li><a href="global.html#protectDocumentation">protectDocumentation</a></li><li><a href="global.html#requestIdMiddleware">requestIdMiddleware</a></li><li><a href="global.html#requestLogger">requestLogger</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#requireGroups">requireGroups</a></li><li><a href="global.html#userDetailsCache">userDetailsCache</a></li><li><a href="global.html#validateConfig">validateConfig</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 17 2025 10:36:52 GMT+0200 (Eastern European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

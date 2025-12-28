@@ -56,9 +56,9 @@ const logger = createContextLogger(__filename)
  * and does not call `next()`.
  *
  * @name requireAuth
- * @param {import('express').Request} req - Express request
- * @param {import('express').Response} res - Express response
- * @param {import('express').NextFunction} next - Next middleware
+ * @param {Object} req - Express request
+ * @param {Object} res - Express response
+ * @param {Function} next - Next middleware
  * @returns {void}
  */
 const requireAuth = async (req, res, next) => {
@@ -1324,8 +1324,8 @@ router.get('/session/info', requireAuth, async (req, res) => {
 /**
  * @function GET /api/session/info
  * @description Returns current session and token info for authenticated user.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  * @returns {Object} JSON with user, tokenInfo, sessionId, timestamp
  * @throws {500} On server error
  */
@@ -1374,8 +1374,8 @@ router.get('/health', async (req, res) => {
 /**
  * @function GET /api/health
  * @description Returns system health status and metrics for monitoring.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  * @returns {Object} JSON with status, timestamp, uptime, memoryUsage, cpuUsage, requestId
  * @throws {500} On server error
  */
@@ -1511,8 +1511,8 @@ router.get('/test', (req, res) => {
 /**
  * @function GET /api/test
  * @description Returns a test message and server time for API status checks.
- * @param {import('express').Request} req - Express request object
- * @param {import('express').Response} res - Express response object
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
  * @returns {Object} JSON with message, timestamp, authenticated
  */
   res.json({

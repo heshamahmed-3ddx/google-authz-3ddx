@@ -43,7 +43,30 @@ logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`, {
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI 
 });
 
-// Initialize system components
+/**
+ * Initialize system components during server startup
+ * 
+ * Performs critical initialization tasks in sequence:
+ * 1. Logs server startup event
+ * 2. Preloads i18n message system
+ * 3. Initializes security middleware
+ * 
+ * Any failure during initialization will throw an error and prevent server start.
+ * 
+ * @async
+ * @throws {Error} If any initialization step fails
+ * @returns {Promise<boolean>} Returns true on successful initialization
+ * 
+ * @example
+ * // Called during server startup
+ * try {
+ *   await initializeSystem();
+ *   console.log('System initialized successfully');
+ * } catch (error) {
+ *   console.error('Initialization failed:', error);
+ *   process.exit(1);
+ * }
+ */
 async function initializeSystem() {
   try {
     logSystemInit('Server Startup', 'started', { port: PORT });
@@ -64,6 +87,9 @@ async function initializeSystem() {
     throw error;
   }
 }
+
+// Trust proxy (for sessions behind Nginx/reverse proxy)
+app.set('trust proxy', 1)
 
 // Security headers (must be first)
 app.use(securityHeaders)

@@ -194,7 +194,28 @@ if (CONFIG.server.environment === 'production') {
 }
 
 /**
- * Validation function for required environment variables
+ * Validate that all required environment variables are present
+ * 
+ * Checks for critical environment variables needed for application startup
+ * (Google OAuth credentials, session secret). Throws an error with specific
+ * missing variables if validation fails. Should be called during app initialization.
+ * 
+ * @throws {Error} If any required environment variables are missing
+ * @returns {void}
+ * 
+ * @example
+ * // At application startup
+ * try {
+ *   validateConfig();
+ *   console.log('Configuration valid');
+ * } catch (error) {
+ *   console.error('Configuration error:', error.message);
+ *   process.exit(1);
+ * }
+ * 
+ * @example
+ * // Missing variables
+ * // Throws: Error('Missing required environment variables: GOOGLE_CLIENT_ID, SESSION_SECRET')
  */
 export function validateConfig() {
   const required = [
@@ -212,7 +233,29 @@ export function validateConfig() {
 }
 
 /**
- * Get configuration value by path (e.g., 'server.port')
+ * Get configuration value by dot-notation path
+ * 
+ * Safely retrieves nested configuration values using string path notation.
+ * Returns undefined if path doesn't exist. Useful for accessing deeply
+ * nested config without multiple null checks.
+ * 
+ * @param {string} path - Dot-notation path to config value (e.g., 'server.port', 'security.cors.origin')
+ * @returns {*} Configuration value at path, or undefined if not found
+ * 
+ * @example
+ * // Get server port
+ * const port = getConfig('server.port');
+ * // Returns: 3001
+ * 
+ * @example
+ * // Get nested security setting
+ * const corsOrigin = getConfig('security.cors.origin');
+ * // Returns: 'http://localhost:3000'
+ * 
+ * @example
+ * // Non-existent path
+ * const value = getConfig('does.not.exist');
+ * // Returns: undefined
  */
 export function getConfig(path) {
   return path.split('.').reduce((obj, key) => obj?.[key], CONFIG);

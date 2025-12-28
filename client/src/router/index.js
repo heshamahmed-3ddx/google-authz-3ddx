@@ -394,7 +394,31 @@ const router = createRouter({
 });
 
 /**
- * Helper function to get user groups with fallback
+ * Helper function to get user groups with multiple fallback mechanisms
+ * 
+ * Attempts to retrieve user groups from multiple sources in priority order:
+ * 1. Cached user rights from auth store
+ * 2. User object groups from session
+ * 3. Fresh API fetch if authenticated but no cached data
+ * 
+ * This ensures navigation guards always have access to user groups even
+ * if the cache hasn't been populated yet.
+ * 
+ * @private
+ * @async
+ * @param {Object} authStore - Pinia auth store instance
+ * @param {Object} [authStore.cachedUserRights] - Cached rights from API
+ * @param {string[]} [authStore.cachedUserRights.groups] - User's groups
+ * @param {Object} [authStore.user] - User object from session
+ * @param {string[]} [authStore.user.groups] - User's groups from session
+ * @param {boolean} authStore.isAuthenticated - Whether user is logged in
+ * @returns {Promise<string[]>} Array of user group names
+ * 
+ * @example
+ * // In router guard
+ * const authStore = useAuthStore();
+ * const groups = await getUserGroups(authStore);
+ * // Returns: ['admin', 'user'] or []
  */
 async function getUserGroups(authStore) {
   // Try cached user rights first

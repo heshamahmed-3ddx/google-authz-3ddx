@@ -22,6 +22,7 @@
   "showingRecords": "Showing {from} - {to} of {total}",
   "navigation": {
     "home": "Home",
+    "dashboard": "Dashboard",
     "userManagement": "User Management",
     "user-management": "User Management",
     "users": "Users",

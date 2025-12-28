@@ -330,14 +330,14 @@ class CasbinService {
     // Only add missing group/role memberships (don't modify enforcer state unnecessarily)
     if (userInfo.groups && Array.isArray(userInfo.groups)) {
       for (const group of userInfo.groups) {
-        if (!existingUserRoles.includes(group)) {
+        if (!existingUserRoles || !existingUserRoles.includes(group)) {
           await this.enforcer.addGroupingPolicy(userEmail, group);
         }
       }
     }
     if (userInfo.roles && Array.isArray(userInfo.roles)) {
       for (const role of userInfo.roles) {
-        if (!existingUserRoles.includes(role)) {
+        if (!existingUserRoles || !existingUserRoles.includes(role)) {
           await this.enforcer.addGroupingPolicy(userEmail, role);
         }
       }
