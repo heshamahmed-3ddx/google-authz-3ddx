@@ -7,6 +7,7 @@ module.exports = {
       exec_mode: 'cluster',
       max_memory_restart: '512M',
       node_args: '--max-old-space-size=512',
+      env_file: './.env',
       env: {
         NODE_ENV: 'development',
         PORT: 3001,
