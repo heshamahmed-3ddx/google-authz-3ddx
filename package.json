@@ -32,7 +32,7 @@
     "clean:build": "rm -rf client/dist server/dist",
     "docs:generate": "cd client && npm run docs:generate",
     "docs:clean": "rm -rf client/docs/jsdoc",
-    "prepare": "husky"
+    "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\""
   },
   "lint-staged": {
     "client/**/*.{js,vue}": [
