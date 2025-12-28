@@ -85,7 +85,7 @@ jobs:
 
   deploy:
     name: Deploy to Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     if: github.ref == 'refs/heads/main'
     
@@ -99,20 +99,15 @@ jobs:
           name: client-build
           path: ./client/dist
 
-      - name: Deploy to production server
-        uses: easingthemes/ssh-deploy@v4
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          SOURCE: "./"
-          TARGET: ${{ secrets.DEPLOY_PATH }}
-          EXCLUDE: "/node_modules/, /.git/, /.github/, /client/node_modules/, /server/node_modules/, /tests/"
-          SCRIPT_BEFORE: |
-            cd ${{ secrets.DEPLOY_PATH }}
-            pm2 stop insighthub-backend || true
-          SCRIPT_AFTER: |
-            cd ${{ secrets.DEPLOY_PATH }}/server
-            npm install --production
-            cd ${{ secrets.DEPLOY_PATH }}
-            pm2 restart server/ecosystem.config.js --env production || pm2 start server/ecosystem.config.js --env production
+      - name: Stop PM2 processes
+        run: |
+          pm2 stop insighthub-backend || true
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install --production
+
+      - name: Start/Restart PM2
+        run: |
+          pm2 restart server/ecosystem.config.js --env production || pm2 start server/ecosystem.config.js --env production
+          pm2 save
