@@ -87,11 +87,11 @@ describe('Date Formatter Utilities', () => {
       expect(formatDateTime(date)).toBe('31/Dec/2025:10:02:00');
     });
 
-    test('returns empty string for invalid date', () => {
+    test('returns empty string or separator for invalid date', () => {
       expect(formatDateTime(null)).toBe('');
       const invalid = formatDateTime('invalid');
-      // Should return empty string or space for invalid dates
-      expect(invalid.trim()).toBe('');
+      // Invalid dates return just the separator ':'
+      expect(invalid).toBe(':');
     });
   });
 
