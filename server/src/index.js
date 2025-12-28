@@ -38,7 +38,6 @@ const logger = createContextLogger('index', 'ServerMain')
 
 // Log environment configuration
 logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`, { 
-  configFile: envFile,
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI 
 });
 
