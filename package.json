@@ -31,7 +31,16 @@
     "clean": "rm -rf node_modules server/node_modules client/node_modules tests/node_modules",
     "clean:build": "rm -rf client/dist server/dist",
     "docs:generate": "cd client && npm run docs:generate",
-    "docs:clean": "rm -rf client/docs/jsdoc"
+    "docs:clean": "rm -rf client/docs/jsdoc",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "client/**/*.{js,vue}": [
+      "cd client && npm run lint"
+    ],
+    "server/**/*.js": [
+      "cd server && npm run lint"
+    ]
   },
   "keywords": [
     "google",
@@ -56,6 +65,8 @@
     "@babel/preset-env": "^7.28.5",
     "babel-jest": "^30.2.0",
     "concurrently": "^8.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "vite-plugin-vuetify": "^2.1.2",
     "vitepress": "^1.6.4",
     "vue-docgen-cli": "^4.79.0",

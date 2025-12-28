@@ -7,7 +7,7 @@
 import request from 'supertest'
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals'
 
-const BASE_URL = process.env.TEST_SERVER_URL || 'http://localhost:3000'
+const BASE_URL = process.env.TEST_SERVER_URL || 'http://localhost:3001'
 
 describe('Authentication & Authorization API Integration Tests', () => {
   
@@ -18,11 +18,11 @@ describe('Authentication & Authorization API Integration Tests', () => {
         .expect(200)
       
       expect(response.body).toMatchObject({
-        status: 'healthy',
-        version: expect.any(String),
-        casbin: expect.any(String)
+        status: 'ok',
+        timestamp: expect.any(String)
       })
-      expect(response.body.timestamp).toBeDefined()
+      expect(response.body.uptime).toBeDefined()
+      expect(response.body.memoryUsage).toBeDefined()
     })
 
     it('should return API test status', async () => {

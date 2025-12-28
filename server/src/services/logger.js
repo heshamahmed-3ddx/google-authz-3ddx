@@ -51,19 +51,35 @@ const coloredLogFormat = format.printf(({ timestamp, level, message, filename, l
 });
 
 /**
+ * Custom timestamp format: DD/MMM/YYYY:HH:mm:ss (e.g., 17/Jan/2025:14:30:45)
+ */
+const customTimestamp = format.timestamp({
+  format: () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = now.toLocaleString('en-US', { month: 'short' });
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year}:${hours}:${minutes}:${seconds}`;
+  }
+});
+
+/**
  * Create enhanced logger instance
  */
 export const logger = createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    customTimestamp,
     logFormat
   ),
   defaultMeta: { service: '3ddx-auth-service' },
   transports: [
     new transports.Console({
       format: format.combine(
-        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        customTimestamp,
         coloredLogFormat
       )
     }),
@@ -71,14 +87,14 @@ export const logger = createLogger({
   filename: './logs/error.log',
       level: 'error',
       format: format.combine(
-        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        customTimestamp,
         logFormat
       )
     }),
     new transports.File({
   filename: './logs/combined.log',
       format: format.combine(
-        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        customTimestamp,
         logFormat
       )
     })
@@ -117,11 +133,11 @@ export function createContextLogger(filename, functionName = null) {
   };
 
   const getCallerInfo = () => {
-    // Only collect stack info in development or for error-level logs to
-    // avoid the cost of creating and parsing an Error stack on every call.
-    if (process.env.NODE_ENV !== 'development') return '0';
+    // Capture stack trace to get line number
     const error = new Error();
     const stack = (error.stack || '').split('\n');
+    // Stack trace format: at functionName (file:line:column)
+    // We want line 3 which is the actual caller (0=Error, 1=getCallerInfo, 2=logger method, 3=actual caller)
     const callerLine = stack[3] || '';
     const lineMatch = callerLine.match(/:(\d+):\d+/);
     return lineMatch ? lineMatch[1] : '0';
@@ -132,10 +148,9 @@ export function createContextLogger(filename, functionName = null) {
     info: (message, meta = {}) => {
       // Only log critical system events, authentication, and business logic
       if (!isCriticalLog(message, 'info')) return;
-      // Use precomputed filename and avoid stack parsing for info-level logs
       logger.info(message, {
         filename: getFileName(filename),
-        lineNumber: '0',
+        lineNumber: getCallerInfo(),
         functionName,
         ...meta
       });
@@ -143,10 +158,9 @@ export function createContextLogger(filename, functionName = null) {
     
     // Important warnings and system alerts
     warn: (message, meta = {}) => {
-      // Warnings use a lightweight code path (no stack parsing)
       logger.warn(message, {
         filename: getFileName(filename),
-        lineNumber: '0',
+        lineNumber: getCallerInfo(),
         functionName,
         ...meta
       });
@@ -154,7 +168,6 @@ export function createContextLogger(filename, functionName = null) {
     
     // Always log errors
     error: (message, meta = {}) => {
-      // For errors we capture caller line number (more expensive) to help debugging
       logger.error(message, {
         filename: getFileName(filename),
         lineNumber: getCallerInfo(),

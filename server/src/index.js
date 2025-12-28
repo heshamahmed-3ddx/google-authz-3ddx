@@ -7,10 +7,6 @@ import dotenv from 'dotenv';
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
 dotenv.config({ path: envFile });
 
-console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`📂 Loading config from: ${envFile}`);
-console.log(`🔗 Google Redirect URI: ${process.env.GOOGLE_REDIRECT_URI}`);
-
 import authRoutes from './routes/auth.routes.js'
 import apiRoutes from './routes/api.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
@@ -39,7 +35,13 @@ import {
 
 const app = express()
 const PORT = process.env.PORT || 3000
-const logger = createContextLogger('ServerMain', 'ServerMain')
+const logger = createContextLogger('index', 'ServerMain')
+
+// Log environment configuration
+logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`, { 
+  configFile: envFile,
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI 
+});
 
 // Initialize system components
 async function initializeSystem() {
@@ -244,33 +246,35 @@ const gracefulShutdown = async (signal) => {
 
 // Log DB env variables for diagnosis
 
-// Start server
-const server = app.listen(PORT, async () => {
-  try {
-    // Initialize system components
-    await initializeSystem();
-    
-    logger.info('3D Diagnostix Authorization System started', {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version,
-      timestamp: new Date().toISOString()
-    });
-    
-    logSystemInit('Security Features', 'enabled', {
-      features: [
-        'Security headers (Helmet)',
-        'Rate limiting & speed control',
-        'Request validation & sanitization',
-        'CORS protection',
-        'Session security',
-        'Error handling'
-      ]
-    });
-    
-    // Initialize MySQL database connection FIRST (if configured)
-    // This must happen before Casbin if using database storage mode
-    if (process.env.DB_HOST && process.env.DB_NAME) {
+// Start server (only if not in test environment)
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, async () => {
+    try {
+      // Initialize system components
+      await initializeSystem();
+      
+      logger.info('3D Diagnostix Authorization System started', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        nodeVersion: process.version,
+        timestamp: new Date().toISOString()
+      });
+      
+      logSystemInit('Security Features', 'enabled', {
+        features: [
+          'Security headers (Helmet)',
+          'Rate limiting & speed control',
+          'Request validation & sanitization',
+          'CORS protection',
+          'Session security',
+          'Error handling'
+        ]
+      });
+      
+      // Initialize MySQL database connection FIRST (if configured)
+      // This must happen before Casbin if using database storage mode
+      if (process.env.DB_HOST && process.env.DB_NAME) {
       try {
         await databaseService.initialize();
         logSystemInit('MySQL Database', 'connected', {
@@ -322,7 +326,8 @@ const server = app.listen(PORT, async () => {
     });
     process.exit(1);
   }
-})
+});
+}
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
@@ -340,3 +345,4 @@ process.on('unhandledRejection', (reason, promise) => {
 })
 
 export default app
+export { server }

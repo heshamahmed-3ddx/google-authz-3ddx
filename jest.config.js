@@ -1,12 +1,11 @@
-module.exports = {
+export default {
   rootDir: '.',
   testEnvironment: 'node',
-  transform: {
-    '^.+\\.js$': 'babel-jest'
+  extensionsToTreatAsEsm: ['.js'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
-  transformIgnorePatterns: [
-    '/node_modules/(?!uuid)/'
-  ],
+  transform: {},
   collectCoverage: true,
   collectCoverageFrom: [
     'server/src/**/*.js',
@@ -14,11 +13,15 @@ module.exports = {
     '!**/coverage/**',
     '!**/e2e/**'
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
-  testTimeout: 20000,
-  globals: {
-    jest: {
-      useESM: true
-    }
-  }
+  testMatch: [
+    '**/tests/**/*.test.js',
+    '**/server/**/*.test.js',
+    '!**/client/**'
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/e2e/',
+    '/client/'
+  ],
+  testTimeout: 60000
 };

@@ -10,7 +10,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 // Mock the logging service
-jest.mock('../../server/src/services/logging.js', () => ({
+jest.mock('../../server/src/services/logger.js', () => ({
   createLogger: jest.fn(() => ({
     info: jest.fn(),
     error: jest.fn(),
@@ -37,7 +37,8 @@ const mockEnforcer = {
   getAllSubjects: jest.fn(),
   getAllObjects: jest.fn(),
   getAllActions: jest.fn(),
-  getAllRoles: jest.fn()
+  getAllRoles: jest.fn(),
+  getPermissionsForUser: jest.fn()
 };
 
 jest.mock('casbin', () => ({
@@ -315,12 +316,12 @@ describe('CasbinService', () => {
     })
 
     test('should return user rights for existing user', async () => {
-      mockEnforcer.getPolicy.mockResolvedValue([
-        ['p', 'Engineering', 'patient_data', 'read'],
-        ['p', 'Engineering', 'patient_data', 'write'],
-        ['p', 'Engineering', 'imaging_systems', 'read'],
-        ['p', 'Finance', 'financial_reports', 'read']
+      mockEnforcer.getPermissionsForUser.mockResolvedValue([
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'read'],
+        ['john.doe@3ddiagnostix.com', 'patient_data', 'write'],
+        ['Engineering', 'imaging_systems', 'read']
       ])
+      mockEnforcer.getRolesForUser.mockResolvedValue(['Engineering', 'engineer'])
 
       const result = await casbinService.getUserRights('john.doe@3ddiagnostix.com')
 
@@ -358,6 +359,8 @@ describe('CasbinService', () => {
     })
 
     test('should handle enforcer errors', async () => {
+      mockEnforcer.getRolesForUser.mockResolvedValue([])
+      mockEnforcer.getPermissionsForUser.mockRejectedValue(new Error('Permissions error'))
       mockEnforcer.getPolicy.mockRejectedValue(new Error('Policy error'))
 
       await expect(casbinService.getUserRights('john.doe@3ddiagnostix.com'))

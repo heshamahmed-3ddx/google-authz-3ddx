@@ -1,18 +1,18 @@
 /**
  * @file dateFormatter.js
  * @description Client-side date formatting utilities for InsightHub
- * Standard format: Date: 31/Dec/2025, Time: hh:mma/p (e.g., 10:02p)
+ * Standard format: Date: 17/Jan/2025, Time: 14:30:45
  * @author InsightHub Development Team
  * @created 2025-01-XX
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 /**
- * Format date to standard format: 31/Dec/2025
+ * Format date to standard format: 17/Jan/2025
  * @param {Date|string} date - Date object or date string
  * @returns {string} Formatted date string
  * @example
- * formatDate(new Date('2025-12-31')) // Returns "31/Dec/2025"
+ * formatDate(new Date('2025-01-17')) // Returns "17/Jan/2025"
  */
 export function formatDate(date) {
   if (!date) return '';
@@ -20,7 +20,7 @@ export function formatDate(date) {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (!d || isNaN(d?.getTime?.())) return '';
   
-  const day = d.getDate();
+  const day = String(d.getDate()).padStart(2, '0');
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const month = months[d.getMonth()];
@@ -30,12 +30,11 @@ export function formatDate(date) {
 }
 
 /**
- * Format time to standard format: hh:mma/p (e.g., 10:02p)
+ * Format time to standard format: 14:30:45 (24-hour format)
  * @param {Date|string} date - Date object or date string
  * @returns {string} Formatted time string
  * @example
- * formatTime(new Date('2025-12-31T22:02:00')) // Returns "10:02p"
- * formatTime(new Date('2025-12-31T10:02:00')) // Returns "10:02a"
+ * formatTime(new Date('2025-12-31T14:30:45')) // Returns "14:30:45"
  */
 export function formatTime(date) {
   if (!date) return '';
@@ -43,26 +42,23 @@ export function formatTime(date) {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (!d || isNaN(d?.getTime?.())) return '';
   
-  let hours = d.getHours();
-  const minutes = d.getMinutes();
-  const ampm = hours >= 12 ? 'p' : 'a';
-  hours = hours % 12;
-  hours = hours || 12; // 0 should be 12
-  const minutesStr = minutes.toString().padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
   
-  return `${hours}:${minutesStr}${ampm}`;
+  return `${hours}:${minutes}:${seconds}`;
 }
 
 /**
- * Format date and time together: 31/Dec/2025 10:02p
+ * Format date and time together: 17/Jan/2025:14:30:45
  * @param {Date|string} date - Date object or date string
  * @returns {string} Formatted date and time string
  * @example
- * formatDateTime(new Date('2025-12-31T22:02:00')) // Returns "31/Dec/2025 10:02p"
+ * formatDateTime(new Date('2025-01-17T14:30:45')) // Returns "17/Jan/2025:14:30:45"
  */
 export function formatDateTime(date) {
   if (!date) return '';
-  return `${formatDate(date)} ${formatTime(date)}`;
+  return `${formatDate(date)}:${formatTime(date)}`;
 }
 
 /**

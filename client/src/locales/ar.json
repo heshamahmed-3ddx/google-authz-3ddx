@@ -453,6 +453,15 @@
         "hasExtraction": "يشير إلى ما إذا تم إجراء الاستخراج",
         "boneReduction": "يشير إلى ما إذا تم اختيار تقليل العظام"
       },
+      "progress": {
+        "validating": "التحقق",
+        "fetching": "جلب البيانات",
+        "processing": "المعالجة",
+        "complete": "مكتمل",
+        "preparing": "التحضير",
+        "generating": "التوليد",
+        "downloading": "التنزيل"
+      },
       "status": {
         "qcShipping": "مراقبة الجودة والشحن",
         "confirmedByOEM": "مؤكد من الشركة المصنعة",
