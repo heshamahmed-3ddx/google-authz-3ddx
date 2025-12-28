@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'insighthub-backend',
-      script: './src/server.js',
+      script: './src/index.js',
       instances: 2,
       exec_mode: 'cluster',
       max_memory_restart: '512M',
