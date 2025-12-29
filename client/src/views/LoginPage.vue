@@ -45,9 +45,9 @@
 
     <!-- Footer -->
     <div class="login-footer">
-      <span class="footer-version">v{{ appVersion }}</span>
+      <span class="footer-copyright">© 2026 3DDX</span>
       <span class="footer-divider">•</span>
-      <span class="footer-powered">Powered by 3DDX</span>
+      <span class="footer-version">v{{ appVersion }}</span>
     </div>
   </div>
 </template>
