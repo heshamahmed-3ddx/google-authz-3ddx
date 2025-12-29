@@ -102,6 +102,7 @@ export default defineConfig({
         globIgnores: ["**/logo2.png", "**/lamp.png"],
         // Increase file size limit for precaching (optional, but we're excluding large files anyway)
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        navigateFallbackDenylist: [/^\/auth\//], // Don't use navigation fallback for /auth/ routes
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
