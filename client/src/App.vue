@@ -39,6 +39,7 @@
           <span>{{ t('app.navigation') || 'App Navigation' }}</span>
         </v-tooltip>
        
+        <LanguageSwitcher />
         <ThemeToggle />
         <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
