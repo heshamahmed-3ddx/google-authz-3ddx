@@ -352,7 +352,8 @@ export const corsOptions = {
       'http://localhost:5173', // Development frontend
       'http://localhost:3000', // Development backend
       'https://app.3ddiagnostix.com', // Production frontend
-      'https://api.3ddiagnostix.com'  // Production backend
+      'https://api.3ddiagnostix.com',  // Production backend
+      'https://insighthub.3ddx.link'  // InsightHub production
     ]
     
     if (allowedOrigins.indexOf(origin) !== -1) {
