@@ -329,7 +329,8 @@ export const sessionSecurity = {
     secure: process.env.NODE_ENV === 'production', // HTTPS only in production
     httpOnly: true, // Prevent XSS
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax' // Allow OAuth redirects
+    sameSite: 'lax', // Allow OAuth redirects
+    domain: process.env.NODE_ENV === 'production' ? '.3ddx.link' : undefined // Set domain for production
   }
 }
 
