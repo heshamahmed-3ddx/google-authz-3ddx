@@ -39,7 +39,6 @@
           <span>{{ t('app.navigation') || 'App Navigation' }}</span>
         </v-tooltip>
        
-        <LanguageSwitcher />
         <ThemeToggle />
         <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
@@ -139,6 +138,23 @@
 
     <!-- PWA Update Prompt -->
     <PWAUpdatePrompt />
+
+    <!-- Footer -->
+    <v-footer
+      v-if="authStore.isAuthenticated && showAppBar"
+      app
+      :color="themeStore.isDark ? '#1e1e1e' : '#ffffff'"
+      class="app-footer"
+      height="36"
+    >
+      <div class="footer-content">
+        <span class="footer-text">v{{ appVersion }}</span>
+        <span class="footer-divider">•</span>
+        <span class="footer-text">Powered by 3DDX</span>
+        <span class="footer-divider">•</span>
+        <span class="footer-text">{{ currentYear }}</span>
+      </div>
+    </v-footer>
   </v-app>
 </template>
 
@@ -148,9 +164,9 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import ThemeToggle from "@/components/ThemeToggle.vue";
-import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 import PWAUpdatePrompt from "@/components/PWAUpdatePrompt.vue";
 import { defineAsyncComponent } from "vue";
+import pkg from "../../package.json";
 
 // Lazy load heavier components and use Suspense fallbacks
 const OverlaySidebar = defineAsyncComponent(
@@ -170,6 +186,8 @@ const vuetifyTheme = useTheme();
 const vuetifyLocale = useLocale();
 const router = useRouter();
 const route = useRoute();
+const appVersion = pkg.version || "1.1.0";
+const currentYear = new Date().getFullYear();
 
 // Hide AppBar on login page (landing page)
 const showAppBar = computed(() => {
@@ -1015,5 +1033,41 @@ authStore.checkAuth();
 
 .v-theme--dark .apps-menu-btn.active {
   background: rgba(255, 183, 77, 0.2) !important;
+}
+
+/* Footer Styles */
+.app-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 16px;
+}
+
+.v-theme--dark .app-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.v-theme--dark .footer-content {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-text {
+  font-weight: 400;
+}
+
+.footer-divider {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.v-theme--dark .footer-divider {
+  color: rgba(255, 255, 255, 0.3);
 }
 </style>

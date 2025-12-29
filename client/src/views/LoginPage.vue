@@ -1,8 +1,7 @@
 <template>
   <div ref="pageRef" class="login-page" role="main">
-    <!-- Top-right controls: Theme + Language -->
+    <!-- Top-right controls: Theme -->
     <div class="page-controls">
-      <LanguageSwitcher class="control-item" />
       <ThemeToggle class="control-item" />
     </div>
 
@@ -58,7 +57,6 @@ import { useRouter } from "vue-router";
 import { onMounted, onUnmounted, ref, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import ThemeToggle from "@/components/ThemeToggle.vue";
-import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 import pkg from "../../../package.json";
 
 const { t: $t } = useI18n();
