@@ -68,7 +68,8 @@ router.get('/google', (req, res) => {
     const authUrl = client.generateAuthUrl({
       access_type: 'offline',
       scope: scopes,
-      prompt: 'consent'
+      prompt: 'consent',
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI
     })
 
     res.json({ authUrl })

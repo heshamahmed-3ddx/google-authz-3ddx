@@ -325,12 +325,13 @@ export const sessionSecurity = {
   resave: false,
   saveUninitialized: false,
   rolling: true, // Reset expiration on activity
+  proxy: true, // Trust the reverse proxy
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    secure: false, // Set to false since SSL is terminated before nginx
     httpOnly: true, // Prevent XSS
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax', // Allow OAuth redirects
-    domain: process.env.NODE_ENV === 'production' ? '.3ddx.link' : undefined // Set domain for production
+    path: '/'
   }
 }
 
