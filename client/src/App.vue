@@ -153,6 +153,8 @@
         <span class="footer-text">Powered by 3DDX</span>
         <span class="footer-divider">•</span>
         <span class="footer-text">{{ currentYear }}</span>
+        <span class="footer-divider">•</span>
+        <span class="footer-text">test</span>
       </div>
     </v-footer>
   </v-app>
