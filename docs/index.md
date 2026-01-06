@@ -10,8 +10,20 @@
 ### 🚀 Getting Started & Setup
 - [Quick Start Guide](./getting-started.md): Fastest way to get up and running
 - [Dev Mode Guide](./DEV_MODE_GUIDE.md): Simulate groups and admin access in development
-- [Deployment Guide](./deployment.md): Step-by-step production deployment
 - [Development Roadmap](./development-roadmap.md): Project priorities and progress
+
+### 🌐 Deployment & Production
+- [**Complete Deployment Guide**](./deployment-guide.md): Full production deployment with all configs ⭐
+- [Quick Deployment Reference](./deployment.md): Brief deployment steps
+- [Environment Configuration](./DEPLOYMENT_ENVIRONMENT_CONFIG.md): Environment variables for all services
+- [DevOps Briefing](./DEVOPS_DEPLOYMENT_BRIEFING.md): DevOps coordination guide
+- [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md): Pre-deployment verification
+
+### 📊 Monitoring & Observability
+- [Monitoring Guide](./monitoring.md): Metrics and monitoring setup
+- [Grafana Quick Start](./GRAFANA_QUICK_START.md): Fast Grafana dashboard setup
+- [Grafana Setup](./GRAFANA_SETUP.md): Detailed Grafana configuration
+- [Prometheus & Docker](./DOCKER_GRAFANA_PROMETHEUS_SETUP.md): Container-based monitoring
 
 ### 🔗 API & Backend
 - [API Reference](./api-reference.md): Backend endpoints and usage

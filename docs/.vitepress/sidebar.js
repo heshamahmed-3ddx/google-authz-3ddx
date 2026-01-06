@@ -7,9 +7,20 @@ module.exports = [
     items: [
       { text: 'Quick Start', link: '/getting-started' },
       { text: 'Dev Mode Guide', link: '/DEV_MODE_GUIDE' },
-      { text: 'Deployment', link: '/deployment' },
       { text: 'Development Roadmap', link: '/development-roadmap' },
       { text: 'Roadmap 2025 (Detailed)', link: '/DEVELOPMENT_ROADMAP_2025' },
+    ]
+  },
+  {
+    text: 'Deployment',
+    collapsible: true,
+    items: [
+      { text: 'Complete Deployment Guide', link: '/deployment-guide' },
+      { text: 'Quick Reference', link: '/deployment' },
+      { text: 'Environment Configuration', link: '/DEPLOYMENT_ENVIRONMENT_CONFIG' },
+      { text: 'DevOps Deployment Briefing', link: '/DEVOPS_DEPLOYMENT_BRIEFING' },
+      { text: 'DevOps Checklist', link: '/DEVOPS_CHECKLIST' },
+      { text: 'Deployment Checklist', link: '/DEPLOYMENT_CHECKLIST' },
     ]
   },
   {
@@ -29,9 +40,9 @@ module.exports = [
     collapsible: true,
     items: [
       { text: 'Monitoring Guide', link: '/monitoring' },
-      { text: 'DevOps Coordination', link: '/DEVOPS_COORDINATION' },
-      { text: 'DevOps Deployment Briefing', link: '/DEVOPS_DEPLOYMENT_BRIEFING' },
-      { text: 'Deployment Environment Config', link: '/DEPLOYMENT_ENVIRONMENT_CONFIG' },
+      { text: 'Grafana Quick Start', link: '/GRAFANA_QUICK_START' },
+      { text: 'Grafana Setup', link: '/GRAFANA_SETUP' },
+      { text: 'Prometheus Configuration', link: '/DOCKER_GRAFANA_PROMETHEUS_SETUP' },
     ]
   },
   {

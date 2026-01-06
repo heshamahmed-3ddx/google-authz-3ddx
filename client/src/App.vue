@@ -399,6 +399,12 @@ authStore.checkAuth();
 </script>
 
 <style scoped>
+/* Prevent horizontal overflow */
+:deep(.v-application) {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 /* Global font settings */
 :deep(.v-application) {
   font-family:
@@ -1037,12 +1043,12 @@ authStore.checkAuth();
 
 /* Footer Styles */
 .app-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent !important;
   padding: 0 16px;
 }
 
 .v-theme--dark .app-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent !important;
 }
 
 .footer-content {

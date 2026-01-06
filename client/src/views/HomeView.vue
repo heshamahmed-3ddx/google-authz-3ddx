@@ -1,6 +1,6 @@
 <template>
-  <v-container class="fill-height d-flex align-center justify-center">
-    <v-row justify="center" align="center" class="text-center">
+  <v-container class="fill-height d-flex align-center justify-center home-container">
+    <v-row justify="center" align="center" class="text-center home-row">
       <v-col cols="12" md="8" lg="6">
         <!-- Logo -->
         <div class="mb-8">
@@ -87,6 +87,16 @@ function goToDashboard() {
 </script>
 
 <style scoped>
+.home-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.home-row {
+  max-width: 100%;
+  margin: 0;
+}
+
 .home-logo {
   max-width: 300px;
   max-height: 150px;
