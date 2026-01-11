@@ -160,9 +160,9 @@ const handleCallback = async () => {
         // Non-blocking
       }
 
-      // Brief delay before redirect to home page
+      // Brief delay before redirect to dashboard
       setTimeout(() => {
-        router.push("/home");
+        router.push("/dashboard");
       }, 600);
       return;
     }
@@ -179,7 +179,7 @@ const handleCallback = async () => {
       }
 
       setTimeout(() => {
-        router.push("/home");
+        router.push("/dashboard");
       }, 600);
       return;
     }
