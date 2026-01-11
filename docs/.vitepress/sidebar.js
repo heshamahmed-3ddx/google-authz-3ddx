@@ -24,6 +24,19 @@ module.exports = [
     ]
   },
   {
+    text: 'CI/CD Pipeline',
+    collapsible: true,
+    items: [
+      { text: '🏠 CI/CD Home', link: '/ci-cd-index' },
+      { text: '📘 Overview', link: '/CI-CD-README' },
+      { text: '⚡ Quick Reference', link: '/CI-CD-QUICK-REFERENCE' },
+      { text: '📊 Flow Diagram', link: '/CI-CD-FLOW-DIAGRAM' },
+      { text: '📖 Complete Guide', link: '/CI-CD-IMPLEMENTATION' },
+      { text: '✅ Implementation Checklist', link: '/CI-CD-IMPLEMENTATION-CHECKLIST' },
+      { text: '📋 Delivery Summary', link: '/CI-CD-IMPLEMENTATION-SUMMARY' },
+    ]
+  },
+  {
     text: 'API & Backend',
     collapsible: true,
     items: [
