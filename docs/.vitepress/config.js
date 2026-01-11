@@ -8,6 +8,7 @@ module.exports = {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started' },
+      { text: 'CI/CD', link: '/CI-CD-README' },
       { text: 'Deployment', link: '/deployment-guide' },
       { text: 'API Reference', link: '/api-reference' },
       { text: 'Architecture', link: '/architecture' },
