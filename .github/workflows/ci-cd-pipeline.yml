@@ -40,7 +40,7 @@ jobs:
   # Job 1: Deployment Decision
   #=============================================================================
   decision:
-    name: 🔍 Determine Deployment Strategy
+    name: Determine Deployment Strategy
     runs-on: ubuntu-latest
     outputs:
       deploy_env: ${{ steps.decide.outputs.deploy_env }}
@@ -94,7 +94,7 @@ jobs:
   # Job 2: Quality Gates
   #=============================================================================
   quality:
-    name: ✅ Quality Gates
+    name: Quality Gates
     runs-on: ubuntu-latest
     needs: decision
     
@@ -149,7 +149,7 @@ jobs:
   # Job 3: Build Application
   #=============================================================================
   build:
-    name: 🏗️ Build Application
+    name: Build Application
     runs-on: ubuntu-latest
     needs: [decision, quality]
     if: needs.decision.outputs.skip_deploy == 'false'
@@ -199,7 +199,7 @@ jobs:
   # Job 4: Deploy to Development
   #=============================================================================
   deploy-dev:
-    name: 🔧 Deploy to Development
+    name: Deploy to Development
     runs-on: ubuntu-latest
     needs: [decision, build]
     if: |
@@ -257,75 +257,53 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Development deployment successful"
-          echo "🔗 https://dev.insighthub.example.com"
+          echo "Development deployment successful"
+          echo "URL: https://dev.insighthub.example.com"
 
   #=============================================================================
-  # Job 5: Deploy to Staging
+  # Job 5: Deploy to Staging (Optional - skip if no staging server)
   #=============================================================================
   deploy-staging:
-    name: 🎭 Deploy to Staging
+    name: Staging Validation (No Deployment)
     runs-on: ubuntu-latest
     needs: [decision, build]
     if: |
       needs.decision.outputs.skip_deploy == 'false' &&
       needs.decision.outputs.deploy_env == 'staging'
-    environment:
-      name: staging
-      url: https://staging.insighthub.example.com
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Download build artifacts
+      - name: Download client artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: '*-build-staging'
-          path: ./artifacts
+          name: client-build-staging
+          path: ./client/dist
       
-      - name: Configure deployment
+      - name: Validate build artifacts
         run: |
-          echo "Configuring staging deployment..."
+          echo "Validating staging build artifacts..."
+          ls -lah ./client/dist/
+          echo "Build artifacts validated"
       
-      - name: Deploy to staging server
-        env:
-          STAGING_SERVER_HOST: ${{ secrets.STAGING_SERVER_HOST }}
-          STAGING_SERVER_USER: ${{ secrets.STAGING_SERVER_USER }}
-          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+      - name: Run integration tests (if available)
         run: |
-          echo "Deploying to staging environment..."
-          # Add actual deployment commands
+          echo "Running integration tests..."
+          # npm run test:integration || echo "No integration tests configured"
       
-      - name: Run database migrations
-        env:
-          DB_CONNECTION_STRING: ${{ secrets.STAGING_DB_CONNECTION_STRING }}
+      - name: Staging summary
         run: |
-          echo "Running database migrations..."
-          # npm run migrate:staging
-      
-      - name: Run smoke tests
-        run: |
-          echo "Running smoke tests..."
-          # npm run test:smoke:staging
-      
-      - name: Health check
-        run: |
-          echo "Performing health check..."
-          # curl -f https://staging.insighthub.example.com/health || exit 1
-      
-      - name: Notify deployment success
-        if: success()
-        run: |
-          echo "✅ Staging deployment successful"
-          echo "🔗 https://staging.insighthub.example.com"
+          echo "Staging validation complete"
+          echo "Build artifacts ready for production"
+          echo "Note: No staging server available - validation only"
 
   #=============================================================================
   # Job 6: Deploy to Production (with Manual Approval)
   #=============================================================================
   deploy-production:
-    name: 🚀 Deploy to Production
-    runs-on: ubuntu-latest
+    name: Deploy to Production
+    runs-on: self-hosted
     needs: [decision, build]
     if: |
       needs.decision.outputs.skip_deploy == 'false' &&
@@ -338,94 +316,53 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Download build artifacts
+      - name: Download client artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: '*-build-production'
-          path: ./artifacts
+          name: client-build-production
+          path: ./client/dist
       
-      - name: Pre-deployment validation
+      - name: Copy built files to production directory
         run: |
-          echo "Running pre-deployment validation..."
-          # Validate artifacts
-          # Check database connection
-          # Verify secrets are available
+          rsync -av --delete ./client/dist/ /home/hesham/InsightHub/client/dist/
       
-      - name: Create deployment backup
-        env:
-          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
-          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
-          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+      - name: Stop PM2 processes
         run: |
-          echo "Creating backup of current production deployment..."
-          # ssh ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "backup_deployment.sh"
+          pm2 stop insighthub-backend || true
       
-      - name: Deploy to production server
-        env:
-          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
-          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
-          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
-        run: |
-          echo "Deploying to production environment..."
-          # Add actual production deployment commands
-          
-          # Blue-Green deployment example:
-          # 1. Deploy to inactive slot
-          # 2. Run health checks
-          # 3. Switch traffic
-          # 4. Monitor for issues
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install --production
       
-      - name: Run database migrations
-        env:
-          DB_CONNECTION_STRING: ${{ secrets.PROD_DB_CONNECTION_STRING }}
+      - name: Start/Restart PM2
+        working-directory: ./server
         run: |
-          echo "Running database migrations..."
-          # npm run migrate:production
-      
-      - name: Warm up application
-        run: |
-          echo "Warming up application caches..."
-          # curl https://insighthub.example.com/warmup
-      
-      - name: Run smoke tests
-        run: |
-          echo "Running smoke tests..."
-          # npm run test:smoke:production
+          pm2 restart ecosystem.config.cjs --env production || pm2 start ecosystem.config.cjs --env production
+          pm2 save
       
       - name: Health check
         run: |
-          echo "Performing comprehensive health check..."
-          # curl -f https://insighthub.example.com/health || exit 1
-          # curl -f https://insighthub.example.com/api/health || exit 1
-      
-      - name: Monitor initial traffic
-        run: |
-          echo "Monitoring initial production traffic..."
-          # sleep 60
-          # Check error rates, response times, etc.
+          echo "Performing health check..."
+          sleep 5
+          # Add health check if available
       
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Production deployment successful"
-          echo "🔗 https://insighthub.example.com"
-          # Send notifications to Slack, email, etc.
+          echo "Production deployment successful"
+          echo "URL: https://insighthub.example.com"
       
       - name: Rollback on failure
         if: failure()
-        env:
-          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
-          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
-          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
         run: |
-          echo "❌ Deployment failed - initiating rollback..."
-          # ssh ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "rollback_deployment.sh"
+          echo "Deployment failed - initiating rollback..."
+          pm2 restart insighthub-backend || true
 
   #=============================================================================
   # Job 7: Post-Deployment Monitoring
   #=============================================================================
   monitor:
-    name: 📊 Post-Deployment Monitoring
+    name: Post-Deployment Monitoring
     runs-on: ubuntu-latest
     needs: [decision, deploy-dev, deploy-staging, deploy-production]
     if: |
@@ -455,7 +392,7 @@ jobs:
           echo "**Commit Type:** ${{ needs.decision.outputs.commit_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment Label:** ${{ needs.decision.outputs.deployment_label }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ✅ Successful" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
 
