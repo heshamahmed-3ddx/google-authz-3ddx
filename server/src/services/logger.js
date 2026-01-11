@@ -236,10 +236,17 @@ export function requestLogger(req, res, next) {
   // cut down on allocations. We use the base `logger` instance and attach a
   // minimal filename/line metadata (no stack parsing) for performance.
   if (isCriticalRequest(req.url)) {
+    // Capture line number from stack trace
+    const error = new Error();
+    const stack = (error.stack || '').split('\n');
+    const callerLine = stack[1] || ''; // First line after Error
+    const lineMatch = callerLine.match(/:(\d+):\d+/);
+    const lineNumber = lineMatch ? lineMatch[1] : '0';
+    
     const startMessage = `HTTP Request Started: ${req.method} ${req.url}`;
     logger.info(startMessage, {
       filename: 'requestLogger',
-      lineNumber: '0',
+      lineNumber: lineNumber,
       method: req.method,
       url: req.url,
       userAgent: req.get('User-Agent'),
@@ -256,6 +263,13 @@ export function requestLogger(req, res, next) {
     const shouldLog = isCriticalRequest(req.url) || res.statusCode >= 400 || (isApiRequest && isSlowRequest);
     
     if (shouldLog) {
+      // Capture line number from stack trace
+      const error = new Error();
+      const stack = (error.stack || '').split('\n');
+      const callerLine = stack[1] || ''; // First line after Error
+      const lineMatch = callerLine.match(/:(\d+):\d+/);
+      const lineNumber = lineMatch ? lineMatch[1] : '0';
+      
       const logLevel = res.statusCode >= 400 ? 'error' : (isSlowRequest ? 'warn' : 'info');
       const statusInfo = res.statusCode >= 400 ? 'FAILED' : (isSlowRequest ? 'SLOW' : 'OK');
       const userContext = req.session?.user?.email ? ` (${req.session.user.email})` : '';
@@ -263,7 +277,7 @@ export function requestLogger(req, res, next) {
       
       logger[logLevel](completedMessage, {
         filename: 'requestLogger',
-        lineNumber: '0',
+        lineNumber: lineNumber,
         method: req.method,
         url: req.url,
         statusCode: res.statusCode,
