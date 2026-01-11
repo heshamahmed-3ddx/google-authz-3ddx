@@ -138,25 +138,6 @@
 
     <!-- PWA Update Prompt -->
     <PWAUpdatePrompt />
-
-    <!-- Footer -->
-    <v-footer
-      v-if="showAppBar"
-      app
-      :color="themeStore.isDark ? '#1e1e1e' : '#ffffff'"
-      class="app-footer"
-      height="36"
-    >
-      <div class="footer-content">
-        <span class="footer-text">v{{ appVersion }}</span>
-        <span class="footer-divider">•</span>
-        <span class="footer-text">Powered by 3DDX</span>
-        <span class="footer-divider">•</span>
-        <span class="footer-text">{{ currentYear }}</span>
-        <span class="footer-divider">•</span>
-        <span class="footer-text">test</span>
-      </div>
-    </v-footer>
   </v-app>
 </template>
 
@@ -189,7 +170,6 @@ const vuetifyLocale = useLocale();
 const router = useRouter();
 const route = useRoute();
 const appVersion = pkg.version || "1.1.0";
-const currentYear = new Date().getFullYear();
 
 // Hide AppBar on login page (landing page)
 const showAppBar = computed(() => {
@@ -1041,41 +1021,5 @@ authStore.checkAuth();
 
 .v-theme--dark .apps-menu-btn.active {
   background: rgba(255, 183, 77, 0.2) !important;
-}
-
-/* Footer Styles */
-.app-footer {
-  background: transparent !important;
-  padding: 0 16px;
-}
-
-.v-theme--dark .app-footer {
-  background: transparent !important;
-}
-
-.footer-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.v-theme--dark .footer-content {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.footer-text {
-  font-weight: 400;
-}
-
-.footer-divider {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-.v-theme--dark .footer-divider {
-  color: rgba(255, 255, 255, 0.3);
 }
 </style>
