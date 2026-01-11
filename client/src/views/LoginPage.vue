@@ -119,7 +119,7 @@ const login = async () => {
   authLoading.value = true;
   try {
     await authStore.login();
-    router.push("/dashboard");
+    router.push("/home");
   } catch (e) {
     window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/auth/google`;
   } finally {
@@ -248,14 +248,14 @@ async function animateLogo() {
 onMounted(async () => {
   // Double-check authentication (router guard should handle this, but this is a safety net)
   if (authStore.isAuthenticated) {
-    router.push("/dashboard");
+    router.push("/home");
     return;
   }
   
   // Also check with server if not cached
   const isAuthenticated = await authStore.checkAuth();
   if (isAuthenticated) {
-    router.push("/dashboard");
+    router.push("/home");
     return;
   }
 

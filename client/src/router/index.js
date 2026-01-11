@@ -454,9 +454,9 @@ router.beforeEach(async (to, from, next) => {
 
     // Fast path: if route doesn't require auth, allow immediately
     if (!to.meta.requiresAuth) {
-      // If authenticated user tries to access login page, redirect to dashboard
+      // If authenticated user tries to access login page, redirect to home
       if (to.name === "Login" && authStore.isAuthenticated) {
-        next({ name: "Dashboard" });
+        next({ name: "Home" });
         return;
       }
       next();
@@ -477,9 +477,9 @@ router.beforeEach(async (to, from, next) => {
       }
     }
 
-    // If logged-in user tries to access login page, redirect to dashboard
+    // If logged-in user tries to access login page, redirect to home
     if (to.name === "Login" && isAuthenticated) {
-      next({ name: "Dashboard" });
+      next({ name: "Home" });
       return;
     }
 
