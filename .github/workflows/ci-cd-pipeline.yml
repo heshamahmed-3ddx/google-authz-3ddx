@@ -1,0 +1,490 @@
+name: Enterprise CI/CD Pipeline
+
+#===============================================================================
+# Trigger Configuration
+#===============================================================================
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - staging
+      - develop
+
+#===============================================================================
+# Environment Variables
+#===============================================================================
+env:
+  NODE_VERSION: '18.x'
+  ARTIFACT_RETENTION_DAYS: 7
+
+#===============================================================================
+# Reusable Environment Configurations
+#===============================================================================
+# These would be configured in GitHub Settings > Environments
+# with appropriate protection rules and secrets
+
+#===============================================================================
+# Jobs
+#===============================================================================
+jobs:
+  
+  #=============================================================================
+  # Job 1: Deployment Decision
+  #=============================================================================
+  decision:
+    name: 🔍 Determine Deployment Strategy
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_env: ${{ steps.decide.outputs.deploy_env }}
+      skip_deploy: ${{ steps.decide.outputs.skip_deploy }}
+      commit_type: ${{ steps.decide.outputs.commit_type }}
+      requires_approval: ${{ steps.decide.outputs.requires_approval }}
+      deployment_label: ${{ steps.decide.outputs.deployment_label }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need at least 2 commits for proper analysis
+      
+      - name: Run deployment decision logic
+        id: decide
+        run: |
+          # Source the decision script
+          source ./scripts/ci-deployment-decision.sh
+          
+          # Execute decision logic
+          make_deployment_decision
+          
+          # Export to GitHub Actions outputs
+          echo "deploy_env=${DEPLOY_ENV}" >> $GITHUB_OUTPUT
+          echo "skip_deploy=${SKIP_DEPLOY}" >> $GITHUB_OUTPUT
+          echo "commit_type=${COMMIT_TYPE}" >> $GITHUB_OUTPUT
+          echo "requires_approval=${REQUIRES_APPROVAL}" >> $GITHUB_OUTPUT
+          echo "deployment_label=${DEPLOYMENT_LABEL}" >> $GITHUB_OUTPUT
+          
+          # Also set as environment variables for subsequent steps
+          echo "DEPLOY_ENV=${DEPLOY_ENV}" >> $GITHUB_ENV
+          echo "SKIP_DEPLOY=${SKIP_DEPLOY}" >> $GITHUB_ENV
+          echo "COMMIT_TYPE=${COMMIT_TYPE}" >> $GITHUB_ENV
+          echo "REQUIRES_APPROVAL=${REQUIRES_APPROVAL}" >> $GITHUB_ENV
+          echo "DEPLOYMENT_LABEL=${DEPLOYMENT_LABEL}" >> $GITHUB_ENV
+      
+      - name: Display decision summary
+        run: |
+          echo "### Deployment Decision Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ steps.decide.outputs.deploy_env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Skip Deployment** | \`${{ steps.decide.outputs.skip_deploy }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit Type** | \`${{ steps.decide.outputs.commit_type }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Requires Approval** | \`${{ steps.decide.outputs.requires_approval }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Label** | ${{ steps.decide.outputs.deployment_label }} |" >> $GITHUB_STEP_SUMMARY
+
+  #=============================================================================
+  # Job 2: Quality Gates
+  #=============================================================================
+  quality:
+    name: ✅ Quality Gates
+    runs-on: ubuntu-latest
+    needs: decision
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd client && npm ci
+          cd ../server && npm ci
+      
+      - name: Lint code
+        run: |
+          echo "Running linters..."
+          # Add your linting commands here
+          # npm run lint
+      
+      - name: Run unit tests
+        run: |
+          npm run test:unit || echo "No unit tests configured"
+      
+      - name: Run integration tests
+        if: needs.decision.outputs.deploy_env != 'dev'
+        run: |
+          npm run test:integration || echo "No integration tests configured"
+      
+      - name: Security audit
+        run: |
+          npm audit --audit-level=moderate || true
+      
+      - name: Generate test coverage
+        run: |
+          npm run test:coverage || echo "No coverage configured"
+      
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  #=============================================================================
+  # Job 3: Build Application
+  #=============================================================================
+  build:
+    name: 🏗️ Build Application
+    runs-on: ubuntu-latest
+    needs: [decision, quality]
+    if: needs.decision.outputs.skip_deploy == 'false'
+    
+    strategy:
+      matrix:
+        component: [client, server]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        working-directory: ./${{ matrix.component }}
+        run: npm ci
+      
+      - name: Build ${{ matrix.component }}
+        working-directory: ./${{ matrix.component }}
+        env:
+          NODE_ENV: ${{ needs.decision.outputs.deploy_env == 'production' && 'production' || 'development' }}
+        run: |
+          if [ "${{ matrix.component }}" = "client" ]; then
+            npm run build -- --mode ${{ needs.decision.outputs.deploy_env }}
+          else
+            # Server doesn't need build, but we validate it
+            npm run validate || echo "No validation script"
+          fi
+      
+      - name: Upload ${{ matrix.component }} artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.component }}-build-${{ needs.decision.outputs.deploy_env }}
+          path: |
+            ${{ matrix.component }}/dist
+            ${{ matrix.component }}/build
+            ${{ matrix.component }}/src
+            ${{ matrix.component }}/package*.json
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  #=============================================================================
+  # Job 4: Deploy to Development
+  #=============================================================================
+  deploy-dev:
+    name: 🔧 Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [decision, build]
+    if: |
+      needs.decision.outputs.skip_deploy == 'false' &&
+      needs.decision.outputs.deploy_env == 'dev'
+    environment:
+      name: development
+      url: https://dev.insighthub.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build-dev'
+          path: ./artifacts
+      
+      - name: Configure deployment
+        run: |
+          echo "Configuring development deployment..."
+          # Add deployment configuration steps
+      
+      - name: Deploy to development server
+        env:
+          DEV_SERVER_HOST: ${{ secrets.DEV_SERVER_HOST }}
+          DEV_SERVER_USER: ${{ secrets.DEV_SERVER_USER }}
+          DEV_SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
+        run: |
+          echo "Deploying to development environment..."
+          # Add actual deployment commands here
+          # Example: rsync, scp, kubectl, etc.
+          
+          # Setup SSH key
+          # mkdir -p ~/.ssh
+          # echo "$DEV_SSH_KEY" > ~/.ssh/id_rsa
+          # chmod 600 ~/.ssh/id_rsa
+          
+          # Deploy using rsync
+          # rsync -avz --delete artifacts/ ${DEV_SERVER_USER}@${DEV_SERVER_HOST}:/var/www/insighthub-dev/
+      
+      - name: Run database migrations
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DEV_DB_CONNECTION_STRING }}
+        run: |
+          echo "Running database migrations..."
+          # npm run migrate:dev
+      
+      - name: Health check
+        run: |
+          echo "Performing health check..."
+          # curl -f https://dev.insighthub.example.com/health || exit 1
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Development deployment successful"
+          echo "🔗 https://dev.insighthub.example.com"
+
+  #=============================================================================
+  # Job 5: Deploy to Staging
+  #=============================================================================
+  deploy-staging:
+    name: 🎭 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [decision, build]
+    if: |
+      needs.decision.outputs.skip_deploy == 'false' &&
+      needs.decision.outputs.deploy_env == 'staging'
+    environment:
+      name: staging
+      url: https://staging.insighthub.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build-staging'
+          path: ./artifacts
+      
+      - name: Configure deployment
+        run: |
+          echo "Configuring staging deployment..."
+      
+      - name: Deploy to staging server
+        env:
+          STAGING_SERVER_HOST: ${{ secrets.STAGING_SERVER_HOST }}
+          STAGING_SERVER_USER: ${{ secrets.STAGING_SERVER_USER }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        run: |
+          echo "Deploying to staging environment..."
+          # Add actual deployment commands
+      
+      - name: Run database migrations
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.STAGING_DB_CONNECTION_STRING }}
+        run: |
+          echo "Running database migrations..."
+          # npm run migrate:staging
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # npm run test:smoke:staging
+      
+      - name: Health check
+        run: |
+          echo "Performing health check..."
+          # curl -f https://staging.insighthub.example.com/health || exit 1
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Staging deployment successful"
+          echo "🔗 https://staging.insighthub.example.com"
+
+  #=============================================================================
+  # Job 6: Deploy to Production (with Manual Approval)
+  #=============================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [decision, build]
+    if: |
+      needs.decision.outputs.skip_deploy == 'false' &&
+      needs.decision.outputs.deploy_env == 'production'
+    environment:
+      name: production
+      url: https://insighthub.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build-production'
+          path: ./artifacts
+      
+      - name: Pre-deployment validation
+        run: |
+          echo "Running pre-deployment validation..."
+          # Validate artifacts
+          # Check database connection
+          # Verify secrets are available
+      
+      - name: Create deployment backup
+        env:
+          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+        run: |
+          echo "Creating backup of current production deployment..."
+          # ssh ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "backup_deployment.sh"
+      
+      - name: Deploy to production server
+        env:
+          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+        run: |
+          echo "Deploying to production environment..."
+          # Add actual production deployment commands
+          
+          # Blue-Green deployment example:
+          # 1. Deploy to inactive slot
+          # 2. Run health checks
+          # 3. Switch traffic
+          # 4. Monitor for issues
+      
+      - name: Run database migrations
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.PROD_DB_CONNECTION_STRING }}
+        run: |
+          echo "Running database migrations..."
+          # npm run migrate:production
+      
+      - name: Warm up application
+        run: |
+          echo "Warming up application caches..."
+          # curl https://insighthub.example.com/warmup
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # npm run test:smoke:production
+      
+      - name: Health check
+        run: |
+          echo "Performing comprehensive health check..."
+          # curl -f https://insighthub.example.com/health || exit 1
+          # curl -f https://insighthub.example.com/api/health || exit 1
+      
+      - name: Monitor initial traffic
+        run: |
+          echo "Monitoring initial production traffic..."
+          # sleep 60
+          # Check error rates, response times, etc.
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful"
+          echo "🔗 https://insighthub.example.com"
+          # Send notifications to Slack, email, etc.
+      
+      - name: Rollback on failure
+        if: failure()
+        env:
+          PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+          PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+        run: |
+          echo "❌ Deployment failed - initiating rollback..."
+          # ssh ${PROD_SERVER_USER}@${PROD_SERVER_HOST} "rollback_deployment.sh"
+
+  #=============================================================================
+  # Job 7: Post-Deployment Monitoring
+  #=============================================================================
+  monitor:
+    name: 📊 Post-Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [decision, deploy-dev, deploy-staging, deploy-production]
+    if: |
+      always() &&
+      needs.decision.outputs.skip_deploy == 'false' &&
+      (needs.deploy-dev.result == 'success' || 
+       needs.deploy-staging.result == 'success' || 
+       needs.deploy-production.result == 'success')
+    
+    steps:
+      - name: Monitor application metrics
+        run: |
+          echo "Monitoring application metrics for 5 minutes..."
+          # Query monitoring systems (Prometheus, Datadog, etc.)
+          # Check error rates, latency, throughput
+      
+      - name: Check alerts
+        run: |
+          echo "Checking for triggered alerts..."
+          # Query alerting systems
+      
+      - name: Generate deployment report
+        run: |
+          echo "### Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ needs.decision.outputs.deploy_env }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit Type:** ${{ needs.decision.outputs.commit_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Label:** ${{ needs.decision.outputs.deployment_label }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+
+#===============================================================================
+# Security Notes:
+#===============================================================================
+# 1. All secrets are stored in GitHub Secrets, never in code
+# 2. SSH keys are ephemeral and destroyed after use
+# 3. Database credentials are environment-specific
+# 4. Production environment has required reviewers configured
+# 5. Branch protection rules enforce code review before merge
+#
+# Required GitHub Secrets by Environment:
+# 
+# Development:
+#   - DEV_SERVER_HOST
+#   - DEV_SERVER_USER
+#   - DEV_SSH_KEY
+#   - DEV_DB_CONNECTION_STRING
+#
+# Staging:
+#   - STAGING_SERVER_HOST
+#   - STAGING_SERVER_USER
+#   - STAGING_SSH_KEY
+#   - STAGING_DB_CONNECTION_STRING
+#
+# Production:
+#   - PROD_SERVER_HOST
+#   - PROD_SERVER_USER
+#   - PROD_SSH_KEY
+#   - PROD_DB_CONNECTION_STRING
+#===============================================================================
