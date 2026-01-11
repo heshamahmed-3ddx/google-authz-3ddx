@@ -40,7 +40,7 @@ jobs:
   # Job 1: Deployment Decision
   #=============================================================================
   decision:
-    name: 🔍 Determine Deployment Strategy
+    name: Determine Deployment Strategy
     runs-on: ubuntu-latest
     outputs:
       deploy_env: ${{ steps.decide.outputs.deploy_env }}
@@ -94,7 +94,7 @@ jobs:
   # Job 2: Quality Gates
   #=============================================================================
   quality:
-    name: ✅ Quality Gates
+    name: Quality Gates
     runs-on: ubuntu-latest
     needs: decision
     
@@ -149,7 +149,7 @@ jobs:
   # Job 3: Build Application
   #=============================================================================
   build:
-    name: 🏗️ Build Application
+    name: Build Application
     runs-on: ubuntu-latest
     needs: [decision, quality]
     if: needs.decision.outputs.skip_deploy == 'false'
@@ -199,7 +199,7 @@ jobs:
   # Job 4: Deploy to Development
   #=============================================================================
   deploy-dev:
-    name: 🔧 Deploy to Development
+    name: Deploy to Development
     runs-on: ubuntu-latest
     needs: [decision, build]
     if: |
@@ -257,14 +257,14 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Development deployment successful"
-          echo "🔗 https://dev.insighthub.example.com"
+          echo "Development deployment successful"
+          echo "URL: https://dev.insighthub.example.com"
 
   #=============================================================================
   # Job 5: Deploy to Staging (Optional - skip if no staging server)
   #=============================================================================
   deploy-staging:
-    name: 🎭 Staging Validation (No Deployment)
+    name: Staging Validation (No Deployment)
     runs-on: ubuntu-latest
     needs: [decision, build]
     if: |
@@ -285,7 +285,7 @@ jobs:
         run: |
           echo "Validating staging build artifacts..."
           ls -lah ./client/dist/
-          echo "✅ Build artifacts validated"
+          echo "Build artifacts validated"
       
       - name: Run integration tests (if available)
         run: |
@@ -294,15 +294,15 @@ jobs:
       
       - name: Staging summary
         run: |
-          echo "✅ Staging validation complete"
-          echo "📦 Build artifacts ready for production"
+          echo "Staging validation complete"
+          echo "Build artifacts ready for production"
           echo "Note: No staging server available - validation only"
 
   #=============================================================================
   # Job 6: Deploy to Production (with Manual Approval)
   #=============================================================================
   deploy-production:
-    name: 🚀 Deploy to Production
+    name: Deploy to Production
     runs-on: self-hosted
     needs: [decision, build]
     if: |
@@ -349,20 +349,20 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "✅ Production deployment successful"
-          echo "🔗 https://insighthub.example.com"
+          echo "Production deployment successful"
+          echo "URL: https://insighthub.example.com"
       
       - name: Rollback on failure
         if: failure()
         run: |
-          echo "❌ Deployment failed - initiating rollback..."
+          echo "Deployment failed - initiating rollback..."
           pm2 restart insighthub-backend || true
 
   #=============================================================================
   # Job 7: Post-Deployment Monitoring
   #=============================================================================
   monitor:
-    name: 📊 Post-Deployment Monitoring
+    name: Post-Deployment Monitoring
     runs-on: ubuntu-latest
     needs: [decision, deploy-dev, deploy-staging, deploy-production]
     if: |
@@ -392,7 +392,7 @@ jobs:
           echo "**Commit Type:** ${{ needs.decision.outputs.commit_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment Label:** ${{ needs.decision.outputs.deployment_label }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ✅ Successful" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
 
