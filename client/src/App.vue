@@ -141,7 +141,7 @@
 
     <!-- Footer -->
     <v-footer
-      v-if="authStore.isAuthenticated && showAppBar"
+      v-if="showAppBar"
       app
       :color="themeStore.isDark ? '#1e1e1e' : '#ffffff'"
       class="app-footer"

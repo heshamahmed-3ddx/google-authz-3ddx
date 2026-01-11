@@ -49,8 +49,6 @@
       <span class="footer-powered">Powered by 3DDX</span>
       <span class="footer-divider">•</span>
       <span class="footer-year">{{ new Date().getFullYear() }}</span>
-      <span class="footer-divider">•</span>
-      <span class="footer-cicd">CI/CD Works</span>
     </div>
   </div>
 </template>
