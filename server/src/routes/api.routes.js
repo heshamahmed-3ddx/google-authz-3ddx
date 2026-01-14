@@ -2106,6 +2106,33 @@ router.get('/dev/casbin-state', requireAuth, async (req, res) => {
 // ========================================
 
 /**
+ * GET /api/config/app
+ * Get application configuration for frontend
+ * @route GET /api/config/app
+ * @access Public
+ * @returns {Object} Application configuration
+ */
+router.get('/config/app', async (req, res) => {
+  try {
+    res.json(createApiResponse({
+      superAdminGroup: CONFIG.auth.superAdminGroup
+    }, 'Application configuration retrieved successfully'));
+  } catch (error) {
+    logger.error('Error fetching app config', {
+      error: error.message,
+      requestId: req.requestId
+    });
+    
+    res.status(500).json(createErrorResponse(
+      'SERVER_ERROR',
+      500,
+      'Failed to retrieve application configuration',
+      req.requestId
+    ));
+  }
+});
+
+/**
  * GET /api/config/github
  * Get GitHub repository information for developer documentation
  * @route GET /api/config/github

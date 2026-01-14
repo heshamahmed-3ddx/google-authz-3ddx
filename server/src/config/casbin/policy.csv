@@ -10,8 +10,27 @@ p, default, dashboard, read
 p, default, profile, read
 p, default, profile, update
 
-# Only SWD group can read swd-page
+# Super Admin Group - Full admin access (configure group name in config.js)
+p, SWDDD, admin-resource, manage
+p, SWDDD, application, access
+p, SWDDD, swd-page, read
+
+# Support for SW group (from .env)
+p, SW, admin-resource, manage
+p, SW, application, access
+p, SW, swd-page, read
+
+# Legacy SWD group support
+p, SWD, admin-resource, manage
+p, SWD, application, access
 p, SWD, swd-page, read
+
+# Common groups - application access
+p, engineering, application, access
+p, finance, application, access
+p, admin, application, access
+p, developer, application, access
+p, developers, application, access
 
 p, engineering, invoices, read
 p, engineering, invoices, create

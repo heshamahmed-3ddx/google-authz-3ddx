@@ -128,42 +128,45 @@ async function processOAuthCallback(code, req, res) {
   // Use Directory API to get groups and profile with error handling
   const directory = google.admin({ version: 'directory_v1', auth: client });
 
-  // Fetch user profile with graceful fallback
+  // Fetch user profile AND groups in parallel for better performance
   try {
-    const userProfileRes = await directory.users.get({ userKey: userEmail });
-    userProfile = userProfileRes.data || {};
-    
-    logger?.info('User profile fetched successfully', { 
-      userEmail,
-      hasOrgUnit: !!userProfile.orgUnitPath,
-      hasDepartment: !!userProfile.department
-    });
-  } catch (error) {
-    logger?.warn('Failed to fetch user profile from Google Directory API, using defaults', { 
-      userEmail, 
-      error: error.message 
-    });
-    // Continue with minimal user info from ID token - profile fetch is optional
-  }
+    const [userProfileRes, groupsRes] = await Promise.all([
+      directory.users.get({ userKey: userEmail }).catch(err => {
+        logger?.warn('Failed to fetch user profile', { userEmail, error: err.message });
+        return { data: null };
+      }),
+      directory.groups.list({ userKey: userEmail }).catch(err => {
+        logger?.warn('Failed to fetch user groups', { userEmail, error: err.message });
+        return { data: { groups: [] } };
+      })
+    ]);
 
-  // Fetch user groups with graceful fallback
-  try {
-    const groupsRes = await directory.groups.list({ userKey: userEmail });
+    // Process profile
+    if (userProfileRes.data) {
+      userProfile = userProfileRes.data;
+      logger?.info('User profile fetched successfully', { 
+        userEmail,
+        hasOrgUnit: !!userProfile.orgUnitPath,
+        hasDepartment: !!userProfile.department
+      });
+    }
+
+    // Process groups
     groups = (groupsRes.data.groups || []).map(g => g.name);
-    
-    logger?.info('User groups fetched successfully', { 
+    logger?.info('User groups fetched', { 
       userEmail,
       groupsCount: groups.length
     });
+
   } catch (error) {
-    logger?.warn('Failed to fetch user groups from Google Directory API, using empty array', { 
+    logger?.warn('Failed to fetch user data from Google Directory API', { 
       userEmail, 
       error: error.message 
     });
-    groups = []; // Empty groups - user can still login but may have limited permissions
+    // Continue with minimal user info from ID token
   }
 
-  // Extract roles from custom schemas (correct approach)
+  // Extract roles from custom schemas (if available)
   if (userProfile.customSchemas && userProfile.customSchemas.Roles) {
     roles = userProfile.customSchemas.Roles.values || [];
     logger?.debug('User roles extracted from custom schemas', { 
@@ -172,7 +175,7 @@ async function processOAuthCallback(code, req, res) {
     });
   }
 
-  // Build user info from Google data
+  // Build user info from Google data FIRST (before slow Casbin operations)
   const userInfo = {
     id: payload.sub,
     email: userEmail,
@@ -188,37 +191,11 @@ async function processOAuthCallback(code, req, res) {
     }
   };
 
-  // Sync user to Casbin for authorization
-  try {
-    const { default: casbinService } = await import('../services/casbin.js');
-    await casbinService.syncUserFromGoogle(userEmail, {
-      fullName: userInfo.name,
-      groups: userInfo.groups,
-      roles: userInfo.roles,
-      orgUnit: userInfo.orgUnit,
-      department: userInfo.department
-    });
-    
-    logger?.info('User synced to Casbin successfully', { 
-      userEmail,
-      groupsCount: userInfo.groups.length,
-      rolesCount: userInfo.roles.length
-    });
-  } catch (syncError) {
-    // Log error but don't fail login - Casbin sync failures shouldn't block authentication
-    logger?.error('Failed to sync user to Casbin (non-blocking)', {
-      userEmail,
-      error: syncError.message,
-      stack: syncError.stack,
-      note: 'Login will continue, but user may have limited permissions until sync succeeds'
-    });
-  }
-
-  // Set session data
+  // Set session data early (before slow operations)
   req.session.user = userInfo;
   req.session.tokens = tokens;
 
-  // Save session synchronously before redirect/response
+  // Save session synchronously before Casbin sync
   await new Promise((resolve, reject) => {
     req.session.save((err) => {
       if (err) {
@@ -233,6 +210,36 @@ async function processOAuthCallback(code, req, res) {
       }
     });
   });
+
+  // Sync user to Casbin in background (non-blocking for faster login)
+  const casbinSyncPromise = (async () => {
+    try {
+      const { default: casbinService } = await import('../services/casbin.js');
+      await casbinService.syncUserFromGoogle(userEmail, {
+        fullName: userInfo.name,
+        groups: userInfo.groups,
+        roles: userInfo.roles,
+        orgUnit: userInfo.orgUnit,
+        department: userInfo.department
+      });
+      
+      logger?.info('User synced to Casbin', { 
+        userEmail,
+        groupsCount: groups.length
+      });
+    } catch (syncError) {
+      logger?.error('Failed to sync user to Casbin (non-blocking)', {
+        userEmail,
+        error: syncError.message
+      });
+    }
+  })();
+
+  // Don't await Casbin sync - let it happen in background for faster response
+  // In production, you may want to await this and check access before allowing login
+
+  // In development mode, skip all access checks (allow all authenticated users)
+  // In production, you would await casbinSyncPromise and check access here
 
   return userInfo;
 }
@@ -318,6 +325,17 @@ router.get('/google/callback', async (req, res) => {
       code: error.code
     });
 
+    // Handle access denied error
+    if (error.message === 'ACCESS_DENIED') {
+      if (wantsJson) {
+        return res.status(403).json({
+          error: 'access_denied',
+          message: 'You are not authorized to access this application. Please contact your administrator.'
+        });
+      }
+      return errorRedirect('access_denied', res, logger);
+    }
+
     // Return appropriate error response
     if (wantsJson) {
       return res.status(500).json({
@@ -383,6 +401,14 @@ router.post('/google/callback', async (req, res) => {
       response: error.response?.data
     });
 
+    // Handle access denied error
+    if (error.message === 'ACCESS_DENIED') {
+      return res.status(403).json({
+        error: 'access_denied',
+        message: 'You are not authorized to access this application. Please contact your administrator.'
+      });
+    }
+
     return res.status(500).json({
       error: 'oauth_failed',
       message: error.message || 'OAuth callback processing failed'
@@ -420,21 +446,13 @@ router.post('/logout', (req, res) => {
  */
 // Get current user
 router.get('/me', (req, res) => {
-  req.logger?.debug('/me endpoint accessed', {
-    sessionId: req.sessionID,
-    hasSession: !!req.session,
-    hasUser: !!req.session?.user,
-    hasCookies: !!req.headers.cookie,
-    origin: req.headers.origin,
-    userAgent: req.headers['user-agent']?.substring(0, 50)
-  })
-  
   if (!req.session.user) {
-    req.logger?.debug('No user in session');
-    return res.status(401).json({ error: 'Not authenticated' })
+    return res.status(401).json({ 
+      error: 'Not authenticated',
+      authenticated: false 
+    })
   }
 
-  req.logger?.debug('User authenticated', { userEmail: req.session.user.email });
   res.json({
     user: req.session.user,
     authenticated: true

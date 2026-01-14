@@ -50,6 +50,26 @@
       <span class="footer-divider">•</span>
       <span class="footer-year">{{ new Date().getFullYear() }}</span>
     </div>
+
+    <!-- Error message snackbar -->
+    <v-snackbar
+      v-model="showError"
+      :timeout="6000"
+      color="error"
+      location="top"
+      multi-line
+    >
+      {{ errorMessage }}
+      <template v-slot:actions>
+        <v-btn
+          color="white"
+          variant="text"
+          @click="showError = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -74,6 +94,26 @@ const buttonAnimated = ref(false);
 const logoWrapper = ref(null);
 const logoImg = ref(null);
 const signInBtn = ref(null);
+const showError = ref(false);
+const errorMessage = ref("");
+
+// Error message mappings
+const errorMessages = {
+  access_denied: "Access Denied: You are not authorized to access this application. Please contact your administrator.",
+  oauth_failed: "Authentication failed. Please try again.",
+  session_error: "Session error occurred. Please try signing in again.",
+  default: "An error occurred during authentication. Please try again."
+};
+
+function checkForErrors() {
+  const error = router.currentRoute.value.query.error;
+  if (error) {
+    errorMessage.value = errorMessages[error] || errorMessages.default;
+    showError.value = true;
+    // Clean up URL
+    router.replace({ query: {} });
+  }
+}
 
 function generateBinaryPatternSVG(
   width = 800,
@@ -246,6 +286,9 @@ async function animateLogo() {
 }
 
 onMounted(async () => {
+  // Check for error query parameters
+  checkForErrors();
+
   // Double-check authentication (router guard should handle this, but this is a safety net)
   if (authStore.isAuthenticated) {
     router.push("/home");

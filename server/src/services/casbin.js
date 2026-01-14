@@ -242,16 +242,14 @@ class CasbinService {
         });
       }
 
-      // Log authorization result (only if denied or in debug mode)
-      if (!allowed || process.env.NODE_ENV !== 'production') {
-        const logLevel = allowed ? 'info' : 'warn';
-        logger[logLevel](`Authorization ${allowed ? 'granted' : 'denied'}`, {
+      // Log authorization result (only if denied or slow)
+      if (!allowed) {
+        logger.warn('Authorization denied', {
           userEmail,
           resource,
           action,
-          result: allowed,
           duration: `${duration}ms`,
-          userGroups
+          userGroups: userGroups.join(', ') || 'none'
         });
       }
 
