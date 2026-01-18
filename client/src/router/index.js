@@ -312,7 +312,7 @@ const routes = [
     path: "/admin/settings",
     name: "AdminSettings",
     component: () => import("@/views/AdminSettingsView.vue"),
-    meta: { requiresAuth: true, requiredGroups: ["SWD", "SWDD"] },
+    meta: { requiresAuth: true, requiredGroups: ["SWD", "SWDD", "SW"] },
   },
   {
     path: "/help/faq",

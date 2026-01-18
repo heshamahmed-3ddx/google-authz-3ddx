@@ -88,7 +88,7 @@ export const NAVIGATION_CONFIG = [
     title: "Admin Settings",
     icon: "mdi-shield-account",
     route: "/admin/settings",
-    permissions: ["SWD", "SWDD"], // Support both old and new super admin group names
+    permissions: ["SWD", "SWDD", "SW"], // Support all super admin group variants
   },
 ];
 

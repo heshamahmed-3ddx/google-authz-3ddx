@@ -1,10 +1,13 @@
 import express from 'express';
 import groupAccessService from '../services/groupAccess.service.js';
+import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 
 const router = express.Router();
 
 /**
- * Middleware to check if user is super admin (member of SWD group)
+ * Middleware to check if user is super admin (member of SUPER_ADMIN_GROUP from .env)
+ * Checks user's live Google Workspace groups from their session
  */
 const requireSuperAdmin = async (req, res, next) => {
   const logger = req.logger;
@@ -21,12 +24,43 @@ const requireSuperAdmin = async (req, res, next) => {
 
     const userEmail = req.session.user.email;
 
-    // Check if user is super admin using Casbin
-    const isSuperAdmin = await groupAccessService.isSuperAdmin(userEmail);
+    // Try to get user's Google Workspace groups from session first
+    let userGroups = [];
+    
+    // Option 1: Groups already cached in session
+    if (req.session.user.groups && Array.isArray(req.session.user.groups)) {
+      userGroups = req.session.user.groups;
+      logger?.debug('Using cached groups from session', { userEmail, groups: userGroups });
+    } 
+    // Option 2: Fetch from Google Directory API (live check)
+    else if (req.session.tokens) {
+      try {
+        const client = new OAuth2Client();
+        client.setCredentials(req.session.tokens);
+        const admin = google.admin({ version: 'directory_v1', auth: client });
+        const groupsRes = await admin.groups.list({ userKey: userEmail });
+        userGroups = (groupsRes.data.groups || []).map(g => g.name);
+        
+        // Cache groups in session for next time
+        req.session.user.groups = userGroups;
+        
+        logger?.debug('Fetched groups from Google Directory API', { userEmail, groups: userGroups });
+      } catch (googleError) {
+        logger?.warn('Failed to fetch groups from Google API', { 
+          userEmail, 
+          error: googleError.message 
+        });
+      }
+    }
+    
+    // Check if user is super admin using their Google groups
+    const isSuperAdmin = await groupAccessService.isSuperAdmin(userGroups.length > 0 ? userGroups : userEmail);
     
     if (!isSuperAdmin) {
-      logger?.warn('Forbidden admin access attempt - not authorized via Casbin', { 
-        userEmail
+      logger?.warn('Forbidden admin access attempt - not in super admin group', { 
+        userEmail,
+        userGroups,
+        requiredGroup: process.env.SUPER_ADMIN_GROUP || 'SWD'
       });
       return res.status(403).json({
         error: 'forbidden',
@@ -35,6 +69,7 @@ const requireSuperAdmin = async (req, res, next) => {
     }
 
     // User is super admin, proceed
+    logger?.debug('Super admin access granted', { userEmail, userGroups });
     next();
   } catch (error) {
     logger?.error('Error in super admin middleware', {
@@ -241,6 +276,148 @@ router.get('/check', async (req, res) => {
     return res.status(500).json({
       error: 'server_error',
       message: 'Failed to check admin status'
+    });
+  }
+});
+
+/**
+ * GET /admin/policies
+ * 
+ * Get all Casbin policies
+ * Only super admin can access this endpoint.
+ */
+router.get('/policies', requireSuperAdmin, async (req, res) => {
+  const logger = req.logger;
+
+  try {
+    const { default: casbinService } = await import('../services/casbin.js');
+    
+    // Get all policies from Casbin
+    const allPolicies = await casbinService.enforcer.getPolicy();
+    
+    // Format policies for frontend
+    const policies = allPolicies.map(policy => ({
+      subject: policy[0],
+      object: policy[1],
+      action: policy[2]
+    }));
+
+    logger?.info('Policies fetched', { count: policies.length });
+
+    return res.json({
+      success: true,
+      policies
+    });
+  } catch (error) {
+    logger?.error('Error fetching policies', {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({
+      error: 'server_error',
+      message: 'Failed to fetch policies'
+    });
+  }
+});
+
+/**
+ * POST /admin/policies
+ * 
+ * Add a new Casbin policy
+ * Only super admin can access this endpoint.
+ */
+router.post('/policies', requireSuperAdmin, async (req, res) => {
+  const logger = req.logger;
+  const { subject, object, action } = req.body;
+
+  if (!subject || !object || !action) {
+    return res.status(400).json({
+      error: 'validation_error',
+      message: 'Subject, object, and action are required'
+    });
+  }
+
+  try {
+    const { default: casbinService } = await import('../services/casbin.js');
+    
+    // Add policy to Casbin
+    const added = await casbinService.enforcer.addPolicy(subject, object, action);
+    
+    if (!added) {
+      return res.status(409).json({
+        error: 'duplicate_error',
+        message: 'This policy already exists'
+      });
+    }
+
+    logger?.info('Policy added', { subject, object, action, addedBy: req.session.user.email });
+
+    return res.json({
+      success: true,
+      policy: { subject, object, action }
+    });
+  } catch (error) {
+    logger?.error('Error adding policy', {
+      message: error.message,
+      stack: error.stack,
+      subject,
+      object,
+      action
+    });
+    return res.status(500).json({
+      error: 'server_error',
+      message: 'Failed to add policy'
+    });
+  }
+});
+
+/**
+ * DELETE /admin/policies
+ * 
+ * Remove a Casbin policy
+ * Only super admin can access this endpoint.
+ */
+router.delete('/policies', requireSuperAdmin, async (req, res) => {
+  const logger = req.logger;
+  const { subject, object, action } = req.body;
+
+  if (!subject || !object || !action) {
+    return res.status(400).json({
+      error: 'validation_error',
+      message: 'Subject, object, and action are required'
+    });
+  }
+
+  try {
+    const { default: casbinService } = await import('../services/casbin.js');
+    
+    // Remove policy from Casbin
+    const removed = await casbinService.enforcer.removePolicy(subject, object, action);
+    
+    if (!removed) {
+      return res.status(404).json({
+        error: 'not_found',
+        message: 'Policy not found'
+      });
+    }
+
+    logger?.info('Policy removed', { subject, object, action, removedBy: req.session.user.email });
+
+    return res.json({
+      success: true,
+      message: 'Policy removed successfully'
+    });
+  } catch (error) {
+    logger?.error('Error removing policy', {
+      message: error.message,
+      stack: error.stack,
+      subject,
+      object,
+      action
+    });
+    return res.status(500).json({
+      error: 'server_error',
+      message: 'Failed to remove policy'
     });
   }
 });

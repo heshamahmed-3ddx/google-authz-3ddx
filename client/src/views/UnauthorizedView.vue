@@ -118,8 +118,21 @@ const requiredGroups = computed(() => {
 });
 
 const userGroups = computed(() => {
-  const rights = authStore.cachedUserRights;
-  const groups = rights?.groups || [];
+  // Try multiple fallbacks for groups (same as router guard)
+  let groups = authStore.cachedUserRights?.groups || [];
+  
+  // Fallback to user object from session
+  if (groups.length === 0 && authStore.user?.groups) {
+    groups = authStore.user.groups;
+  }
+  
+  // Log for debugging
+  if (import.meta.env.DEV) {
+    console.log('[UnauthorizedView] Groups from cachedUserRights:', authStore.cachedUserRights?.groups);
+    console.log('[UnauthorizedView] Groups from user object:', authStore.user?.groups);
+    console.log('[UnauthorizedView] Final groups:', groups);
+  }
+  
   return groups.length > 0 ? groups.join(", ") : "None";
 });
 
