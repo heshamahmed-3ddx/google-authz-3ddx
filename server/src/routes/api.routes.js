@@ -1628,9 +1628,9 @@ router.get('/admin/policies', requireAuth, requireAdmin, async (req, res) => {
       data: {
         policies: policies.map(p => ({
           type: 'policy',
-          subject: p[1],
-          object: p[2], 
-          action: p[3]
+          subject: p[0],
+          object: p[1], 
+          action: p[2]
         })),
         groupings: groupings.map(g => ({
           type: 'grouping',

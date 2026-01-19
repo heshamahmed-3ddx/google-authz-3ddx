@@ -202,19 +202,28 @@
           <v-form @submit.prevent="addPermissionToGroup" ref="addPermissionForm">
             <v-row>
               <v-col cols="12" sm="6">
-                <v-text-field
+                <v-combobox
                   v-model="newPermission.resource"
                   label="Resource"
-                  hint="e.g., dashboard, reports, invoices"
+                  hint="Select from existing or type a new resource name"
                   persistent-hint
+                  :items="availableResources"
                   :disabled="loadingPermission"
                   variant="outlined"
                   density="comfortable"
+                  clearable
                 >
                   <template v-slot:prepend-inner>
                     <v-icon>mdi-file-document</v-icon>
                   </template>
-                </v-text-field>
+                  <template v-slot:no-data>
+                    <v-list-item>
+                      <v-list-item-title class="text-caption">
+                        Type a resource name (e.g., dashboard, reports, users)
+                      </v-list-item-title>
+                    </v-list-item>
+                  </template>
+                </v-combobox>
               </v-col>
               <v-col cols="12" sm="4">
                 <v-select
@@ -448,6 +457,14 @@ const availableGroups = computed(() => {
   return allowedGroups.value.map(g => g.groupName);
 });
 
+// Computed: available resources from existing policies
+const availableResources = computed(() => {
+  if (!policies.value || policies.value.length === 0) return [];
+  // Get unique resources from all policies
+  const uniqueResources = [...new Set(policies.value.map(p => p.object))];
+  return uniqueResources.sort();
+});
+
 async function fetchGroups() {
   loadingGroups.value = true;
   try {
@@ -532,14 +549,18 @@ function formatDate(dateString) {
 async function openEditPermissions(groupName) {
   selectedGroup.value = groupName;
   editPermissionsDialog.value = true;
-  await loadGroupPermissions(groupName);
+  // Load both group permissions and all policies to populate autocomplete
+  await Promise.all([
+    loadGroupPermissions(groupName),
+    fetchPolicies()
+  ]);
 }
 
 async function loadGroupPermissions(groupName) {
   loadingGroupPermissions.value = true;
   try {
     const response = await api.get('/admin/policies');
-    const allPolicies = response.data.policies || [];
+    const allPolicies = response.data.data?.policies || response.data.policies || [];
     
     // Filter policies for this specific group
     groupPermissions.value = allPolicies
@@ -608,7 +629,7 @@ async function fetchPolicies() {
   loadingPolicies.value = true;
   try {
     const response = await api.get('/admin/policies');
-    policies.value = response.data.policies || [];
+    policies.value = response.data.data?.policies || response.data.policies || [];
   } catch (error) {
     console.error('Error fetching policies:', error);
     showMessage('Failed to load policies: ' + (error.response?.data?.message || error.message), 'error');
