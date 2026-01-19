@@ -263,8 +263,9 @@ server {
         proxy_connect_timeout 75s;
     }
     
-    # Admin API routes (ensure they work with all methods)
-    location /api/admin {
+    # Admin routes (rewrite /admin to /api/admin for backend)
+    location /admin {
+        rewrite ^/admin/(.*)$ /api/admin/$1 break;
         proxy_pass http://insighthub_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;

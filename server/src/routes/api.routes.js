@@ -1531,6 +1531,7 @@ logger.info('Admin API routes loaded');
 /**
  * Admin authentication middleware
  * Ensures the current user has admin privileges
+ * Admins are users in 'admin' group or 'SWD' group (super admins)
  */
 const requireAdmin = async (req, res, next) => {
   if (!req.session.user) {
@@ -1545,7 +1546,10 @@ const requireAdmin = async (req, res, next) => {
   }
 
   const userEmail = req.session.user.email;
-  const isAdmin = casbinService.isUserAdmin(userEmail);
+  const userGroups = req.session.user.groups || [];
+  
+  // Check if user is admin via Casbin or is in SWD group (super admin)
+  const isAdmin = casbinService.isUserAdmin(userEmail) || userGroups.includes('SWD');
 
   if (!isAdmin) {
     return res.status(403).json({
@@ -1860,6 +1864,188 @@ router.delete('/admin/user-groups', requireAuth, requireAdmin, async (req, res) 
         code: 'INTERNAL_ERROR',
         http: 500,
         message: 'Failed to remove user from group'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Get allowed groups (groups with application access)
+ * @route GET /api/admin/groups/allowed
+ */
+router.get('/admin/groups/allowed', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Get all policies for 'application' resource with 'access' action
+    const policies = await casbinService.enforcer.getFilteredPolicy(1, 'application', 'access');
+    
+    // Format as groups list
+    const groups = policies.map(p => ({
+      groupName: p[0],
+      resource: p[1],
+      action: p[2],
+      createdAt: new Date().toISOString() // Note: Casbin doesn't store timestamps
+    }));
+
+    logUserAccess('admin-groups-list', {
+      requestId: req.requestId,
+      userEmail: req.session.user.email,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      count: groups.length
+    });
+
+    res.json({
+      success: true,
+      groups,
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Admin groups list error');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to retrieve allowed groups'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Add group to allowed list (grant application access)
+ * @route POST /api/admin/groups/allowed
+ */
+router.post('/admin/groups/allowed', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { groupName } = req.body;
+
+    if (!groupName) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          http: 400,
+          message: 'groupName is required'
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+
+    // Check if group already has access
+    const hasAccess = await casbinService.enforcer.hasPolicy(groupName, 'application', 'access');
+    
+    if (hasAccess) {
+      return res.status(409).json({
+        error: {
+          code: 'DUPLICATE_ERROR',
+          http: 409,
+          message: 'Group already has application access'
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+
+    // Add policy: group can access application
+    const added = await casbinService.enforcer.addPolicy(groupName, 'application', 'access');
+
+    if (!added) {
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          http: 500,
+          message: 'Failed to add group policy'
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+
+    logUserAccess('admin-group-add', {
+      requestId: req.requestId,
+      userEmail: req.session.user.email,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      groupName
+    });
+
+    res.json({
+      success: true,
+      group: {
+        groupName,
+        addedBy: req.session.user.email,
+        addedAt: new Date().toISOString()
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Admin group add error');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to add group'
+      },
+      requestId: req.requestId || 'unknown'
+    });
+  }
+});
+
+/**
+ * Remove group from allowed list
+ * @route DELETE /api/admin/groups/allowed/:groupName
+ */
+router.delete('/admin/groups/allowed/:groupName', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { groupName } = req.params;
+
+    if (!groupName) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          http: 400,
+          message: 'groupName is required'
+        },
+        requestId: req.requestId || 'unknown'
+      });
+    }
+
+    // Remove application access policy
+    const removed = await casbinService.enforcer.removeFilteredPolicy(0, groupName, 'application', 'access');
+
+    logUserAccess('admin-group-remove', {
+      requestId: req.requestId,
+      userEmail: req.session.user.email,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      groupName,
+      success: removed
+    });
+
+    res.json({
+      success: true,
+      removed,
+      groupName,
+      requestId: req.requestId || 'unknown'
+    });
+  } catch (error) {
+    req.logger?.error({
+      error: error.message,
+      userEmail: req.session?.user?.email
+    }, 'Admin group remove error');
+    
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        http: 500,
+        message: 'Failed to remove group'
       },
       requestId: req.requestId || 'unknown'
     });

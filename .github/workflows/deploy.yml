@@ -84,6 +84,7 @@ jobs:
     runs-on: self-hosted
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/feature/admin-settings-permissions-ui'
+    environment: production
     
     steps:
       - name: Checkout code
@@ -116,6 +117,33 @@ jobs:
         run: |
           rsync -av --delete ./client/dist/ ${{ steps.env.outputs.path }}/client/dist/
 
+      - name: Create environment file
+        working-directory: ./server
+        run: |
+          cat > .env << EOF
+          NODE_ENV=production
+          PORT=3001
+          
+          GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI=${{ vars.GOOGLE_REDIRECT_URI }}
+          
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          CLIENT_URL=${{ vars.CLIENT_URL }}
+          
+          DB_HOST=${{ vars.DB_HOST }}
+          DB_PORT=${{ vars.DB_PORT }}
+          DB_USER=${{ vars.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ vars.DB_NAME }}
+          
+          POWERBI_WORKSPACE_ID=${{ vars.POWERBI_WORKSPACE_ID }}
+          POWERBI_REPORT_ID=${{ vars.POWERBI_REPORT_ID }}
+          POWERBI_TENANT_ID=${{ vars.POWERBI_TENANT_ID }}
+          POWERBI_CLIENT_ID=${{ vars.POWERBI_CLIENT_ID }}
+          POWERBI_CLIENT_SECRET=${{ secrets.POWERBI_CLIENT_SECRET }}
+          EOF
+
       - name: Stop PM2 processes
         run: |
           pm2 stop insighthub-backend-${{ steps.env.outputs.environment }} || true
@@ -127,5 +155,5 @@ jobs:
       - name: Start/Restart PM2
         working-directory: ./server
         run: |
-          pm2 restart ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }} || pm2 start ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }}
+          pm2 restart ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }} --update-env || pm2 start ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }}
           pm2 save

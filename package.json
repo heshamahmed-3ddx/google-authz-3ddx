@@ -73,6 +73,7 @@
     "vue-styleguidist": "^4.72.4"
   },
   "dependencies": {
+    "@azure/msal-node": "^3.8.4",
     "googleapis": "^164.0.0",
     "prom-client": "^15.1.3"
   }
