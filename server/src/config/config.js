@@ -50,7 +50,8 @@ export const CONFIG = {
     sessionSecret: process.env.SESSION_SECRET || 'default-secret-change-me',
     sessionMaxAge: 24 * 60 * 60 * 1000, // 24 hours
     tokenExpiry: 3600, // 1 hour in seconds
-    requireHttps: process.env.NODE_ENV === 'production'
+    requireHttps: process.env.NODE_ENV === 'production',
+    superAdminGroup: process.env.SUPER_ADMIN_GROUP || 'SWD' // Google Workspace group with full admin access
   },
 
   // Google OAuth Configuration
@@ -72,7 +73,6 @@ export const CONFIG = {
   // Casbin Configuration
   casbin: {
     modelPath: path.resolve(__dirname, 'casbin/model.conf'),
-    policyPath: path.resolve(__dirname, 'casbin/policy.csv'),
     usersPath: path.resolve(__dirname, 'casbin/users.json'),
     tableName: process.env.CASBIN_TABLE_NAME || 'casbin_rule', // Database table name for policies
     usersTableName: process.env.CASBIN_USERS_TABLE_NAME || 'casbin_users', // Database table name for users
@@ -129,7 +129,7 @@ export const CONFIG = {
 
   // Database/Storage Configuration
   storage: {
-    type: process.env.STORAGE_TYPE || 'database', // 'file' | 'database' - can be overridden by STORAGE_TYPE env var
+    type: 'database', // Database storage only (Casbin policies stored in MySQL)
     backupInterval: 24 * 60 * 60 * 1000, // 24 hours
     retentionDays: 30
   },

@@ -8,6 +8,7 @@ dotenv.config();
 
 import authRoutes from './routes/auth.routes.js'
 import apiRoutes from './routes/api.routes.js'
+import adminRoutes from './routes/admin.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import casbinService from './services/casbin.js'
 import databaseService from './services/database.js'
@@ -188,6 +189,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 // Routes with appropriate rate limiting
 app.use('/auth', authRateLimit, authRoutes) // Stricter rate limit for auth
 app.use('/api', apiRoutes)
+app.use('/admin', authRateLimit, adminRoutes) // Admin routes with stricter rate limit
 import fs from 'fs'
 import yaml from 'js-yaml'
 import path from 'path'

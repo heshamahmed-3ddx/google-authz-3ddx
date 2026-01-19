@@ -36,15 +36,15 @@ class CasbinService {
   constructor() {
     this.enforcer = null;
     this.usersData = null;
-    this.storageType = CONFIG.storage.type || 'file'; // 'file' or 'database'
+    this.storageType = 'database'; // Database storage only
     this.adapter = null;
   }
 
   /**
-   * Initialize Casbin enforcer with model and policies
-   * Supports both file-based and database storage modes
+   * Initialize Casbin enforcer with model and database storage
+   * Uses MySQL adapter for policy storage with caching and performance optimizations
    * @returns {Promise<boolean>} - True if initialization successful
-   * @throws {Error} - When model, policy, or user files cannot be loaded
+   * @throws {Error} - When model file or database connection fails
    * @example
    * await casbinService.initialize();
    */
@@ -52,7 +52,7 @@ class CasbinService {
     try {
       const modelPath = CONFIG.casbin.modelPath;
       const usersPath = CONFIG.casbin.usersPath;
-      this.storageType = CONFIG.storage.type || 'file';
+      this.storageType = 'database'; // Database storage only
 
       // Model file is always required
       if (!fs.existsSync(modelPath)) {
@@ -66,63 +66,45 @@ class CasbinService {
         throw new Error(`Users data file not found: ${usersPath}`);
       }
 
-      logger.info('Casbin initialization started', {
-        storageType: this.storageType,
-        configStorageType: CONFIG.storage.type,
+      logger.info('Casbin initialization started (database storage)', {
         modelPath,
         usersPath
       });
 
-      // Initialize enforcer based on storage type
-      if (this.storageType === 'database') {
-        // Check if database is initialized
-        try {
-          const pool = databaseService.getPool();
-          logger.debug('Database pool available for Casbin', {
-            poolExists: !!pool
-          });
-        } catch (error) {
-          logger.warn('Database not initialized, falling back to file storage', {
-            error: error.message,
-            stack: error.stack
-          });
-          this.storageType = 'file';
-        }
+      // Check if database is initialized
+      try {
+        const pool = databaseService.getPool();
+        logger.debug('Database pool available for Casbin', {
+          poolExists: !!pool
+        });
+      } catch (error) {
+        logger.error('Database not initialized - cannot start Casbin', {
+          error: error.message,
+          stack: error.stack
+        });
+        throw new Error('Database must be initialized before Casbin can start');
+      }
 
-        if (this.storageType === 'database') {
-          // Use enhanced MySQL adapter with caching and performance optimizations
-          const useEnhanced = CONFIG.casbin.useEnhancedAdapter !== false; // Default: true
-          
-          if (useEnhanced) {
-            this.adapter = new MySQLAdapterEnhanced(
-              CONFIG.casbin.tableName || 'casbin_rule',
-              {
-                enableCache: CONFIG.casbin.cache?.enabled !== false, // Default: true
-                cacheTTL: CONFIG.casbin.cache?.ttl || 60000, // 1 minute default
-                batchSize: CONFIG.casbin.batchSize || 100,
-                maxRetries: CONFIG.casbin.maxRetries || 3
-              }
-            );
-            logger.info('Casbin enforcer initialized with enhanced MySQL adapter (caching enabled)');
-          } else {
-            this.adapter = new MySQLAdapter(CONFIG.casbin.tableName || 'casbin_rule');
-            logger.info('Casbin enforcer initialized with MySQL adapter');
+      // Use enhanced MySQL adapter with caching and performance optimizations
+      const useEnhanced = CONFIG.casbin.useEnhancedAdapter !== false; // Default: true
+      
+      if (useEnhanced) {
+        this.adapter = new MySQLAdapterEnhanced(
+          CONFIG.casbin.tableName || 'casbin_rule',
+          {
+            enableCache: CONFIG.casbin.cache?.enabled !== false, // Default: true
+            cacheTTL: CONFIG.casbin.cache?.ttl || 60000, // 1 minute default
+            batchSize: CONFIG.casbin.batchSize || 100,
+            maxRetries: CONFIG.casbin.maxRetries || 3
           }
-          
-          this.enforcer = await newEnforcer(modelPath, this.adapter);
-        }
+        );
+        logger.info('Casbin enforcer initialized with enhanced MySQL adapter (caching enabled)');
+      } else {
+        this.adapter = new MySQLAdapter(CONFIG.casbin.tableName || 'casbin_rule');
+        logger.info('Casbin enforcer initialized with MySQL adapter');
       }
-
-      // Fallback to file-based storage
-      if (this.storageType === 'file') {
-        const policyPath = CONFIG.casbin.policyPath;
-        if (!fs.existsSync(policyPath)) {
-          logger.error('Casbin policy file not found', { policyPath });
-          throw new Error(`Casbin policy file not found: ${policyPath}`);
-        }
-        this.enforcer = await newEnforcer(modelPath, policyPath);
-        logger.info('Casbin enforcer initialized with file adapter');
-      }
+      
+      this.enforcer = await newEnforcer(modelPath, this.adapter);
 
       // Load and count policies
       const allPolicies = await this.enforcer.getPolicy();
@@ -242,16 +224,14 @@ class CasbinService {
         });
       }
 
-      // Log authorization result (only if denied or in debug mode)
-      if (!allowed || process.env.NODE_ENV !== 'production') {
-        const logLevel = allowed ? 'info' : 'warn';
-        logger[logLevel](`Authorization ${allowed ? 'granted' : 'denied'}`, {
+      // Log authorization result (only if denied or slow)
+      if (!allowed) {
+        logger.warn('Authorization denied', {
           userEmail,
           resource,
           action,
-          result: allowed,
           duration: `${duration}ms`,
-          userGroups
+          userGroups: userGroups.join(', ') || 'none'
         });
       }
 

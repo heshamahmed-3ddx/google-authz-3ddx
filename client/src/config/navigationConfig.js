@@ -79,6 +79,17 @@ export const NAVIGATION_CONFIG = [
       },
     ],
   },
+
+  // ========================================
+  // ADMIN SETTINGS
+  // ========================================
+  {
+    id: "admin-settings",
+    title: "Admin Settings",
+    icon: "mdi-shield-account",
+    route: "/admin/settings",
+    permissions: ["SWD", "SWDD", "SW"], // Support all super admin group variants
+  },
 ];
 
 /**
