@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - staging
+      - feature/admin-settings-permissions-ui
   pull_request:
     branches:
       - main
+      - staging
 
 env:
   NODE_VERSION: '18.x'
@@ -81,7 +83,7 @@ jobs:
     name: Deploy to Server
     runs-on: self-hosted
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/feature/admin-settings-permissions-ui'
     
     steps:
       - name: Checkout code
@@ -93,13 +95,30 @@ jobs:
           name: client-build
           path: ./client/dist
 
-      - name: Copy built files to production directory
+      - name: Determine deployment environment
+        id: env
         run: |
-          rsync -av --delete ./client/dist/ /home/hesham/InsightHub/client/dist/
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "path=/home/hesham/InsightHub" >> $GITHUB_OUTPUT
+            echo "pm2_env=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "path=/home/hesham/InsightHub-staging" >> $GITHUB_OUTPUT
+            echo "pm2_env=staging" >> $GITHUB_OUTPUT
+          else
+            echo "environment=feature" >> $GITHUB_OUTPUT
+            echo "path=/home/hesham/InsightHub-feature" >> $GITHUB_OUTPUT
+            echo "pm2_env=development" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Copy built files to deployment directory
+        run: |
+          rsync -av --delete ./client/dist/ ${{ steps.env.outputs.path }}/client/dist/
 
       - name: Stop PM2 processes
         run: |
-          pm2 stop insighthub-backend || true
+          pm2 stop insighthub-backend-${{ steps.env.outputs.environment }} || true
 
       - name: Install server dependencies
         working-directory: ./server
@@ -108,5 +127,5 @@ jobs:
       - name: Start/Restart PM2
         working-directory: ./server
         run: |
-          pm2 restart ecosystem.config.cjs --env production || pm2 start ecosystem.config.cjs --env production
+          pm2 restart ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }} || pm2 start ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }}
           pm2 save
