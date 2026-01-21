@@ -32,6 +32,16 @@
     "clean:build": "rm -rf client/dist server/dist",
     "docs:generate": "cd client && npm run docs:generate",
     "docs:clean": "rm -rf client/docs/jsdoc",
+    "migrate:make": "knex migrate:make --knexfile knexfile.js",
+    "migrate:latest": "knex migrate:latest --knexfile knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "migrate:rollback:all": "knex migrate:rollback --all --knexfile knexfile.js",
+    "migrate:status": "knex migrate:status --knexfile knexfile.js",
+    "migrate:list": "knex migrate:list --knexfile knexfile.js",
+    "migrate:up": "knex migrate:up --knexfile knexfile.js",
+    "migrate:down": "knex migrate:down --knexfile knexfile.js",
+    "seed:make": "knex seed:make --knexfile knexfile.js",
+    "seed:run": "knex seed:run --knexfile knexfile.js",
     "prepare": "node -e \"if (process.env.CI !== 'true') { require('child_process').execSync('husky', { stdio: 'inherit' }) }\""
   },
   "lint-staged": {
