@@ -1,0 +1,2 @@
+# Keep main branch version of deploy.yml during merges
+.github/workflows/deploy.yml merge=ours
