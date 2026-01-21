@@ -42,6 +42,9 @@ module.exports = [
     items: [
       { text: 'API Reference', link: '/api-reference' },
       { text: 'API Spec (OpenAPI)', link: '/api-spec' },
+      { text: '🗄️ Database Migrations', link: '/DATABASE_MIGRATIONS' },
+      { text: '⚡ Migrations Quick Ref', link: '/DATABASE_MIGRATIONS_QUICK_REFERENCE' },
+      { text: '📋 Migrations Summary', link: '/DATABASE_MIGRATIONS_IMPLEMENTATION' },
       { text: 'Backend Performance', link: '/BACKEND_PERFORMANCE_OPTIMIZATIONS' },
       { text: 'General Performance', link: '/PERFORMANCE_OPTIMIZATIONS' },
       { text: 'Implementation Guide', link: '/implementation-guide' },
