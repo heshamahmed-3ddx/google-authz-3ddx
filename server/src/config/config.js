@@ -148,7 +148,7 @@ export const CONFIG = {
       }
     },
     cors: {
-      origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+      origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:3000'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -173,6 +173,67 @@ export const CONFIG = {
     environment: process.env.PROMETHEUS_ENVIRONMENT || process.env.NODE_ENV || 'development',
     scrapeInterval: process.env.PROMETHEUS_SCRAPE_INTERVAL || '15s',
     scrapeTimeout: process.env.PROMETHEUS_SCRAPE_TIMEOUT || '10s'
+  },
+
+  // Reports Scheduling Configuration
+  scheduling: {
+    enabled: process.env.SCHEDULING_ENABLED !== 'false', // Default: true
+    checkInterval: '*/1 * * * *', // Check every minute (cron format)
+    maxConcurrentJobs: parseInt(process.env.SCHEDULING_MAX_CONCURRENT) || 3,
+    maxRetries: parseInt(process.env.SCHEDULING_MAX_RETRIES) || 3,
+    retryDelay: parseInt(process.env.SCHEDULING_RETRY_DELAY) || 300000, // 5 minutes
+    jobTimeout: parseInt(process.env.SCHEDULING_JOB_TIMEOUT) || 300000, // 5 minutes
+    
+    // Report generation settings
+    reportGeneration: {
+      maxRecords: parseInt(process.env.REPORT_MAX_RECORDS) || 10000,
+      tempDir: process.env.REPORT_TEMP_DIR || path.join(process.cwd(), 'temp/reports'),
+      retentionHours: parseInt(process.env.REPORT_RETENTION_HOURS) || 24
+    },
+    
+    // Email settings
+    email: {
+      provider: process.env.EMAIL_PROVIDER || 'smtp', // 'smtp' or 'sendgrid'
+      from: process.env.EMAIL_FROM || 'noreply@insighthub.com',
+      fromName: process.env.EMAIL_FROM_NAME || 'InsightHub Reports',
+      
+      // SMTP settings
+      smtp: {
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      },
+      
+      // SendGrid settings
+      sendgrid: {
+        apiKey: process.env.SENDGRID_API_KEY
+      }
+    },
+    
+    // PDF generation settings (Puppeteer)
+    pdf: {
+      enabled: process.env.PDF_ENABLED !== 'false',
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20px',
+        right: '20px',
+        bottom: '20px',
+        left: '20px'
+      }
+    },
+    
+    // Excel generation settings
+    excel: {
+      enabled: process.env.EXCEL_ENABLED !== 'false',
+      sheetName: 'Report Data',
+      autoFilter: true,
+      freeze: { row: 1, column: 0 } // Freeze header row
+    }
   },
 
   // Localization
