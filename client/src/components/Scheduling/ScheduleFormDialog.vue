@@ -135,24 +135,24 @@
               <template #chip="{ props, item }">
                 <v-chip
                   v-bind="props"
-                  :color="isValidEmail(item) ? 'primary' : 'error'"
+                  :color="isValidEmail(typeof item === 'string' ? item : item.value) ? 'primary' : 'error'"
                   closable
                 >
-                  {{ item }}
+                  {{ typeof item === 'string' ? item : item.value || item.title || item }}
                 </v-chip>
               </template>
             </v-combobox>
           </div>
 
-          <v-divider class="my-4" />
+          <v-divider class="my-6" />
 
           <!-- Report Filters (Optional) -->
-          <div>
-            <h3 class="text-subtitle-1 font-weight-bold mb-2">
+          <div class="mb-4">
+            <h3 class="text-subtitle-1 font-weight-bold mb-4">
               Report Filters (Optional)
             </h3>
             
-            <v-row>
+            <v-row dense>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="form.filters.startDate"
@@ -160,6 +160,7 @@
                   type="date"
                   variant="outlined"
                   density="comfortable"
+                  class="mb-2"
                 />
               </v-col>
               <v-col cols="12" md="6">
@@ -169,6 +170,7 @@
                   type="date"
                   variant="outlined"
                   density="comfortable"
+                  class="mb-2"
                 />
               </v-col>
             </v-row>
@@ -181,6 +183,7 @@
               clearable
               variant="outlined"
               density="comfortable"
+              class="mt-2"
             />
           </div>
         </v-form>

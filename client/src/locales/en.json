@@ -6,6 +6,7 @@
   "app": {
     "title": "InsightHub",
     "navigation": "App Navigation",
+    "announcements": "Announcements",
     "apiResponse": "API Response",
     "apiError": "API Error",
     "copyUserIdSuccess": "User ID copied to clipboard",
