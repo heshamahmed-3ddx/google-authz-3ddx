@@ -1,6 +1,6 @@
 /* global describe, it, expect */
 import { mount } from "@vue/test-utils";
-import { createMemoryHistory, createRouter } from 'vue-router';
+import { createMemoryHistory, createRouter } from "vue-router";
 import App from "../App.vue";
 import { createPinia } from "pinia";
 import { i18n } from "../i18n";
@@ -10,7 +10,7 @@ const vuetify = createVuetify();
 
 // Create a mock router
 const routes = [
-  { path: '/', name: 'home', component: { template: '<div>Home</div>' } }
+  { path: "/", name: "home", component: { template: "<div>Home</div>" } },
 ];
 
 const router = createRouter({

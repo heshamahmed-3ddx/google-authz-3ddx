@@ -12,17 +12,17 @@
 
 /**
  * Create a client logger with disabled logging methods
- * 
+ *
  * This function returns a logger object with standard logging methods (info, warn, error, debug)
  * but all methods are no-ops to reduce client-side overhead. Server-side logging is used for
  * production monitoring and debugging.
- * 
+ *
  * @returns {Object} Logger object with disabled logging methods
  * @returns {Function} returns.info - Info level logging (disabled)
  * @returns {Function} returns.warn - Warning level logging (disabled)
  * @returns {Function} returns.error - Error level logging (disabled)
  * @returns {Function} returns.debug - Debug level logging (disabled)
- * 
+ *
  * @example
  * import { createClientLogger } from '@/services/logger';
  * const logger = createClientLogger();
@@ -69,7 +69,7 @@ export function createClientLogger() {
  * @property {Function} warn - Warning level logging (disabled)
  * @property {Function} error - Error level logging (disabled)
  * @property {Function} debug - Debug level logging (disabled)
- * 
+ *
  * @example
  * import { logger } from '@/services/logger';
  * logger.error('Something went wrong'); // No-op in production
@@ -78,10 +78,10 @@ export const logger = createClientLogger("App");
 
 /**
  * Log API call information (disabled for client-side)
- * 
+ *
  * Server-side API logging is handled by the backend request logger middleware.
  * This function exists for API compatibility but performs no action.
- * 
+ *
  * @returns {void}
  * @deprecated Use server-side logging instead
  * @example
@@ -93,10 +93,10 @@ export function logApiCall() {
 
 /**
  * Log API request details (disabled for client-side)
- * 
+ *
  * Server-side API request logging is handled by the backend middleware.
  * This function exists for API compatibility but performs no action.
- * 
+ *
  * @returns {void}
  * @deprecated Use server-side logging instead
  * @example
@@ -108,10 +108,10 @@ export function logApiRequest() {
 
 /**
  * Log navigation events (disabled for client-side)
- * 
+ *
  * Vue Router navigation can be tracked using router guards if needed.
  * This function exists for API compatibility but performs no action.
- * 
+ *
  * @returns {void}
  * @deprecated Use Vue Router navigation guards for tracking
  * @example
@@ -123,10 +123,10 @@ export function logNavigation() {
 
 /**
  * Log authentication events (disabled for client-side)
- * 
+ *
  * Authentication events are logged server-side via the auth middleware and services.
  * This function exists for API compatibility but performs no action.
- * 
+ *
  * @returns {void}
  * @deprecated Use server-side auth logging
  * @example

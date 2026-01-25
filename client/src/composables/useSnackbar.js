@@ -10,11 +10,11 @@ import { reactive } from "vue";
 
 /**
  * Composable for managing snackbar notifications throughout the application
- * 
+ *
  * Provides a reactive snackbar state and a helper function to display notifications
  * with different types (success, error, warning, info) and custom durations.
  * The snackbar automatically hides after the specified timeout.
- * 
+ *
  * @returns {Object} Snackbar API object
  * @returns {Function} returns.showSnackbar - Function to display a notification
  * @returns {Object} returns.snackbar - Reactive snackbar state for v-snackbar binding
@@ -22,19 +22,19 @@ import { reactive } from "vue";
  * @returns {string} returns.snackbar.message - Message to display
  * @returns {string} returns.snackbar.color - Color/type (success, error, warning, info)
  * @returns {number} returns.snackbar.timeout - Duration in milliseconds
- * 
+ *
  * @example
  * // In a Vue component
  * import { useSnackbar } from '@/composables/useSnackbar';
- * 
+ *
  * const { showSnackbar, snackbar } = useSnackbar();
- * 
+ *
  * // Show success message
  * showSnackbar('Operation completed!', 'success');
- * 
+ *
  * // Show error message with custom duration
  * showSnackbar('Something went wrong', 'error', 6000);
- * 
+ *
  * @example
  * // Template usage
  * <template>
@@ -57,12 +57,12 @@ export function useSnackbar() {
 
   /**
    * Display a snackbar notification
-   * 
+   *
    * @param {string} message - The message to display in the snackbar
    * @param {('success'|'error'|'warning'|'info')} [type='info'] - The notification type/color
    * @param {number} [duration=4000] - How long to display the message in milliseconds
    * @returns {void}
-   * 
+   *
    * @example
    * showSnackbar('User saved successfully', 'success');
    * showSnackbar('Failed to load data', 'error', 5000);
@@ -72,7 +72,7 @@ export function useSnackbar() {
     snackbar.color = type;
     snackbar.timeout = duration;
     snackbar.show = true;
-    
+
     // Auto-hide after duration
     setTimeout(() => {
       snackbar.show = false;
@@ -84,4 +84,3 @@ export function useSnackbar() {
     snackbar, // Export reactive state for v-snackbar binding
   };
 }
-

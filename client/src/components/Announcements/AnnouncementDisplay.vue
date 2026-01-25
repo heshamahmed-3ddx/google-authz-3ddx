@@ -9,9 +9,9 @@
       <v-spacer />
       <v-btn
         icon
-        @click="loadAnnouncements"
         :loading="loading"
         title="Refresh announcements"
+        @click="loadAnnouncements"
       >
         <v-icon>mdi-refresh</v-icon>
       </v-btn>
@@ -73,10 +73,16 @@
         class="text-center py-12"
         color="grey lighten-5"
       >
-        <v-icon size="80" color="grey lighten-1">mdi-information-outline</v-icon>
+        <v-icon size="80" color="grey lighten-1"
+          >mdi-information-outline</v-icon
+        >
         <p class="text-h6 mt-4 mb-2">No announcements to display</p>
         <p class="text-body-2 text--secondary">
-          {{ activeTab === 'unread' ? 'All caught up! No unread announcements.' : 'Check back later for updates.' }}
+          {{
+            activeTab === "unread"
+              ? "All caught up! No unread announcements."
+              : "Check back later for updates."
+          }}
         </p>
       </v-card>
 
@@ -91,14 +97,16 @@
             :class="[
               'announcement-card',
               { 'unread-card': !announcement.is_read },
-              `severity-${announcement.severity}`
+              `severity-${announcement.severity}`,
             ]"
             elevation="1"
             hover
           >
             <!-- Severity Indicator -->
-            <div :class="`severity-bar severity-bar-${announcement.severity}`" />
-            
+            <div
+              :class="`severity-bar severity-bar-${announcement.severity}`"
+            />
+
             <v-card-text class="pa-4">
               <div class="d-flex align-start">
                 <!-- Icon -->
@@ -114,7 +122,9 @@
                 <div class="flex-grow-1 announcement-content-wrapper">
                   <!-- Header -->
                   <div class="d-flex align-center mb-2">
-                    <h3 class="announcement-title mb-0">{{ announcement.title }}</h3>
+                    <h3 class="announcement-title mb-0">
+                      {{ announcement.title }}
+                    </h3>
                     <v-chip
                       v-if="!announcement.is_read"
                       x-small
@@ -134,7 +144,7 @@
                   </div>
 
                   <!-- Content -->
-                  <div 
+                  <div
                     class="announcement-content text-body-2 mb-3"
                     v-html="formatContent(announcement.content)"
                   />
@@ -142,7 +152,9 @@
                   <!-- Meta Information -->
                   <div class="d-flex align-center announcement-meta">
                     <v-icon x-small class="mr-1">mdi-clock-outline</v-icon>
-                    <span class="text-caption">{{ formatDate(announcement.start_date) }}</span>
+                    <span class="text-caption">{{
+                      formatDate(announcement.start_date)
+                    }}</span>
                     <span v-if="announcement.end_date" class="mx-2">•</span>
                     <span v-if="announcement.end_date" class="text-caption">
                       <v-icon x-small class="mr-1">mdi-calendar-end</v-icon>
@@ -157,9 +169,9 @@
                   icon
                   small
                   color="primary"
-                  @click.stop="markAsRead(announcement.id)"
                   title="Mark as read"
                   class="ml-2 flex-shrink-0"
+                  @click.stop="markAsRead(announcement.id)"
                 >
                   <v-icon small>mdi-check-circle</v-icon>
                 </v-btn>
@@ -176,20 +188,20 @@
 </template>
 
 <script>
-import announcementService from '@/services/announcementService';
+import announcementService from "@/services/announcementService";
 
 export default {
-  name: 'AnnouncementDisplay',
+  name: "AnnouncementDisplay",
 
   props: {
     autoRefresh: {
       type: Boolean,
-      default: false
+      default: false,
     },
     refreshInterval: {
       type: Number,
-      default: 60000 // 1 minute
-    }
+      default: 60000, // 1 minute
+    },
   },
 
   data() {
@@ -197,30 +209,30 @@ export default {
       announcements: [],
       loading: false,
       refreshTimer: null,
-      activeTab: 'all'
+      activeTab: "all",
     };
   },
 
   computed: {
     filteredAnnouncements() {
-      if (this.activeTab === 'unread') {
-        return this.announcements.filter(a => !a.is_read);
-      } else if (this.activeTab === 'important') {
-        return this.announcements.filter(a => 
-          a.severity === 'error' || a.severity === 'warning'
+      if (this.activeTab === "unread") {
+        return this.announcements.filter((a) => !a.is_read);
+      } else if (this.activeTab === "important") {
+        return this.announcements.filter(
+          (a) => a.severity === "error" || a.severity === "warning",
         );
       }
       return this.announcements;
     },
-    
+
     unreadCount() {
-      return this.announcements.filter(a => !a.is_read).length;
-    }
+      return this.announcements.filter((a) => !a.is_read).length;
+    },
   },
 
   mounted() {
     this.loadAnnouncements();
-    
+
     if (this.autoRefresh) {
       this.startAutoRefresh();
     }
@@ -235,9 +247,9 @@ export default {
       this.loading = true;
       try {
         this.announcements = await announcementService.getActive();
-        this.$emit('announcements-loaded', this.announcements);
+        this.$emit("announcements-loaded", this.announcements);
       } catch (error) {
-        console.error('Failed to load announcements:', error);
+        console.error("Failed to load announcements:", error);
       } finally {
         this.loading = false;
       }
@@ -247,62 +259,66 @@ export default {
       try {
         await announcementService.markAsRead(announcementId);
         // Update local state
-        const announcement = this.announcements.find(a => a.id === announcementId);
+        const announcement = this.announcements.find(
+          (a) => a.id === announcementId,
+        );
         if (announcement) {
           announcement.is_read = 1;
         }
-        this.$emit('announcement-read', announcementId);
-        
+        this.$emit("announcement-read", announcementId);
+
         // Dispatch custom event for global listeners (e.g., app bar badge)
-        window.dispatchEvent(new CustomEvent('announcement-marked-read', { 
-          detail: { announcementId } 
-        }));
+        window.dispatchEvent(
+          new CustomEvent("announcement-marked-read", {
+            detail: { announcementId },
+          }),
+        );
       } catch (error) {
-        console.error('Failed to mark announcement as read:', error);
+        console.error("Failed to mark announcement as read:", error);
       }
     },
 
     getAnnouncementColor(severity) {
       const colors = {
-        info: 'blue lighten-5',
-        warning: 'orange lighten-5',
-        success: 'green lighten-5',
-        error: 'red lighten-5'
+        info: "blue lighten-5",
+        warning: "orange lighten-5",
+        success: "green lighten-5",
+        error: "red lighten-5",
       };
-      return colors[severity] || 'grey lighten-5';
+      return colors[severity] || "grey lighten-5";
     },
 
     getSeverityColor(severity) {
       const colors = {
-        info: '#2196F3',
-        warning: '#FF9800',
-        success: '#4CAF50',
-        error: '#F44336'
+        info: "#2196F3",
+        warning: "#FF9800",
+        success: "#4CAF50",
+        error: "#F44336",
       };
-      return colors[severity] || '#9E9E9E';
+      return colors[severity] || "#9E9E9E";
     },
 
     getIcon(severity) {
       const icons = {
-        info: 'mdi-information',
-        warning: 'mdi-alert',
-        success: 'mdi-check-circle',
-        error: 'mdi-alert-circle'
+        info: "mdi-information",
+        warning: "mdi-alert",
+        success: "mdi-check-circle",
+        error: "mdi-alert-circle",
       };
-      return icons[severity] || 'mdi-bell';
+      return icons[severity] || "mdi-bell";
     },
 
     formatContent(content) {
-      if (!content) return '';
+      if (!content) return "";
       // Basic HTML sanitization and formatting
       return content
-        .replace(/\n/g, '<br>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        .replace(/\n/g, "<br>")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>");
     },
 
     formatDate(dateString) {
-      if (!dateString) return '';
+      if (!dateString) return "";
       const date = new Date(dateString);
       const now = new Date();
       const diff = now - date;
@@ -312,11 +328,11 @@ export default {
       if (days > 7) {
         return date.toLocaleDateString();
       } else if (days > 0) {
-        return `${days} day${days > 1 ? 's' : ''} ago`;
+        return `${days} day${days > 1 ? "s" : ""} ago`;
       } else if (hours > 0) {
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        return `${hours} hour${hours > 1 ? "s" : ""} ago`;
       } else {
-        return 'Just now';
+        return "Just now";
       }
     },
 
@@ -336,8 +352,8 @@ export default {
     // Public method to manually refresh
     refresh() {
       this.loadAnnouncements();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -363,7 +379,7 @@ export default {
 
 .unread-card {
   background: #ffffff;
-  border-left: 4px solid #2196F3;
+  border-left: 4px solid #2196f3;
   box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.1);
 }
 
@@ -376,19 +392,19 @@ export default {
 }
 
 .severity-bar-info {
-  background: linear-gradient(90deg, #2196F3, #64B5F6);
+  background: linear-gradient(90deg, #2196f3, #64b5f6);
 }
 
 .severity-bar-warning {
-  background: linear-gradient(90deg, #FF9800, #FFB74D);
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
 }
 
 .severity-bar-success {
-  background: linear-gradient(90deg, #4CAF50, #81C784);
+  background: linear-gradient(90deg, #4caf50, #81c784);
 }
 
 .severity-bar-error {
-  background: linear-gradient(90deg, #F44336, #E57373);
+  background: linear-gradient(90deg, #f44336, #e57373);
 }
 
 .announcement-title {
@@ -432,7 +448,8 @@ export default {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -445,11 +462,11 @@ export default {
   .announcement-title {
     font-size: 1rem;
   }
-  
+
   .announcement-card {
     margin-bottom: 12px;
   }
-  
+
   .announcement-content-wrapper {
     max-width: calc(100% - 40px);
   }
@@ -463,7 +480,7 @@ export default {
 }
 
 .v-tabs >>> .v-tab--active {
-  color: #2196F3 !important;
+  color: #2196f3 !important;
 }
 
 /* Toolbar styling */

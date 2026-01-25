@@ -50,10 +50,11 @@ function applyThemeToCSS(colors) {
 
 export const useThemeStore = defineStore("theme", () => {
   // Initialize from localStorage or default to "light"
-  const savedTheme = typeof window !== "undefined" 
-    ? localStorage.getItem("theme") 
-    : null;
-  const currentTheme = ref(savedTheme && themeConfig[savedTheme] ? savedTheme : "light");
+  const savedTheme =
+    typeof window !== "undefined" ? localStorage.getItem("theme") : null;
+  const currentTheme = ref(
+    savedTheme && themeConfig[savedTheme] ? savedTheme : "light",
+  );
 
   const isDark = computed(() => currentTheme.value === "dark");
   const isLight = computed(() => currentTheme.value === "light");

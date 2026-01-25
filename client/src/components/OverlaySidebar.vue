@@ -7,148 +7,163 @@
       persistent
       @click:outside="closeSidebar"
     >
-      <v-card
-        class="sidebar-card"
-        @click.stop.prevent
-      >
+      <v-card class="sidebar-card" @click.stop.prevent>
         <!-- Content Container -->
         <div class="overlay-content" @click.stop.prevent>
           <div class="overlay-content-wrapper" @click.stop.prevent>
-          <!-- User Profile Section with Logout -->
-          <div v-if="userProfile" class="user-profile-section">
-            <v-avatar size="48" class="profile-avatar" color="primary">
-              <img
-                v-if="userProfile.picture && !imageError"
-                :src="userProfile.picture"
-                :alt="userProfile.name"
-                class="profile-image"
-                @error="imageError = true"
-                @load="imageError = false"
-              />
-              <span v-else class="profile-initials">{{ getInitials(userProfile.name) }}</span>
-            </v-avatar>
-            <div class="profile-info">
-              <div class="profile-name">{{ userProfile.name }}</div>
-              <div v-if="userProfile.jobTitle" class="profile-job-title">{{ userProfile.jobTitle }}</div>
-            </div>
-            <v-btn
-              variant="text"
-              size="small"
-              icon="mdi-logout"
-              class="profile-logout-btn"
-              @click="handleLogout"
-            >
-              <v-icon size="18">mdi-logout</v-icon>
-              <v-tooltip activator="parent" location="bottom">{{ $t("nav.logout") }}</v-tooltip>
-            </v-btn>
-          </div>
-
-          <v-divider v-if="userProfile" class="profile-divider"></v-divider>
-
-          <!-- Search Filter -->
-          <div class="search-input-wrapper">
-            <v-text-field
-              v-model="searchQuery"
-              :placeholder="t('nav.searchPlaceholder') || 'Search navigation...'"
-              prepend-inner-icon="mdi-magnify"
-              variant="solo-filled"
-              density="compact"
-              hide-details
-              clearable
-              class="search-input"
-              flat
-              @click.stop
-            ></v-text-field>
-          </div>
-
-          <!-- Navigation Grid Container -->
-          <div class="navigation-grid-container">
-            <!-- No Results Message -->
-            <div
-              v-if="searchQuery && flattenedNavigation.length === 0"
-              class="no-results-message"
-            >
-              <v-icon size="48" class="no-results-icon">mdi-magnify</v-icon>
-              <div class="no-results-text">
-                <div class="no-results-title">{{ $t("nav.noResults") || "No results found" }}</div>
-                <div class="no-results-subtitle">
-                  {{ $t("nav.noResultsSubtitle") || "Try adjusting your search terms" }}
+            <!-- User Profile Section with Logout -->
+            <div v-if="userProfile" class="user-profile-section">
+              <v-avatar size="48" class="profile-avatar" color="primary">
+                <img
+                  v-if="userProfile.picture && !imageError"
+                  :src="userProfile.picture"
+                  :alt="userProfile.name"
+                  class="profile-image"
+                  @error="imageError = true"
+                  @load="imageError = false"
+                />
+                <span v-else class="profile-initials">{{
+                  getInitials(userProfile.name)
+                }}</span>
+              </v-avatar>
+              <div class="profile-info">
+                <div class="profile-name">{{ userProfile.name }}</div>
+                <div v-if="userProfile.jobTitle" class="profile-job-title">
+                  {{ userProfile.jobTitle }}
                 </div>
+              </div>
+              <v-btn
+                variant="text"
+                size="small"
+                icon="mdi-logout"
+                class="profile-logout-btn"
+                @click="handleLogout"
+              >
+                <v-icon size="18">mdi-logout</v-icon>
+                <v-tooltip activator="parent" location="bottom">{{
+                  $t("nav.logout")
+                }}</v-tooltip>
+              </v-btn>
+            </div>
+
+            <v-divider v-if="userProfile" class="profile-divider"></v-divider>
+
+            <!-- Search Filter -->
+            <div class="search-input-wrapper">
+              <v-text-field
+                v-model="searchQuery"
+                :placeholder="
+                  t('nav.searchPlaceholder') || 'Search navigation...'
+                "
+                prepend-inner-icon="mdi-magnify"
+                variant="solo-filled"
+                density="compact"
+                hide-details
+                clearable
+                class="search-input"
+                flat
+                @click.stop
+              ></v-text-field>
+            </div>
+
+            <!-- Navigation Grid Container -->
+            <div class="navigation-grid-container">
+              <!-- No Results Message -->
+              <div
+                v-if="searchQuery && flattenedNavigation.length === 0"
+                class="no-results-message"
+              >
+                <v-icon size="48" class="no-results-icon">mdi-magnify</v-icon>
+                <div class="no-results-text">
+                  <div class="no-results-title">
+                    {{ $t("nav.noResults") || "No results found" }}
+                  </div>
+                  <div class="no-results-subtitle">
+                    {{
+                      $t("nav.noResultsSubtitle") ||
+                      "Try adjusting your search terms"
+                    }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Navigation Items -->
+              <div v-else class="navigation-grid-wrapper">
+                <template v-for="item in flattenedNavigation" :key="item.id">
+                  <!-- Section Header -->
+                  <v-list-subheader
+                    v-if="item.isSectionHeader"
+                    class="section-header"
+                    :style="{ gridColumn: '1 / -1' }"
+                  >
+                    <v-icon size="16" class="section-icon">{{
+                      item.icon
+                    }}</v-icon>
+                    <span class="section-title">
+                      {{ $t("navigation." + item.id) }}
+                    </span>
+                    <v-divider class="section-separator-line"></v-divider>
+                  </v-list-subheader>
+
+                  <!-- Navigation Item -->
+                  <v-list-item
+                    v-else
+                    :to="item.route"
+                    :active="isActiveRoute(item.route)"
+                    class="nav-list-item"
+                    :class="{
+                      'nav-list-item-active': isActiveRoute(item.route),
+                    }"
+                  >
+                    <template #prepend>
+                      <div class="tile-icon-wrapper">
+                        <v-icon
+                          :icon="item.icon"
+                          size="22"
+                          class="nav-tile-icon"
+                        ></v-icon>
+                      </div>
+                    </template>
+                    <v-list-item-title class="nav-tile-label">
+                      {{ $t("navigation." + item.id) }}
+                    </v-list-item-title>
+                    <template #append>
+                      <v-badge
+                        v-if="item.badge"
+                        :content="item.badge.text"
+                        :color="item.badge.color"
+                        size="x-small"
+                        class="nav-badge"
+                      ></v-badge>
+                      <v-icon
+                        v-else-if="isActiveRoute(item.route)"
+                        size="16"
+                        class="nav-active-indicator"
+                        >mdi-check-circle</v-icon
+                      >
+                    </template>
+                  </v-list-item>
+                </template>
               </div>
             </div>
 
-            <!-- Navigation Items -->
-            <div v-else class="navigation-grid-wrapper">
-              <template v-for="item in flattenedNavigation" :key="item.id">
-                <!-- Section Header -->
-                <v-list-subheader
-                  v-if="item.isSectionHeader"
-                  class="section-header"
-                  :style="{ gridColumn: '1 / -1' }"
-                >
-                  <v-icon size="16" class="section-icon">{{ item.icon }}</v-icon>
-                  <span class="section-title">
-                    {{ $t("navigation." + item.id) }}
-                  </span>
-                  <v-divider class="section-separator-line"></v-divider>
-                </v-list-subheader>
+            <!-- Footer Actions -->
+            <v-divider v-if="isAdmin" class="footer-divider-top"></v-divider>
+            <v-list v-if="isAdmin" class="footer-list">
+              <v-list-item
+                to="/system/settings"
+                class="footer-list-item"
+                @click="onItemClick"
+              >
+                <template #prepend>
+                  <v-icon>mdi-cog</v-icon>
+                </template>
+                <v-list-item-title>{{ $t("nav.settings") }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
 
-                <!-- Navigation Item -->
-                <v-list-item
-                  v-else
-                  :to="item.route"
-                  :active="isActiveRoute(item.route)"
-                  class="nav-list-item"
-                  :class="{ 'nav-list-item-active': isActiveRoute(item.route) }"
-                >
-                  <template #prepend>
-                    <div class="tile-icon-wrapper">
-                      <v-icon
-                        :icon="item.icon"
-                        size="22"
-                        class="nav-tile-icon"
-                      ></v-icon>
-                    </div>
-                  </template>
-                  <v-list-item-title class="nav-tile-label">
-                    {{ $t("navigation." + item.id) }}
-                  </v-list-item-title>
-                  <template #append>
-                    <v-badge
-                      v-if="item.badge"
-                      :content="item.badge.text"
-                      :color="item.badge.color"
-                      size="x-small"
-                      class="nav-badge"
-                    ></v-badge>
-                    <v-icon
-                      v-else-if="isActiveRoute(item.route)"
-                      size="16"
-                      class="nav-active-indicator"
-                    >mdi-check-circle</v-icon>
-                  </template>
-                </v-list-item>
-              </template>
-            </div>
-          </div>
-
-          <!-- Footer Actions -->
-          <v-divider v-if="isAdmin" class="footer-divider-top"></v-divider>
-          <v-list v-if="isAdmin" class="footer-list">
-            <v-list-item
-              to="/system/settings"
-              class="footer-list-item"
-              @click="onItemClick"
-            >
-              <template #prepend>
-                <v-icon>mdi-cog</v-icon>
-              </template>
-              <v-list-item-title>{{ $t("nav.settings") }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-          
-          <!-- Bottom safe space -->
-          <div class="bottom-safe-space"></div>
+            <!-- Bottom safe space -->
+            <div class="bottom-safe-space"></div>
           </div>
         </div>
       </v-card>
@@ -193,10 +208,10 @@ const imageError = ref(false);
 const userProfile = computed(() => {
   const details = authStore.cachedUserDetails || authStore.user;
   if (!details) return null;
-  
+
   // Try multiple possible picture fields
   let picture = null;
-  
+
   // Priority 1: Check session user picture (from OAuth - this is the most reliable)
   if (authStore.user?.picture) {
     picture = authStore.user.picture;
@@ -206,19 +221,23 @@ const userProfile = computed(() => {
     picture = details.picture;
   }
   // Priority 3: Check photos array
-  else if (details.photos && Array.isArray(details.photos) && details.photos.length > 0) {
-    const photo = details.photos.find(p => p.primary) || details.photos[0];
+  else if (
+    details.photos &&
+    Array.isArray(details.photos) &&
+    details.photos.length > 0
+  ) {
+    const photo = details.photos.find((p) => p.primary) || details.photos[0];
     picture = photo?.value || photo?.url;
   }
   // Priority 4: Check thumbnailPhotoUrl (from Google Directory API - might be base64)
   else if (details.thumbnailPhotoUrl) {
     const thumb = details.thumbnailPhotoUrl;
     // If it's already a data URL
-    if (thumb.startsWith('data:')) {
+    if (thumb.startsWith("data:")) {
       picture = thumb;
     }
     // If it's a regular URL
-    else if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
+    else if (thumb.startsWith("http://") || thumb.startsWith("https://")) {
       picture = thumb;
     }
     // If it's base64 encoded (common for Google Directory API)
@@ -231,12 +250,12 @@ const userProfile = computed(() => {
   else if (details.photoUrl) {
     picture = details.photoUrl;
   }
-  
+
   return {
     name: details.fullName || details.name || "",
     picture: picture,
     jobTitle: details.jobTitle || details.title || null,
-    email: details.email || details.primaryEmail || ""
+    email: details.email || details.primaryEmail || "",
   };
 });
 
@@ -315,7 +334,11 @@ function isActiveRoute(itemRoute) {
 
 function closeSidebar(event) {
   // Prevent closing if user is selecting text
-  if (event && window.getSelection && window.getSelection().toString().length > 0) {
+  if (
+    event &&
+    window.getSelection &&
+    window.getSelection().toString().length > 0
+  ) {
     return;
   }
   emit("update:modelValue", false);
@@ -393,7 +416,7 @@ watch(
   () => userProfile.value?.picture,
   () => {
     imageError.value = false;
-  }
+  },
 );
 
 // Close sidebar when route changes (after navigation completes)
@@ -406,7 +429,7 @@ watch(
     if (routeChangeTimer) {
       clearTimeout(routeChangeTimer);
     }
-    
+
     // Only close if sidebar is open and route actually changed
     if (props.modelValue && newPath !== oldPath && oldPath) {
       // Wait for route transition to start before closing sidebar
@@ -417,7 +440,7 @@ watch(
       }, 200); // Small delay to allow route transition to begin
     }
   },
-  { immediate: false }
+  { immediate: false },
 );
 
 // Prevent body scroll when sidebar is open
@@ -513,7 +536,6 @@ watch(
   }
 }
 
-
 @media (max-width: 600px) {
   .sidebar-card {
     width: 100vw !important;
@@ -532,7 +554,6 @@ watch(
 .v-theme--dark .sidebar-card {
   background-color: #1e1e1e !important;
 }
-
 
 /* RTL Support */
 .sidebar-card.rtl-card {
@@ -585,7 +606,6 @@ watch(
   background-color: rgba(var(--v-theme-on-surface), 0.3);
   border-radius: 4px;
 }
-
 
 .overlay-content-wrapper {
   width: 100%;
@@ -948,7 +968,7 @@ watch(
 }
 
 .nav-list-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1123,13 +1143,11 @@ watch(
   border-radius: 4px;
 }
 
-
 .footer-list-item :deep(.v-list-item-title) {
   color: rgba(var(--v-theme-on-surface), 0.7);
   font-size: 0.75rem;
   font-weight: 400;
 }
-
 
 .footer-list-item :deep(.v-icon) {
   color: inherit;
@@ -1211,5 +1229,4 @@ watch(
   outline: 3px solid rgba(255, 255, 255, 0.5);
   outline-offset: 4px;
 }
-
 </style>

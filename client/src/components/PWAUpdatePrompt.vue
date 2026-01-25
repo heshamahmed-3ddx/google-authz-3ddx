@@ -8,21 +8,15 @@
   >
     <div class="d-flex align-center ga-3">
       <v-icon>mdi-download</v-icon>
-      <span>{{ $t("pwa.updateAvailable") || "A new version is available!" }}</span>
+      <span>{{
+        $t("pwa.updateAvailable") || "A new version is available!"
+      }}</span>
     </div>
     <template #actions>
-      <v-btn
-        variant="text"
-        size="small"
-        @click="updateServiceWorker"
-      >
+      <v-btn variant="text" size="small" @click="updateServiceWorker">
         {{ $t("pwa.update") || "Update" }}
       </v-btn>
-      <v-btn
-        variant="text"
-        size="small"
-        @click="showUpdatePrompt = false"
-      >
+      <v-btn variant="text" size="small" @click="showUpdatePrompt = false">
         {{ $t("common.later") || "Later" }}
       </v-btn>
     </template>
@@ -59,7 +53,7 @@ onMounted(() => {
         registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
           await registration.update();
-          
+
           // Check if there's a waiting service worker
           if (registration.waiting) {
             updateServiceWorkerCallback = () => {
@@ -108,4 +102,3 @@ onUnmounted(() => {
   z-index: 9999;
 }
 </style>
-

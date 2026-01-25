@@ -12,32 +12,32 @@
 </template>
 
 <script>
-import announcementService from '@/services/announcementService';
+import announcementService from "@/services/announcementService";
 
 export default {
-  name: 'AnnouncementBadge',
+  name: "AnnouncementBadge",
 
   props: {
     autoRefresh: {
       type: Boolean,
-      default: true
+      default: true,
     },
     refreshInterval: {
       type: Number,
-      default: 60000 // 1 minute
-    }
+      default: 60000, // 1 minute
+    },
   },
 
   data() {
     return {
       unreadCount: 0,
-      refreshTimer: null
+      refreshTimer: null,
     };
   },
 
   mounted() {
     this.loadUnreadCount();
-    
+
     if (this.autoRefresh) {
       this.startAutoRefresh();
     }
@@ -51,9 +51,9 @@ export default {
     async loadUnreadCount() {
       try {
         this.unreadCount = await announcementService.getUnreadCount();
-        this.$emit('unread-count-updated', this.unreadCount);
+        this.$emit("unread-count-updated", this.unreadCount);
       } catch (error) {
-        console.error('Failed to load unread count:', error);
+        console.error("Failed to load unread count:", error);
       }
     },
 
@@ -73,7 +73,7 @@ export default {
     // Public method to manually refresh
     refresh() {
       this.loadUnreadCount();
-    }
-  }
+    },
+  },
 };
 </script>

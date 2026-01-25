@@ -38,7 +38,9 @@
         <v-card>
           <v-card-text>
             <div class="text-caption text-medium-emphasis">Active</div>
-            <div class="text-h5 font-weight-bold text-success">{{ stats.active }}</div>
+            <div class="text-h5 font-weight-bold text-success">
+              {{ stats.active }}
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -54,7 +56,9 @@
         <v-card>
           <v-card-text>
             <div class="text-caption text-medium-emphasis">Success Rate</div>
-            <div class="text-h5 font-weight-bold text-success">{{ stats.successRate }}%</div>
+            <div class="text-h5 font-weight-bold text-success">
+              {{ stats.successRate }}%
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -100,7 +104,9 @@
             <div class="text-center py-8">
               <v-icon size="64" color="grey">mdi-calendar-remove</v-icon>
               <p class="mt-4 text-h6">No schedules found</p>
-              <p class="text-medium-emphasis">Create your first schedule to get started</p>
+              <p class="text-medium-emphasis">
+                Create your first schedule to get started
+              </p>
               <v-btn
                 class="mt-4"
                 color="primary"
@@ -120,7 +126,9 @@
             >
               <template #prepend>
                 <v-icon :color="schedule.is_active ? 'success' : 'grey'">
-                  {{ schedule.is_active ? 'mdi-check-circle' : 'mdi-pause-circle' }}
+                  {{
+                    schedule.is_active ? "mdi-check-circle" : "mdi-pause-circle"
+                  }}
                 </v-icon>
               </template>
 
@@ -202,7 +210,9 @@
                         <template #prepend>
                           <v-icon color="error">mdi-delete</v-icon>
                         </template>
-                        <v-list-item-title class="text-error">Delete</v-list-item-title>
+                        <v-list-item-title class="text-error"
+                          >Delete</v-list-item-title
+                        >
                       </v-list-item>
                     </v-list>
                   </v-menu>
@@ -238,17 +248,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { reportSchedulingService } from '@/services/reportScheduling';
-import ScheduleFormDialog from '@/components/Scheduling/ScheduleFormDialog.vue';
-import ScheduleHistoryDialog from '@/components/Scheduling/ScheduleHistoryDialog.vue';
+import { ref, computed, onMounted } from "vue";
+import { reportSchedulingService } from "@/services/reportScheduling";
+import ScheduleFormDialog from "@/components/Scheduling/ScheduleFormDialog.vue";
+import ScheduleHistoryDialog from "@/components/Scheduling/ScheduleHistoryDialog.vue";
 
 // State
 const loading = ref(false);
 const schedules = ref([]);
 const stats = ref(null);
-const search = ref('');
-const filterStatus = ref('all');
+const search = ref("");
+const filterStatus = ref("all");
 const formDialog = ref(false);
 const historyDialog = ref(false);
 const selectedSchedule = ref(null);
@@ -257,15 +267,15 @@ const triggering = ref({});
 // Snackbar
 const snackbar = ref({
   show: false,
-  message: '',
-  color: 'success'
+  message: "",
+  color: "success",
 });
 
 // Filter options
 const statusOptions = [
-  { title: 'All', value: 'all' },
-  { title: 'Active', value: 'active' },
-  { title: 'Inactive', value: 'inactive' }
+  { title: "All", value: "all" },
+  { title: "Active", value: "active" },
+  { title: "Inactive", value: "inactive" },
 ];
 
 // Computed
@@ -273,18 +283,19 @@ const filteredSchedules = computed(() => {
   let filtered = schedules.value;
 
   // Filter by status
-  if (filterStatus.value === 'active') {
-    filtered = filtered.filter(s => s.is_active);
-  } else if (filterStatus.value === 'inactive') {
-    filtered = filtered.filter(s => !s.is_active);
+  if (filterStatus.value === "active") {
+    filtered = filtered.filter((s) => s.is_active);
+  } else if (filterStatus.value === "inactive") {
+    filtered = filtered.filter((s) => !s.is_active);
   }
 
   // Filter by search
   if (search.value) {
     const query = search.value.toLowerCase();
-    filtered = filtered.filter(s =>
-      s.report_name.toLowerCase().includes(query) ||
-      s.report_type.toLowerCase().includes(query)
+    filtered = filtered.filter(
+      (s) =>
+        s.report_name.toLowerCase().includes(query) ||
+        s.report_type.toLowerCase().includes(query),
     );
   }
 
@@ -299,8 +310,8 @@ async function loadSchedules() {
     schedules.value = response.data || [];
     calculateStats();
   } catch (error) {
-    showError('Failed to load schedules');
-    console.error('Error loading schedules:', error);
+    showError("Failed to load schedules");
+    console.error("Error loading schedules:", error);
   } finally {
     loading.value = false;
   }
@@ -308,10 +319,19 @@ async function loadSchedules() {
 
 function calculateStats() {
   const total = schedules.value.length;
-  const active = schedules.value.filter(s => s.is_active).length;
-  const executions = schedules.value.reduce((sum, s) => sum + (s.execution_count || 0), 0);
-  const failures = schedules.value.reduce((sum, s) => sum + (s.failure_count || 0), 0);
-  const successRate = executions > 0 ? Math.round(((executions - failures) / executions) * 100) : 100;
+  const active = schedules.value.filter((s) => s.is_active).length;
+  const executions = schedules.value.reduce(
+    (sum, s) => sum + (s.execution_count || 0),
+    0,
+  );
+  const failures = schedules.value.reduce(
+    (sum, s) => sum + (s.failure_count || 0),
+    0,
+  );
+  const successRate =
+    executions > 0
+      ? Math.round(((executions - failures) / executions) * 100)
+      : 100;
 
   stats.value = { total, active, executions, successRate };
 }
@@ -339,11 +359,11 @@ function viewHistory(schedule) {
 async function toggleSchedule(schedule) {
   try {
     await reportSchedulingService.toggleSchedule(schedule.id);
-    showSuccess(`Schedule ${schedule.is_active ? 'paused' : 'activated'}`);
+    showSuccess(`Schedule ${schedule.is_active ? "paused" : "activated"}`);
     await loadSchedules();
   } catch (error) {
-    showError('Failed to toggle schedule');
-    console.error('Error toggling schedule:', error);
+    showError("Failed to toggle schedule");
+    console.error("Error toggling schedule:", error);
   }
 }
 
@@ -351,10 +371,10 @@ async function triggerNow(schedule) {
   triggering.value[schedule.id] = true;
   try {
     await reportSchedulingService.triggerSchedule(schedule.id);
-    showSuccess('Schedule triggered successfully');
+    showSuccess("Schedule triggered successfully");
   } catch (error) {
-    showError('Failed to trigger schedule');
-    console.error('Error triggering schedule:', error);
+    showError("Failed to trigger schedule");
+    console.error("Error triggering schedule:", error);
   } finally {
     triggering.value[schedule.id] = false;
   }
@@ -365,42 +385,42 @@ async function deleteSchedule(schedule) {
 
   try {
     await reportSchedulingService.deleteSchedule(schedule.id);
-    showSuccess('Schedule deleted');
+    showSuccess("Schedule deleted");
     await loadSchedules();
   } catch (error) {
-    showError('Failed to delete schedule');
-    console.error('Error deleting schedule:', error);
+    showError("Failed to delete schedule");
+    console.error("Error deleting schedule:", error);
   }
 }
 
 function onScheduleSaved() {
   formDialog.value = false;
   loadSchedules();
-  showSuccess('Schedule saved successfully');
+  showSuccess("Schedule saved successfully");
 }
 
 function formatFrequency(schedule) {
   const freq = schedule.schedule_frequency;
-  const time = schedule.schedule_time?.substring(0, 5) || '00:00';
+  const time = schedule.schedule_time?.substring(0, 5) || "00:00";
 
-  if (freq === 'daily') return `Daily at ${time}`;
-  if (freq === 'weekly') {
-    const days = schedule.schedule_days?.join(', ') || 'Mon-Fri';
+  if (freq === "daily") return `Daily at ${time}`;
+  if (freq === "weekly") {
+    const days = schedule.schedule_days?.join(", ") || "Mon-Fri";
     return `Weekly on ${days} at ${time}`;
   }
-  if (freq === 'monthly') {
-    const days = schedule.schedule_days?.join(', ') || '1st';
+  if (freq === "monthly") {
+    const days = schedule.schedule_days?.join(", ") || "1st";
     return `Monthly on ${days} at ${time}`;
   }
   return freq;
 }
 
 function showSuccess(message) {
-  snackbar.value = { show: true, message, color: 'success' };
+  snackbar.value = { show: true, message, color: "success" };
 }
 
 function showError(message) {
-  snackbar.value = { show: true, message, color: 'error' };
+  snackbar.value = { show: true, message, color: "error" };
 }
 
 // Lifecycle

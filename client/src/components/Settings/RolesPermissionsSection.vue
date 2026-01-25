@@ -2,12 +2,22 @@
   <div class="roles-permissions-section">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
-      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="64"
+      ></v-progress-circular>
       <p class="mt-4 text-body-2">Loading roles and permissions...</p>
     </div>
 
     <!-- Error State -->
-    <v-alert v-else-if="error" type="error" variant="tonal" density="compact" class="mb-3">
+    <v-alert
+      v-else-if="error"
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mb-3"
+    >
       <div class="text-caption">{{ error }}</div>
       <template #append>
         <v-btn variant="text" size="small" @click="loadData">Retry</v-btn>
@@ -41,7 +51,10 @@
 
       <!-- Roles List -->
       <v-card variant="outlined" elevation="0" class="mb-3">
-        <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">
+        <v-card-title
+          class="text-subtitle-2 font-weight-medium pa-3"
+          style="min-height: 36px"
+        >
           Roles ({{ filteredRoles.length }})
         </v-card-title>
         <v-card-text class="pa-3">
@@ -82,13 +95,16 @@
 
       <!-- Permissions Matrix -->
       <v-card variant="outlined" elevation="0">
-        <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">
+        <v-card-title
+          class="text-subtitle-2 font-weight-medium pa-3"
+          style="min-height: 36px"
+        >
           Permissions Matrix
         </v-card-title>
         <v-card-text class="pa-3">
           <v-select
             v-model="selectedRoleForMatrix"
-            :items="roles.map(r => r.name)"
+            :items="roles.map((r) => r.name)"
             label="Select Role to View/Edit Permissions"
             variant="outlined"
             density="compact"
@@ -139,8 +155,8 @@
           <v-btn
             v-if="isAdmin"
             color="primary"
-            @click="saveRole"
             :loading="saving"
+            @click="saveRole"
           >
             {{ editingRole ? "Update" : "Create" }}
           </v-btn>
@@ -154,12 +170,13 @@
         <v-card-title class="text-h6">Confirm Delete</v-card-title>
         <v-card-text>
           Are you sure you want to delete the role
-          <strong>{{ roleToDelete?.name }}</strong>? This action cannot be undone.
+          <strong>{{ roleToDelete?.name }}</strong
+          >? This action cannot be undone.
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="showDeleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" @click="deleteRole" :loading="deleting">
+          <v-btn color="error" :loading="deleting" @click="deleteRole">
             Delete
           </v-btn>
         </v-card-actions>
@@ -168,7 +185,11 @@
   </div>
 
   <!-- Snackbar for notifications -->
-  <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
+  <v-snackbar
+    v-model="snackbar.show"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+  >
     {{ snackbar.message }}
     <template #actions>
       <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
@@ -223,7 +244,7 @@ const filteredRoles = computed(() => {
   return roles.value.filter(
     (role) =>
       role.name.toLowerCase().includes(query) ||
-      (role.description && role.description.toLowerCase().includes(query))
+      (role.description && role.description.toLowerCase().includes(query)),
   );
 });
 
@@ -289,14 +310,14 @@ const saveRole = async () => {
       editingRole.value
         ? "Role updated successfully"
         : "Role created successfully",
-      "success"
+      "success",
     );
     closeRoleDialog();
     await loadData();
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to save role",
-      "error"
+      "error",
     );
   } finally {
     saving.value = false;
@@ -321,7 +342,7 @@ const deleteRole = async () => {
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to delete role",
-      "error"
+      "error",
     );
   } finally {
     deleting.value = false;
@@ -331,7 +352,7 @@ const deleteRole = async () => {
 const handlePermissionChange = async (change) => {
   try {
     const { role, resource, action, enabled } = change;
-    
+
     if (enabled) {
       // Add policy
       await apiService.post("/api/admin/policies", {
@@ -339,7 +360,10 @@ const handlePermissionChange = async (change) => {
         object: resource,
         action: action,
       });
-      showSnackbar(`Permission granted: ${role} can ${action} ${resource}`, "success");
+      showSnackbar(
+        `Permission granted: ${role} can ${action} ${resource}`,
+        "success",
+      );
     } else {
       // Remove policy
       await apiService.delete("/api/admin/policies", {
@@ -349,14 +373,17 @@ const handlePermissionChange = async (change) => {
           action: action,
         },
       });
-      showSnackbar(`Permission revoked: ${role} can no longer ${action} ${resource}`, "info");
+      showSnackbar(
+        `Permission revoked: ${role} can no longer ${action} ${resource}`,
+        "info",
+      );
     }
-    
+
     await loadData();
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to update permission",
-      "error"
+      "error",
     );
   }
 };
@@ -371,4 +398,3 @@ onMounted(() => {
   min-height: 300px;
 }
 </style>
-

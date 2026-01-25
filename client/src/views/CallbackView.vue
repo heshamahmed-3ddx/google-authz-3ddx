@@ -2,8 +2,8 @@
   <div class="callback-view">
     <div class="callback-container">
       <!-- Main Card -->
-      <v-card 
-        elevation="0" 
+      <v-card
+        elevation="0"
         class="callback-card"
         :class="{ 'error-state': error, 'success-state': success }"
       >
@@ -33,85 +33,75 @@
           </div>
         </template>
 
-            <!-- Success State -->
-            <template v-else-if="success">
-              <div class="callback-content">
-                <!-- Success Icon -->
-                <div class="icon-wrapper success-icon">
-                  <v-icon 
-                    size="64" 
-                    color="success"
-                  >
-                    mdi-check-circle
-                  </v-icon>
-                </div>
+        <!-- Success State -->
+        <template v-else-if="success">
+          <div class="callback-content">
+            <!-- Success Icon -->
+            <div class="icon-wrapper success-icon">
+              <v-icon size="64" color="success"> mdi-check-circle </v-icon>
+            </div>
 
-                <!-- Title -->
-                <div class="callback-title success-text">
-                  {{ $t("auth.authSuccess") }}
-                </div>
+            <!-- Title -->
+            <div class="callback-title success-text">
+              {{ $t("auth.authSuccess") }}
+            </div>
 
-                <!-- Message -->
-                <div class="callback-subtitle mb-4">
-                  {{ $t("auth.authSuccessMessage") }}
-                </div>
+            <!-- Message -->
+            <div class="callback-subtitle mb-4">
+              {{ $t("auth.authSuccessMessage") }}
+            </div>
 
-                <!-- Redirecting -->
-                <div class="redirecting-indicator">
-                  <v-progress-circular
-                    indeterminate
-                    color="success"
-                    size="18"
-                    width="2"
-                    class="mr-2"
-                  ></v-progress-circular>
-                  <span>Redirecting...</span>
-                </div>
-              </div>
-            </template>
+            <!-- Redirecting -->
+            <div class="redirecting-indicator">
+              <v-progress-circular
+                indeterminate
+                color="success"
+                size="18"
+                width="2"
+                class="mr-2"
+              ></v-progress-circular>
+              <span>Redirecting...</span>
+            </div>
+          </div>
+        </template>
 
-            <!-- Error State -->
-            <template v-else-if="error">
-              <div class="callback-content">
-                <!-- Error Icon -->
-                <div class="icon-wrapper error-icon">
-                  <v-icon 
-                    size="64" 
-                    color="error"
-                  >
-                    mdi-alert-circle
-                  </v-icon>
-                </div>
+        <!-- Error State -->
+        <template v-else-if="error">
+          <div class="callback-content">
+            <!-- Error Icon -->
+            <div class="icon-wrapper error-icon">
+              <v-icon size="64" color="error"> mdi-alert-circle </v-icon>
+            </div>
 
-                <!-- Title -->
-                <div class="callback-title error-text mb-3">
-                  {{ $t("auth.authFailed") }}
-                </div>
+            <!-- Title -->
+            <div class="callback-title error-text mb-3">
+              {{ $t("auth.authFailed") }}
+            </div>
 
-                <!-- Error Message -->
-                <v-alert 
-                  type="error" 
-                  variant="tonal" 
-                  density="compact"
-                  class="error-alert mb-4"
-                >
-                  <div class="text-body-2">{{ error }}</div>
-                </v-alert>
+            <!-- Error Message -->
+            <v-alert
+              type="error"
+              variant="tonal"
+              density="compact"
+              class="error-alert mb-4"
+            >
+              <div class="text-body-2">{{ error }}</div>
+            </v-alert>
 
-                <!-- Action Button -->
-                <v-btn
-                  color="primary"
-                  size="default"
-                  prepend-icon="mdi-home"
-                  variant="elevated"
-                  @click="goHome"
-                  block
-                  class="error-action-btn"
-                >
-                  {{ $t("auth.returnHome") }}
-                </v-btn>
-              </div>
-            </template>
+            <!-- Action Button -->
+            <v-btn
+              color="primary"
+              size="default"
+              prepend-icon="mdi-home"
+              variant="elevated"
+              block
+              class="error-action-btn"
+              @click="goHome"
+            >
+              {{ $t("auth.returnHome") }}
+            </v-btn>
+          </div>
+        </template>
       </v-card>
     </div>
   </div>
@@ -144,9 +134,9 @@ const handleCallback = async () => {
     }
 
     // Handle success redirect from backend
-    if (successParam === 'true') {
+    if (successParam === "true") {
       const isAuthenticated = await authStore.checkAuth();
-      
+
       if (!isAuthenticated) {
         throw new Error("Authentication failed - session not found");
       }
@@ -225,7 +215,7 @@ onMounted(() => {
   border-radius: 16px !important;
   width: 100%;
   background: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.06) !important;
   overflow: hidden;
@@ -262,7 +252,8 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

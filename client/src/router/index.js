@@ -419,15 +419,15 @@ const router = createRouter({
 
 /**
  * Helper function to get user groups with multiple fallback mechanisms
- * 
+ *
  * Attempts to retrieve user groups from multiple sources in priority order:
  * 1. Cached user rights from auth store
  * 2. User object groups from session
  * 3. Fresh API fetch if authenticated but no cached data
- * 
+ *
  * This ensures navigation guards always have access to user groups even
  * if the cache hasn't been populated yet.
- * 
+ *
  * @private
  * @async
  * @param {Object} authStore - Pinia auth store instance
@@ -437,7 +437,7 @@ const router = createRouter({
  * @param {string[]} [authStore.user.groups] - User's groups from session
  * @param {boolean} authStore.isAuthenticated - Whether user is logged in
  * @returns {Promise<string[]>} Array of user group names
- * 
+ *
  * @example
  * // In router guard
  * const authStore = useAuthStore();
@@ -447,12 +447,12 @@ const router = createRouter({
 async function getUserGroups(authStore) {
   // Try cached user rights first
   let userGroups = authStore.cachedUserRights?.groups || [];
-  
+
   // Fallback to user object from session if cached rights not available
   if (userGroups.length === 0 && authStore.user?.groups) {
     userGroups = authStore.user.groups;
   }
-  
+
   // If still empty and user is authenticated, try to fetch user rights
   if (userGroups.length === 0 && authStore.isAuthenticated) {
     try {
@@ -467,7 +467,7 @@ async function getUserGroups(authStore) {
       console.debug("Failed to fetch user rights in router guard", error);
     }
   }
-  
+
   return userGroups;
 }
 
@@ -489,7 +489,7 @@ router.beforeEach(async (to, from, next) => {
 
     // Check if user is already authenticated (use cached value first)
     let isAuthenticated = authStore.isAuthenticated;
-    
+
     // Only check with server if not already authenticated (avoid unnecessary API calls)
     if (!isAuthenticated) {
       try {
@@ -546,7 +546,10 @@ router.beforeEach(async (to, from, next) => {
 
       // Check if user has required access
       try {
-        const hasAccess = hasNavigationAccess(to.meta.requiredGroups, userGroups);
+        const hasAccess = hasNavigationAccess(
+          to.meta.requiredGroups,
+          userGroups,
+        );
 
         if (!hasAccess) {
           // Redirect to unauthorized page with context
@@ -586,7 +589,7 @@ router.beforeEach(async (to, from, next) => {
   } catch (error) {
     // Global error handler for router guard
     console.error("Router guard error", error);
-    
+
     // If error occurs, redirect to login to ensure user can re-authenticate
     // Only if we're not already on a public route
     if (to.meta.requiresAuth) {

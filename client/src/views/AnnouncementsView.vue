@@ -3,12 +3,12 @@
 </template>
 
 <script>
-import AnnouncementDisplay from '@/components/Announcements/AnnouncementDisplay.vue';
+import AnnouncementDisplay from "@/components/Announcements/AnnouncementDisplay.vue";
 
 export default {
-  name: 'AnnouncementsView',
+  name: "AnnouncementsView",
   components: {
-    AnnouncementDisplay
-  }
+    AnnouncementDisplay,
+  },
 };
 </script>

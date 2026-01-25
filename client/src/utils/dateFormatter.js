@@ -15,17 +15,29 @@
  * formatDate(new Date('2025-01-17')) // Returns "17/Jan/2025"
  */
 export function formatDate(date) {
-  if (!date) return '';
-  
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (!d || isNaN(d?.getTime?.())) return '';
-  
-  const day = String(d.getDate()).padStart(2, '0');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  if (!date) return "";
+
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (!d || isNaN(d?.getTime?.())) return "";
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const month = months[d.getMonth()];
   const year = d.getFullYear();
-  
+
   return `${day}/${month}/${year}`;
 }
 
@@ -37,15 +49,15 @@ export function formatDate(date) {
  * formatTime(new Date('2025-12-31T14:30:45')) // Returns "14:30:45"
  */
 export function formatTime(date) {
-  if (!date) return '';
-  
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (!d || isNaN(d?.getTime?.())) return '';
-  
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const seconds = String(d.getSeconds()).padStart(2, '0');
-  
+  if (!date) return "";
+
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (!d || isNaN(d?.getTime?.())) return "";
+
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
   return `${hours}:${minutes}:${seconds}`;
 }
 
@@ -57,7 +69,7 @@ export function formatTime(date) {
  * formatDateTime(new Date('2025-01-17T14:30:45')) // Returns "17/Jan/2025:14:30:45"
  */
 export function formatDateTime(date) {
-  if (!date) return '';
+  if (!date) return "";
   return `${formatDate(date)}:${formatTime(date)}`;
 }
 
@@ -71,4 +83,3 @@ export function parseDate(dateString) {
   const d = new Date(dateString);
   return isNaN(d.getTime()) ? null : d;
 }
-

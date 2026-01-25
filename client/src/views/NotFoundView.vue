@@ -4,16 +4,12 @@
       <v-col cols="12" sm="10" md="8" lg="6">
         <v-card elevation="3" class="text-center pa-8">
           <!-- 404 Icon -->
-          <v-icon
-            size="120"
-            color="primary"
-            class="mb-4"
-          >
+          <v-icon size="120" color="primary" class="mb-4">
             mdi-file-question-outline
           </v-icon>
 
           <!-- Error Code -->
-          <h1 class="text-h2 font-weight-bold mb-2" style="color: #ef9043;">
+          <h1 class="text-h2 font-weight-bold mb-2" style="color: #ef9043">
             404
           </h1>
 
@@ -24,7 +20,10 @@
 
           <!-- Description -->
           <p class="text-body-1 text-medium-emphasis mb-6">
-            {{ $t("errors.404.description") || "The page you're looking for doesn't exist or has been moved." }}
+            {{
+              $t("errors.404.description") ||
+              "The page you're looking for doesn't exist or has been moved."
+            }}
           </p>
 
           <!-- Current Path Info (Development Only) -->
@@ -39,10 +38,11 @@
               Developer Info
             </v-alert-title>
             <p class="mb-2">
-              <strong>Requested Path:</strong> <code>{{ $route.fullPath }}</code>
+              <strong>Requested Path:</strong>
+              <code>{{ $route.fullPath }}</code>
             </p>
             <p class="mb-0">
-              <strong>From:</strong> <code>{{ from || 'Direct access' }}</code>
+              <strong>From:</strong> <code>{{ from || "Direct access" }}</code>
             </p>
           </v-alert>
 
@@ -116,11 +116,10 @@ code {
   background-color: rgba(0, 0, 0, 0.05);
   padding: 2px 8px;
   border-radius: 4px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .v-theme--dark code {
   background-color: rgba(255, 255, 255, 0.1);
 }
 </style>
-

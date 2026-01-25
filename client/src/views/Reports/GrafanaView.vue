@@ -8,17 +8,20 @@
         >
           <div>
             <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
-              <v-icon
-                size="small"
-                class="header-icon"
-                color="primary"
-              >
+              <v-icon size="small" class="header-icon" color="primary">
                 mdi-chart-timeline-variant
               </v-icon>
-              <span>{{ $t("navigation.grafana") || "Grafana Monitoring" }}</span>
+              <span>{{
+                $t("navigation.grafana") || "Grafana Monitoring"
+              }}</span>
             </h1>
-            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
-              {{ $t("reports.grafana.subtitle") || "System monitoring and metrics dashboards powered by Prometheus" }}
+            <p
+              class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle"
+            >
+              {{
+                $t("reports.grafana.subtitle") ||
+                "System monitoring and metrics dashboards powered by Prometheus"
+              }}
             </p>
           </div>
         </div>
@@ -28,7 +31,7 @@
     <!-- Grafana Dashboard -->
     <v-row no-gutters>
       <v-col cols="12" md="3" class="pr-4">
-        <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
+        <v-card elevation="1" class="compact-filters-card" style="height: 100%">
           <v-card-text class="compact-filters-content pa-3">
             <!-- Dashboard Controls -->
             <div class="mb-3">
@@ -42,9 +45,9 @@
                   size="default"
                   variant="elevated"
                   class="flex-1"
-                  @click="reloadDashboard"
                   :loading="loading"
                   :disabled="loading"
+                  @click="reloadDashboard"
                 >
                   <template #prepend>
                     <v-icon>mdi-refresh</v-icon>
@@ -69,17 +72,15 @@
             </div>
 
             <!-- Info Card -->
-            <v-alert
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="mb-3"
-            >
+            <v-alert type="info" variant="tonal" density="compact" class="mb-3">
               <v-alert-title class="text-caption font-weight-medium">
                 {{ $t("reports.grafana.infoTitle") || "About Grafana" }}
               </v-alert-title>
               <div class="text-caption">
-                {{ $t("reports.grafana.infoMessage") || "Grafana provides real-time monitoring and visualization of system metrics collected by Prometheus." }}
+                {{
+                  $t("reports.grafana.infoMessage") ||
+                  "Grafana provides real-time monitoring and visualization of system metrics collected by Prometheus."
+                }}
               </div>
             </v-alert>
 
@@ -90,18 +91,10 @@
                 Available Metrics
               </v-card-title>
               <v-card-text class="pa-2">
-                <div class="text-caption mb-1">
-                  • Database Query Duration
-                </div>
-                <div class="text-caption mb-1">
-                  • API Response Times
-                </div>
-                <div class="text-caption mb-1">
-                  • System Performance
-                </div>
-                <div class="text-caption">
-                  • Application Health
-                </div>
+                <div class="text-caption mb-1">• Database Query Duration</div>
+                <div class="text-caption mb-1">• API Response Times</div>
+                <div class="text-caption mb-1">• System Performance</div>
+                <div class="text-caption">• Application Health</div>
               </v-card-text>
             </v-card>
 
@@ -115,7 +108,7 @@
                 <div class="text-caption text-medium-emphasis mb-2">
                   Metrics are available at:
                 </div>
-                <code class="text-caption" style="word-break: break-all;">
+                <code class="text-caption" style="word-break: break-all">
                   {{ prometheusUrl }}
                 </code>
               </v-card-text>
@@ -131,13 +124,19 @@
                 <div class="text-caption text-medium-emphasis mb-1">
                   Dashboard UID:
                 </div>
-                <code class="text-caption" style="word-break: break-all; font-size: 0.7rem;">
-                  {{ dashboardId || 'Not configured' }}
+                <code
+                  class="text-caption"
+                  style="word-break: break-all; font-size: 0.7rem"
+                >
+                  {{ dashboardId || "Not configured" }}
                 </code>
                 <div class="text-caption text-medium-emphasis mb-1 mt-2">
                   Embed URL:
                 </div>
-                <code class="text-caption" style="word-break: break-all; font-size: 0.7rem;">
+                <code
+                  class="text-caption"
+                  style="word-break: break-all; font-size: 0.7rem"
+                >
                   {{ embedUrl }}
                 </code>
               </v-card-text>
@@ -148,16 +147,25 @@
 
       <!-- Grafana Dashboard iframe -->
       <v-col cols="12" md="9" class="table-col">
-        <v-card elevation="1" class="table-card" style="width: 100% !important; margin: 0 !important; padding: 0 !important;">
-          <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
+        <v-card
+          elevation="1"
+          class="table-card"
+          style="
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          "
+        >
+          <v-card-title
+            class="d-flex justify-space-between align-center table-card-title compact-title"
+          >
             <div class="d-flex align-center">
-              <v-icon
-                size="small"
-                style="margin-inline-end: 6px"
-              >
+              <v-icon size="small" style="margin-inline-end: 6px">
                 mdi-chart-timeline-variant
               </v-icon>
-              <span class="text-subtitle-2 font-weight-medium">{{ displayDashboardName }}</span>
+              <span class="text-subtitle-2 font-weight-medium">{{
+                displayDashboardName
+              }}</span>
             </div>
             <div class="d-flex align-center">
               <v-chip
@@ -171,7 +179,15 @@
               </v-chip>
             </div>
           </v-card-title>
-          <div ref="grafanaContainer" class="grafana-report-container position-relative" style="width: 100% !important; margin: 0 !important; padding: 0 !important;">
+          <div
+            ref="grafanaContainer"
+            class="grafana-report-container position-relative"
+            style="
+              width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+            "
+          >
             <!-- Loading overlay -->
             <div v-if="loading" class="loading-overlay">
               <div class="loading-content">
@@ -182,13 +198,20 @@
                   width="6"
                   class="mb-6"
                 ></v-progress-circular>
-                <p class="text-h6 font-weight-medium mb-2">Loading Grafana Dashboard</p>
-                <p class="text-body-2 text-medium-emphasis">Connecting to monitoring system...</p>
+                <p class="text-h6 font-weight-medium mb-2">
+                  Loading Grafana Dashboard
+                </p>
+                <p class="text-body-2 text-medium-emphasis">
+                  Connecting to monitoring system...
+                </p>
               </div>
             </div>
 
             <!-- Error overlay -->
-            <div v-if="error" class="error-overlay d-flex align-center justify-center pa-4">
+            <div
+              v-if="error"
+              class="error-overlay d-flex align-center justify-center pa-4"
+            >
               <v-alert type="error" variant="tonal" class="max-width-600">
                 <v-alert-title>Failed to Load Dashboard</v-alert-title>
                 <p class="mb-0">{{ error }}</p>
@@ -219,9 +242,15 @@
               class="grafana-iframe"
               frameborder="0"
               allowfullscreen
+              style="
+                width: 100% !important;
+                height: 100% !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              "
               @load="onIframeLoad"
               @error="handleIframeError"
-              style="width: 100% !important; height: 100% !important; border: none !important; margin: 0 !important; padding: 0 !important;"
             ></iframe>
           </div>
         </v-card>
@@ -274,7 +303,11 @@ const orgId = computed(() => {
 
 // Display name for the dashboard
 const displayDashboardName = computed(() => {
-  return import.meta.env.VITE_GRAFANA_DASHBOARD_NAME || t("reports.grafana.dashboard") || "Grafana Dashboard";
+  return (
+    import.meta.env.VITE_GRAFANA_DASHBOARD_NAME ||
+    t("reports.grafana.dashboard") ||
+    "Grafana Dashboard"
+  );
 });
 
 // Embed URL for Grafana dashboard
@@ -282,13 +315,13 @@ const embedUrl = computed(() => {
   const baseUrl = grafanaUrl.value.replace(/\/$/, ""); // Remove trailing slash
   const dashboardUid = dashboardId.value;
   const org = orgId.value;
-  
+
   // If dashboard ID/UID is provided, use it
   if (dashboardUid) {
     // Clean the dashboard ID - remove any path segments or extra parts
     // Dashboard UID format: just the UUID part (e.g., "237d7ea8-519f-4e37-bedb-9e830778fbb8")
     const cleanDashboardId = dashboardUid.split("/").pop().split("?")[0];
-    
+
     // Build embed URL with proper parameters
     // kiosk=tv mode removes UI chrome for better embedding
     // from=now-6h&to=now sets default time range
@@ -299,18 +332,18 @@ const embedUrl = computed(() => {
       theme: "light",
       from: "now-6h",
       to: "now",
-      refresh: "30s"
+      refresh: "30s",
     });
-    
+
     return `${baseUrl}/d/${cleanDashboardId}?${params.toString()}`;
   }
-  
+
   // Default to Grafana home or explore page
   const params = new URLSearchParams({
     orgId: org,
     theme: "light",
     from: "now-6h",
-    to: "now"
+    to: "now",
   });
   return `${baseUrl}/explore?${params.toString()}`;
 });
@@ -323,7 +356,7 @@ const grafanaFrame = ref(null);
 function loadDashboard() {
   loading.value = true;
   error.value = null;
-  
+
   // Reset iframe to trigger reload
   if (grafanaFrame.value) {
     const currentSrc = grafanaFrame.value.src;
@@ -347,7 +380,8 @@ function onIframeLoad() {
 
 function handleIframeError() {
   loading.value = false;
-  error.value = "Failed to load Grafana dashboard. Please check the Grafana URL configuration.";
+  error.value =
+    "Failed to load Grafana dashboard. Please check the Grafana URL configuration.";
 }
 
 onMounted(() => {
@@ -371,13 +405,13 @@ onMounted(() => {
     display: flex !important;
     flex-wrap: nowrap !important;
   }
-  
+
   .grafana-report .v-row > .v-col.md-3 {
     flex: 0 0 25% !important;
     max-width: 25% !important;
     width: 25% !important;
   }
-  
+
   .grafana-report .v-row > .v-col.md-9 {
     flex: 0 0 75% !important;
     max-width: 75% !important;
@@ -527,4 +561,3 @@ onMounted(() => {
   margin-inline-start: 6px;
 }
 </style>
-

@@ -6,7 +6,7 @@
  * @copyright 2026 InsightHub. All rights reserved.
  */
 
-import apiClient from './api.js';
+import apiClient from "./api.js";
 
 /**
  * Report Scheduling API Service
@@ -19,7 +19,10 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Created schedule
    */
   async createSchedule(scheduleData) {
-    const response = await apiClient.post('/api/reports/schedules', scheduleData);
+    const response = await apiClient.post(
+      "/api/reports/schedules",
+      scheduleData,
+    );
     return response.data;
   },
 
@@ -29,8 +32,8 @@ export const reportSchedulingService = {
    * @returns {Promise<Array>} List of schedules
    */
   async getSchedules(activeOnly = false) {
-    const response = await apiClient.get('/api/reports/schedules', {
-      params: { activeOnly }
+    const response = await apiClient.get("/api/reports/schedules", {
+      params: { activeOnly },
     });
     return response.data;
   },
@@ -52,7 +55,10 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Updated schedule
    */
   async updateSchedule(id, updates) {
-    const response = await apiClient.put(`/api/reports/schedules/${id}`, updates);
+    const response = await apiClient.put(
+      `/api/reports/schedules/${id}`,
+      updates,
+    );
     return response.data;
   },
 
@@ -62,7 +68,9 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Updated schedule
    */
   async toggleSchedule(id) {
-    const response = await apiClient.patch(`/api/reports/schedules/${id}/toggle`);
+    const response = await apiClient.patch(
+      `/api/reports/schedules/${id}/toggle`,
+    );
     return response.data;
   },
 
@@ -83,9 +91,12 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Execution history and statistics
    */
   async getScheduleHistory(id, limit = 50) {
-    const response = await apiClient.get(`/api/reports/schedules/${id}/history`, {
-      params: { limit }
-    });
+    const response = await apiClient.get(
+      `/api/reports/schedules/${id}/history`,
+      {
+        params: { limit },
+      },
+    );
     return response.data;
   },
 
@@ -95,7 +106,9 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Schedule statistics
    */
   async getScheduleStatistics(id) {
-    const response = await apiClient.get(`/api/reports/schedules/${id}/statistics`);
+    const response = await apiClient.get(
+      `/api/reports/schedules/${id}/statistics`,
+    );
     return response.data;
   },
 
@@ -105,7 +118,9 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Trigger result
    */
   async triggerSchedule(id) {
-    const response = await apiClient.post(`/api/reports/schedules/${id}/trigger`);
+    const response = await apiClient.post(
+      `/api/reports/schedules/${id}/trigger`,
+    );
     return response.data;
   },
 
@@ -114,7 +129,9 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} System status
    */
   async getSystemStatus() {
-    const response = await apiClient.get('/api/reports/schedules/system/status');
+    const response = await apiClient.get(
+      "/api/reports/schedules/system/status",
+    );
     return response.data;
   },
 
@@ -124,11 +141,14 @@ export const reportSchedulingService = {
    * @returns {Promise<Object>} Test result
    */
   async sendTestEmail(recipient) {
-    const response = await apiClient.post('/api/reports/schedules/system/test-email', {
-      recipient
-    });
+    const response = await apiClient.post(
+      "/api/reports/schedules/system/test-email",
+      {
+        recipient,
+      },
+    );
     return response.data;
-  }
+  },
 };
 
 export default reportSchedulingService;

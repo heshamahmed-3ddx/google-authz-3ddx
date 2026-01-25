@@ -2,109 +2,140 @@
   <div ref="pageRef" class="welcome-view">
     <v-container class="fill-height">
       <v-row justify="center" align="center" class="fill-height">
-      <v-col cols="12" sm="10" md="8" lg="6">
-        <!-- Welcome Card -->
-        <v-card elevation="0" class="welcome-card">
-          <!-- Header -->
-          <div class="welcome-header">
-            <div class="welcome-header-content">
-              <!-- Avatar -->
-              <v-avatar
-                size="56"
-                color="white"
-                class="mb-3 avatar-glow"
-              >
-                <img
-                  v-if="userProfilePicture && !imageError"
-                  :src="userProfilePicture"
-                  :alt="userDisplayName || userFullName"
-                  @error="imageError = true"
-                  @load="imageError = false"
+        <v-col cols="12" sm="10" md="8" lg="6">
+          <!-- Welcome Card -->
+          <v-card elevation="0" class="welcome-card">
+            <!-- Header -->
+            <div class="welcome-header">
+              <div class="welcome-header-content">
+                <!-- Avatar -->
+                <v-avatar size="56" color="white" class="mb-3 avatar-glow">
+                  <img
+                    v-if="userProfilePicture && !imageError"
+                    :src="userProfilePicture"
+                    :alt="userDisplayName || userFullName"
+                    @error="imageError = true"
+                    @load="imageError = false"
+                  />
+                  <span
+                    v-else
+                    class="text-body-1 font-weight-bold"
+                    style="color: rgb(var(--v-theme-primary))"
+                  >
+                    {{ userInitials }}
+                  </span>
+                </v-avatar>
+
+                <!-- User Name -->
+                <h2
+                  v-if="displayName"
+                  class="text-subtitle-1 font-weight-medium mb-1"
+                  style="color: #f08a4a"
                 >
-                <span v-else class="text-body-1 font-weight-bold" style="color: rgb(var(--v-theme-primary))">
-                  {{ userInitials }}
-                </span>
-              </v-avatar>
+                  {{ displayName }}
+                </h2>
 
-              <!-- User Name -->
-              <h2 v-if="displayName" class="text-subtitle-1 font-weight-medium mb-1" style="color: #f08a4a">
-                {{ displayName }}
-              </h2>
-
-              <!-- Welcome Message -->
-              <p class="text-caption mb-0 text-medium-emphasis">
-                Welcome to InsightHub
-              </p>
-            </div>
-          </div>
-
-          <v-card-text class="pa-4">
-
-            <!-- User Details -->
-            <div v-if="userDetails" class="user-details mb-3">
-              <div v-if="userDetails.department || userDetails.jobTitle" class="detail-row mb-2">
-                <div v-if="userDetails.jobTitle" class="detail-item">
-                  <v-icon size="16" style="color: #f08a4a" class="mr-2">mdi-briefcase</v-icon>
-                  <span class="text-body-2">{{ userDetails.jobTitle }}</span>
-                </div>
-                <div v-if="userDetails.department" class="detail-item">
-                  <v-icon size="16" style="color: #f08a4a" class="mr-2">mdi-office-building</v-icon>
-                  <span class="text-body-2">{{ userDetails.department }}</span>
-                </div>
-              </div>
-
-              <div v-if="userDetails.orgUnit" class="detail-row mb-2">
-                <v-icon size="16" style="color: #f08a4a" class="mr-2">mdi-domain</v-icon>
-                <span class="text-body-2">{{ userDetails.orgUnit }}</span>
-              </div>
-
-              <div v-if="userDetails.groups && userDetails.groups.length > 0" class="detail-row">
-                <div class="d-flex align-center flex-wrap gap-1">
-                  <v-icon size="16" style="color: #f08a4a" class="mr-1">mdi-account-group</v-icon>
-                  <v-chip
-                    v-for="group in userDetails.groups.slice(0, 2)"
-                    :key="group"
-                    size="x-small"
-                    style="background-color: rgba(240, 138, 74, 0.1); color: #f08a4a; border: 1px solid rgba(240, 138, 74, 0.2)"
-                  >
-                    {{ group }}
-                  </v-chip>
-                  <v-chip
-                    v-if="userDetails.groups.length > 2"
-                    size="x-small"
-                    style="background-color: rgba(240, 138, 74, 0.1); color: #f08a4a; border: 1px solid rgba(240, 138, 74, 0.2)"
-                  >
-                    +{{ userDetails.groups.length - 2 }}
-                  </v-chip>
-                </div>
+                <!-- Welcome Message -->
+                <p class="text-caption mb-0 text-medium-emphasis">
+                  Welcome to InsightHub
+                </p>
               </div>
             </div>
 
-            <!-- Action Button -->
-            <v-btn
-              size="small"
-              prepend-icon="mdi-apps"
-              variant="elevated"
-              block
-              class="mt-2"
-              style="background-color: #f08a4a !important; color: white !important; width: 100%"
-              @click="openNavigation"
-            >
-              Open Navigation
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+            <v-card-text class="pa-4">
+              <!-- User Details -->
+              <div v-if="userDetails" class="user-details mb-3">
+                <div
+                  v-if="userDetails.department || userDetails.jobTitle"
+                  class="detail-row mb-2"
+                >
+                  <div v-if="userDetails.jobTitle" class="detail-item">
+                    <v-icon size="16" style="color: #f08a4a" class="mr-2"
+                      >mdi-briefcase</v-icon
+                    >
+                    <span class="text-body-2">{{ userDetails.jobTitle }}</span>
+                  </div>
+                  <div v-if="userDetails.department" class="detail-item">
+                    <v-icon size="16" style="color: #f08a4a" class="mr-2"
+                      >mdi-office-building</v-icon
+                    >
+                    <span class="text-body-2">{{
+                      userDetails.department
+                    }}</span>
+                  </div>
+                </div>
+
+                <div v-if="userDetails.orgUnit" class="detail-row mb-2">
+                  <v-icon size="16" style="color: #f08a4a" class="mr-2"
+                    >mdi-domain</v-icon
+                  >
+                  <span class="text-body-2">{{ userDetails.orgUnit }}</span>
+                </div>
+
+                <div
+                  v-if="userDetails.groups && userDetails.groups.length > 0"
+                  class="detail-row"
+                >
+                  <div class="d-flex align-center flex-wrap gap-1">
+                    <v-icon size="16" style="color: #f08a4a" class="mr-1"
+                      >mdi-account-group</v-icon
+                    >
+                    <v-chip
+                      v-for="group in userDetails.groups.slice(0, 2)"
+                      :key="group"
+                      size="x-small"
+                      style="
+                        background-color: rgba(240, 138, 74, 0.1);
+                        color: #f08a4a;
+                        border: 1px solid rgba(240, 138, 74, 0.2);
+                      "
+                    >
+                      {{ group }}
+                    </v-chip>
+                    <v-chip
+                      v-if="userDetails.groups.length > 2"
+                      size="x-small"
+                      style="
+                        background-color: rgba(240, 138, 74, 0.1);
+                        color: #f08a4a;
+                        border: 1px solid rgba(240, 138, 74, 0.2);
+                      "
+                    >
+                      +{{ userDetails.groups.length - 2 }}
+                    </v-chip>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Button -->
+              <v-btn
+                size="small"
+                prepend-icon="mdi-apps"
+                variant="elevated"
+                block
+                class="mt-2"
+                style="
+                  background-color: #f08a4a !important;
+                  color: white !important;
+                  width: 100%;
+                "
+                @click="openNavigation"
+              >
+                Open Navigation
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import { useThemeStore } from '@/stores/theme';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -165,20 +196,26 @@ const userProfilePicture = computed(() => {
 const displayName = computed(() => {
   // First try userFullName
   if (userFullName.value) {
-    return typeof userFullName.value === 'string' ? userFullName.value : String(userFullName.value);
+    return typeof userFullName.value === "string"
+      ? userFullName.value
+      : String(userFullName.value);
   }
   // Then try userDisplayName
   if (userDisplayName.value) {
-    return typeof userDisplayName.value === 'string' ? userDisplayName.value : String(userDisplayName.value);
+    return typeof userDisplayName.value === "string"
+      ? userDisplayName.value
+      : String(userDisplayName.value);
   }
   // Fallback to authStore user name
   if (authStore.user?.name) {
     const name = authStore.user.name;
-    return typeof name === 'string' ? name : (name.fullName || name.firstName || String(name));
+    return typeof name === "string"
+      ? name
+      : name.fullName || name.firstName || String(name);
   }
   // Try email as last resort
   if (authStore.user?.email) {
-    return authStore.user.email.split('@')[0];
+    return authStore.user.email.split("@")[0];
   }
   return null;
 });
@@ -186,9 +223,9 @@ const displayName = computed(() => {
 // Compute user initials for avatar fallback
 const userInitials = computed(() => {
   const name = displayName.value;
-  if (!name) return '?';
-  const nameStr = typeof name === 'string' ? name : String(name);
-  const parts = nameStr.split(' ');
+  if (!name) return "?";
+  const nameStr = typeof name === "string" ? name : String(name);
+  const parts = nameStr.split(" ");
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
@@ -202,17 +239,17 @@ onMounted(async () => {
     // Safely extract name as string
     const name = authStore.user.name;
     if (name) {
-      if (typeof name === 'string') {
+      if (typeof name === "string") {
         userDisplayName.value = name;
-      } else if (typeof name === 'object' && name.fullName) {
+      } else if (typeof name === "object" && name.fullName) {
         userDisplayName.value = name.fullName;
-      } else if (typeof name === 'object' && name.firstName) {
+      } else if (typeof name === "object" && name.firstName) {
         userDisplayName.value = name.firstName;
       } else {
         userDisplayName.value = String(name);
       }
     } else {
-      userDisplayName.value = authStore.user.email?.split('@')[0] || null;
+      userDisplayName.value = authStore.user.email?.split("@")[0] || null;
     }
   }
 
@@ -223,28 +260,30 @@ onMounted(async () => {
       userDetails.value = authStore.cachedUserDetails;
       // Set full name from cached details (ensure it's a string)
       if (authStore.cachedUserDetails.fullName) {
-        userFullName.value = typeof authStore.cachedUserDetails.fullName === 'string' 
-          ? authStore.cachedUserDetails.fullName 
-          : String(authStore.cachedUserDetails.fullName);
+        userFullName.value =
+          typeof authStore.cachedUserDetails.fullName === "string"
+            ? authStore.cachedUserDetails.fullName
+            : String(authStore.cachedUserDetails.fullName);
       } else if (authStore.cachedUserDetails.name) {
         const name = authStore.cachedUserDetails.name;
-        userFullName.value = typeof name === 'string' ? name : String(name);
+        userFullName.value = typeof name === "string" ? name : String(name);
       }
     } else {
       // Fetch from API
-      const { apiService } = await import('@/services/api');
-      const response = await apiService.get('/api/user/details');
+      const { apiService } = await import("@/services/api");
+      const response = await apiService.get("/api/user/details");
       if (response.data?.data) {
         userDetails.value = response.data.data;
         authStore.cachedUserDetails = response.data.data;
         // Set full name from API response (ensure it's a string)
         if (response.data.data.fullName) {
-          userFullName.value = typeof response.data.data.fullName === 'string'
-            ? response.data.data.fullName
-            : String(response.data.data.fullName);
+          userFullName.value =
+            typeof response.data.data.fullName === "string"
+              ? response.data.data.fullName
+              : String(response.data.data.fullName);
         } else if (response.data.data.name) {
           const name = response.data.data.name;
-          userFullName.value = typeof name === 'string' ? name : String(name);
+          userFullName.value = typeof name === "string" ? name : String(name);
         }
       }
     }
@@ -252,9 +291,9 @@ onMounted(async () => {
     // Fallback: If we still don't have full name, use from authStore
     if (!userFullName.value && authStore.user?.name) {
       const name = authStore.user.name;
-      if (typeof name === 'string') {
+      if (typeof name === "string") {
         userFullName.value = name;
-      } else if (typeof name === 'object' && name.fullName) {
+      } else if (typeof name === "object" && name.fullName) {
         userFullName.value = name.fullName;
       } else {
         userFullName.value = String(name);
@@ -265,9 +304,9 @@ onMounted(async () => {
     // Fallback to authStore data
     if (!userFullName.value && authStore.user?.name) {
       const name = authStore.user.name;
-      if (typeof name === 'string') {
+      if (typeof name === "string") {
         userFullName.value = name;
-      } else if (typeof name === 'object' && name.fullName) {
+      } else if (typeof name === "object" && name.fullName) {
         userFullName.value = name.fullName;
       } else {
         userFullName.value = String(name);
@@ -316,7 +355,13 @@ onMounted(async () => {
   };
 
   const run = () => {
-    const svgString = generateBinaryPatternSVG(viewportWidth, viewportHeight, color, fontSize, spacing);
+    const svgString = generateBinaryPatternSVG(
+      viewportWidth,
+      viewportHeight,
+      color,
+      fontSize,
+      spacing,
+    );
     applySvgString(svgString);
   };
 
@@ -345,7 +390,7 @@ onUnmounted(() => {
 
 const openNavigation = () => {
   // Dispatch custom event to open overlay sidebar
-  window.dispatchEvent(new CustomEvent('openOverlaySidebar'));
+  window.dispatchEvent(new CustomEvent("openOverlaySidebar"));
 };
 </script>
 
@@ -397,7 +442,12 @@ const openNavigation = () => {
       )
       25px 25px,
     linear-gradient(var(--pattern-color-2) 2px, transparent 2px) 0 -1px,
-    linear-gradient(90deg, var(--pattern-color-2) 2px, var(--pattern-color-1) 2px) -1px 0
+    linear-gradient(
+        90deg,
+        var(--pattern-color-2) 2px,
+        var(--pattern-color-1) 2px
+      ) -1px
+      0
   );
   background-repeat: var(--welcome-pattern-repeat, no-repeat);
   background-position: center center;
@@ -442,12 +492,12 @@ const openNavigation = () => {
   overflow: hidden;
   background: rgb(var(--v-theme-surface)) !important;
   border: 2px solid transparent !important;
-  background-image: 
+  background-image:
     linear-gradient(rgb(var(--v-theme-surface)), rgb(var(--v-theme-surface))),
     linear-gradient(135deg, #f08a4a 0%, #ffb74d 50%, #f08a4a 100%);
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(240, 138, 74, 0.15),
     0 2px 8px rgba(0, 0, 0, 0.08) !important;
   position: relative;
@@ -455,13 +505,13 @@ const openNavigation = () => {
 }
 
 .v-theme--dark .welcome-card {
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(240, 138, 74, 0.2),
     0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .welcome-card::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: 16px;
@@ -473,7 +523,7 @@ const openNavigation = () => {
 }
 
 .welcome-card:hover {
-  box-shadow: 
+  box-shadow:
     0 12px 32px rgba(240, 138, 74, 0.2),
     0 4px 12px rgba(0, 0, 0, 0.12) !important;
   transform: translateY(-4px);
@@ -553,15 +603,15 @@ const openNavigation = () => {
     margin: 0 16px;
     max-width: 100%;
   }
-  
+
   .welcome-header {
     padding: 16px 16px 14px;
   }
-  
+
   .welcome-card :deep(.v-card-text) {
     padding: 14px 16px 16px !important;
   }
-  
+
   .detail-row {
     padding: 4px 0;
   }

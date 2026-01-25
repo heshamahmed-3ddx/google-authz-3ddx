@@ -6,7 +6,7 @@
           <v-icon size="32" class="mr-3">mdi-shield-account</v-icon>
           <h1 class="text-h4 font-weight-bold">Admin Settings</h1>
         </div>
-        
+
         <!-- Admin Info Alert -->
         <v-alert
           type="info"
@@ -16,7 +16,9 @@
         >
           <div class="text-subtitle-2 mb-1">Super Admin Access</div>
           <div class="text-body-2">
-            You are a member of the <strong>SWD</strong> group. You can manage which Google Workspace groups are allowed to access this application.
+            You are a member of the <strong>SWD</strong> group. You can manage
+            which Google Workspace groups are allowed to access this
+            application.
           </div>
         </v-alert>
 
@@ -30,7 +32,7 @@
 
           <!-- Add New Group Form -->
           <v-card-text>
-            <v-form @submit.prevent="addGroup" ref="addGroupForm">
+            <v-form ref="addGroupForm" @submit.prevent="addGroup">
               <v-row>
                 <v-col cols="12" md="8">
                   <v-text-field
@@ -38,12 +40,12 @@
                     label="Google Group Name"
                     hint="Enter the exact group name as it appears in Google Workspace (e.g., Finance, Engineering)"
                     persistent-hint
-                    :rules="[v => !!v || 'Group name is required']"
+                    :rules="[(v) => !!v || 'Group name is required']"
                     :disabled="loading"
                     variant="outlined"
                     density="comfortable"
                   >
-                    <template v-slot:prepend-inner>
+                    <template #prepend-inner>
                       <v-icon>mdi-google</v-icon>
                     </template>
                   </v-text-field>
@@ -70,14 +72,28 @@
           <!-- Groups List -->
           <v-card-text>
             <div v-if="loadingGroups" class="text-center py-8">
-              <v-progress-circular indeterminate color="primary"></v-progress-circular>
-              <p class="text-body-2 text-medium-emphasis mt-4">Loading groups...</p>
+              <v-progress-circular
+                indeterminate
+                color="primary"
+              ></v-progress-circular>
+              <p class="text-body-2 text-medium-emphasis mt-4">
+                Loading groups...
+              </p>
             </div>
 
-            <div v-else-if="allowedGroups.length === 0" class="text-center py-8">
-              <v-icon size="64" color="grey-lighten-1">mdi-account-group-outline</v-icon>
-              <p class="text-h6 text-medium-emphasis mt-4">No groups configured</p>
-              <p class="text-body-2 text-medium-emphasis">Add your first group above to get started</p>
+            <div
+              v-else-if="allowedGroups.length === 0"
+              class="text-center py-8"
+            >
+              <v-icon size="64" color="grey-lighten-1"
+                >mdi-account-group-outline</v-icon
+              >
+              <p class="text-h6 text-medium-emphasis mt-4">
+                No groups configured
+              </p>
+              <p class="text-body-2 text-medium-emphasis">
+                Add your first group above to get started
+              </p>
             </div>
 
             <v-list v-else lines="two">
@@ -86,7 +102,7 @@
                 :key="group.groupName"
                 :class="{ 'border-b': index < allowedGroups.length - 1 }"
               >
-                <template v-slot:prepend>
+                <template #prepend>
                   <v-avatar color="primary" size="40">
                     <v-icon>mdi-account-group</v-icon>
                   </v-avatar>
@@ -99,17 +115,19 @@
                   Added {{ formatDate(group.createdAt) }}
                 </v-list-item-subtitle>
 
-                <template v-slot:append>
+                <template #append>
                   <v-btn
                     icon="mdi-shield-edit"
                     size="small"
                     variant="text"
                     color="primary"
-                    @click="openEditPermissions(group.groupName)"
                     class="mr-2"
+                    @click="openEditPermissions(group.groupName)"
                   >
                     <v-icon>mdi-shield-edit</v-icon>
-                    <v-tooltip activator="parent" location="top">Edit Permissions</v-tooltip>
+                    <v-tooltip activator="parent" location="top"
+                      >Edit Permissions</v-tooltip
+                    >
                   </v-btn>
                   <v-btn
                     icon="mdi-delete"
@@ -120,7 +138,9 @@
                     @click="confirmDeleteGroup(group.groupName)"
                   >
                     <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="top">Remove Group</v-tooltip>
+                    <v-tooltip activator="parent" location="top"
+                      >Remove Group</v-tooltip
+                    >
                   </v-btn>
                 </template>
               </v-list-item>
@@ -132,10 +152,14 @@
         <v-card class="mt-6" variant="outlined">
           <v-card-text>
             <div class="d-flex align-start">
-              <v-icon class="mr-3 mt-1" color="info">mdi-information-outline</v-icon>
+              <v-icon class="mr-3 mt-1" color="info"
+                >mdi-information-outline</v-icon
+              >
               <div>
-                <div class="text-subtitle-2 mb-2">How it works - Complete Process</div>
-                
+                <div class="text-subtitle-2 mb-2">
+                  How it works - Complete Process
+                </div>
+
                 <div class="text-body-2 text-medium-emphasis mb-3">
                   <strong>Step 1: User Login</strong>
                   <ul class="ml-4 mt-1">
@@ -147,17 +171,29 @@
                 <div class="text-body-2 text-medium-emphasis mb-3">
                   <strong>Step 2: Access Control Check</strong>
                   <ul class="ml-4 mt-1">
-                    <li>System checks if user belongs to any "Allowed Groups" configured below</li>
+                    <li>
+                      System checks if user belongs to any "Allowed Groups"
+                      configured below
+                    </li>
                     <li>If not in any allowed group → Access denied</li>
-                    <li>If in an allowed group → Access granted, continue to Step 3</li>
+                    <li>
+                      If in an allowed group → Access granted, continue to Step
+                      3
+                    </li>
                   </ul>
                 </div>
 
                 <div class="text-body-2 text-medium-emphasis mb-3">
                   <strong>Step 3: Permission Check (Per Group)</strong>
                   <ul class="ml-4 mt-1">
-                    <li>Each allowed group has specific permissions (resources + actions)</li>
-                    <li>Example: "Finance" group can "read" reports, "write" invoices</li>
+                    <li>
+                      Each allowed group has specific permissions (resources +
+                      actions)
+                    </li>
+                    <li>
+                      Example: "Finance" group can "read" reports, "write"
+                      invoices
+                    </li>
                     <li>User inherits all permissions from their groups</li>
                   </ul>
                 </div>
@@ -165,19 +201,41 @@
                 <div class="text-body-2 text-medium-emphasis mb-3">
                   <strong>Managing Groups & Permissions:</strong>
                   <ul class="ml-4 mt-1">
-                    <li><strong>Add Group:</strong> Enter Google group name above (e.g., "Finance", "Engineering")</li>
-                    <li><strong>Edit Permissions:</strong> Click <v-icon size="small" color="primary">mdi-shield-edit</v-icon> next to any group to manage what they can access</li>
-                    <li><strong>Remove Group:</strong> Click <v-icon size="small" color="error">mdi-delete</v-icon> to revoke all access for that group</li>
+                    <li>
+                      <strong>Add Group:</strong> Enter Google group name above
+                      (e.g., "Finance", "Engineering")
+                    </li>
+                    <li>
+                      <strong>Edit Permissions:</strong> Click
+                      <v-icon size="small" color="primary"
+                        >mdi-shield-edit</v-icon
+                      >
+                      next to any group to manage what they can access
+                    </li>
+                    <li>
+                      <strong>Remove Group:</strong> Click
+                      <v-icon size="small" color="error">mdi-delete</v-icon> to
+                      revoke all access for that group
+                    </li>
                   </ul>
                 </div>
 
                 <div class="text-body-2 text-medium-emphasis">
                   <strong>Important Notes:</strong>
                   <ul class="ml-4 mt-1">
-                    <li>Members of <strong>SWD</strong> group are always super admins (full access)</li>
-                    <li>Group names must match exactly as they appear in Google Workspace</li>
+                    <li>
+                      Members of <strong>SWD</strong> group are always super
+                      admins (full access)
+                    </li>
+                    <li>
+                      Group names must match exactly as they appear in Google
+                      Workspace
+                    </li>
                     <li>Changes take effect immediately (no restart needed)</li>
-                    <li>All policies are stored in the database for dynamic updates</li>
+                    <li>
+                      All policies are stored in the database for dynamic
+                      updates
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -194,12 +252,15 @@
           <v-icon class="mr-2">mdi-shield-edit</v-icon>
           Edit Permissions: {{ selectedGroup }}
         </v-card-title>
-        
+
         <v-divider></v-divider>
 
         <!-- Add Resource/Action -->
         <v-card-text class="pt-4">
-          <v-form @submit.prevent="addPermissionToGroup" ref="addPermissionForm">
+          <v-form
+            ref="addPermissionForm"
+            @submit.prevent="addPermissionToGroup"
+          >
             <v-row>
               <v-col cols="12" sm="6">
                 <v-combobox
@@ -213,10 +274,10 @@
                   density="comfortable"
                   clearable
                 >
-                  <template v-slot:prepend-inner>
+                  <template #prepend-inner>
                     <v-icon>mdi-file-document</v-icon>
                   </template>
-                  <template v-slot:no-data>
+                  <template #no-data>
                     <v-list-item>
                       <v-list-item-title class="text-caption">
                         Type a resource name (e.g., dashboard, reports, users)
@@ -229,12 +290,20 @@
                 <v-select
                   v-model="newPermission.action"
                   label="Action"
-                  :items="['read', 'write', 'delete', 'manage', 'access', 'create', 'update']"
+                  :items="[
+                    'read',
+                    'write',
+                    'delete',
+                    'manage',
+                    'access',
+                    'create',
+                    'update',
+                  ]"
                   :disabled="loadingPermission"
                   variant="outlined"
                   density="comfortable"
                 >
-                  <template v-slot:prepend-inner>
+                  <template #prepend-inner>
                     <v-icon>mdi-lightning-bolt</v-icon>
                   </template>
                 </v-select>
@@ -245,7 +314,11 @@
                   color="primary"
                   size="large"
                   :loading="loadingPermission"
-                  :disabled="!newPermission.resource || !newPermission.action || loadingPermission"
+                  :disabled="
+                    !newPermission.resource ||
+                    !newPermission.action ||
+                    loadingPermission
+                  "
                   block
                 >
                   <v-icon>mdi-plus</v-icon>
@@ -258,14 +331,28 @@
 
           <!-- Permissions List -->
           <div v-if="loadingGroupPermissions" class="text-center py-8">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
-            <p class="text-body-2 text-medium-emphasis mt-4">Loading permissions...</p>
+            <v-progress-circular
+              indeterminate
+              color="primary"
+            ></v-progress-circular>
+            <p class="text-body-2 text-medium-emphasis mt-4">
+              Loading permissions...
+            </p>
           </div>
 
-          <div v-else-if="groupPermissions.length === 0" class="text-center py-8">
-            <v-icon size="48" color="grey-lighten-1">mdi-shield-alert-outline</v-icon>
-            <p class="text-body-1 text-medium-emphasis mt-4">No permissions configured</p>
-            <p class="text-body-2 text-medium-emphasis">Add a resource and action above</p>
+          <div
+            v-else-if="groupPermissions.length === 0"
+            class="text-center py-8"
+          >
+            <v-icon size="48" color="grey-lighten-1"
+              >mdi-shield-alert-outline</v-icon
+            >
+            <p class="text-body-1 text-medium-emphasis mt-4">
+              No permissions configured
+            </p>
+            <p class="text-body-2 text-medium-emphasis">
+              Add a resource and action above
+            </p>
           </div>
 
           <v-list v-else lines="one">
@@ -274,9 +361,15 @@
               :key="index"
               :class="{ 'border-b': index < groupPermissions.length - 1 }"
             >
-              <template v-slot:prepend>
-                <v-avatar :color="getActionColor(permission.action)" size="36" variant="tonal">
-                  <v-icon size="20" color="white">{{ getActionIcon(permission.action) }}</v-icon>
+              <template #prepend>
+                <v-avatar
+                  :color="getActionColor(permission.action)"
+                  size="36"
+                  variant="tonal"
+                >
+                  <v-icon size="20" color="white">{{
+                    getActionIcon(permission.action)
+                  }}</v-icon>
                 </v-avatar>
               </template>
 
@@ -284,18 +377,26 @@
                 {{ permission.resource }}
               </v-list-item-title>
               <v-list-item-subtitle>
-                <v-chip size="small" :color="getActionColor(permission.action)" variant="tonal" class="mt-1">
+                <v-chip
+                  size="small"
+                  :color="getActionColor(permission.action)"
+                  variant="tonal"
+                  class="mt-1"
+                >
                   {{ permission.action }}
                 </v-chip>
               </v-list-item-subtitle>
 
-              <template v-slot:append>
+              <template #append>
                 <v-btn
                   icon="mdi-delete"
                   size="small"
                   variant="text"
                   color="error"
-                  :loading="deletingPermission === `${permission.resource}-${permission.action}`"
+                  :loading="
+                    deletingPermission ===
+                    `${permission.resource}-${permission.action}`
+                  "
                   @click="removePermissionFromGroup(permission)"
                 ></v-btn>
               </template>
@@ -326,24 +427,22 @@
           Confirm Removal
         </v-card-title>
         <v-card-text>
-          Are you sure you want to remove the <strong>{{ groupToDelete }}</strong> group from the allowed list?
-          <br><br>
-          Users in this group will no longer be able to access the application (unless they're in another allowed group or the SWD group).
+          Are you sure you want to remove the
+          <strong>{{ groupToDelete }}</strong> group from the allowed list?
+          <br /><br />
+          Users in this group will no longer be able to access the application
+          (unless they're in another allowed group or the SWD group).
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            text
-            @click="deleteDialog = false"
-            :disabled="deletingGroup"
-          >
+          <v-btn text :disabled="deletingGroup" @click="deleteDialog = false">
             Cancel
           </v-btn>
           <v-btn
             color="error"
             variant="flat"
-            @click="deleteGroup"
             :loading="deletingGroup"
+            @click="deleteGroup"
           >
             Remove Group
           </v-btn>
@@ -360,7 +459,7 @@
         </v-card-title>
         <v-card-text>
           Are you sure you want to remove this policy?
-          <br><br>
+          <br /><br />
           <v-chip size="small" color="primary" variant="tonal" class="mr-2">
             {{ policyToDelete?.subject }}
           </v-chip>
@@ -377,16 +476,16 @@
           <v-spacer></v-spacer>
           <v-btn
             text
-            @click="deletePolicyDialog = false"
             :disabled="deletingPolicy"
+            @click="deletePolicyDialog = false"
           >
             Cancel
           </v-btn>
           <v-btn
             color="error"
             variant="flat"
-            @click="deletePolicy"
             :loading="deletingPolicy"
+            @click="deletePolicy"
           >
             Remove Policy
           </v-btn>
@@ -402,36 +501,31 @@
       location="top"
     >
       {{ snackbarMessage }}
-      <template v-slot:actions>
-        <v-btn
-          variant="text"
-          @click="snackbar = false"
-        >
-          Close
-        </v-btn>
+      <template #actions>
+        <v-btn variant="text" @click="snackbar = false"> Close </v-btn>
       </template>
     </v-snackbar>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import api from '@/services/api';
+import { ref, onMounted, computed } from "vue";
+import api from "@/services/api";
 
 const allowedGroups = ref([]);
-const newGroupName = ref('');
+const newGroupName = ref("");
 const loading = ref(false);
 const loadingGroups = ref(false);
 const deletingGroup = ref(null);
 const deleteDialog = ref(false);
-const groupToDelete = ref('');
+const groupToDelete = ref("");
 const addGroupForm = ref(null);
 
 // Group permissions dialog
 const editPermissionsDialog = ref(false);
-const selectedGroup = ref('');
+const selectedGroup = ref("");
 const groupPermissions = ref([]);
-const newPermission = ref({ resource: '', action: '' });
+const newPermission = ref({ resource: "", action: "" });
 const loadingPermission = ref(false);
 const loadingGroupPermissions = ref(false);
 const deletingPermission = ref(null);
@@ -439,7 +533,7 @@ const addPermissionForm = ref(null);
 
 // Policies management (keeping for backward compatibility)
 const policies = ref([]);
-const newPolicy = ref({ subject: '', object: '', action: '' });
+const newPolicy = ref({ subject: "", object: "", action: "" });
 const loadingPolicy = ref(false);
 const loadingPolicies = ref(false);
 const deletingPolicy = ref(null);
@@ -449,30 +543,34 @@ const addPolicyForm = ref(null);
 
 // Snackbar
 const snackbar = ref(false);
-const snackbarMessage = ref('');
-const snackbarColor = ref('success');
+const snackbarMessage = ref("");
+const snackbarColor = ref("success");
 
 // Computed: available groups for policy subject dropdown
 const availableGroups = computed(() => {
-  return allowedGroups.value.map(g => g.groupName);
+  return allowedGroups.value.map((g) => g.groupName);
 });
 
 // Computed: available resources from existing policies
 const availableResources = computed(() => {
   if (!policies.value || policies.value.length === 0) return [];
   // Get unique resources from all policies
-  const uniqueResources = [...new Set(policies.value.map(p => p.object))];
+  const uniqueResources = [...new Set(policies.value.map((p) => p.object))];
   return uniqueResources.sort();
 });
 
 async function fetchGroups() {
   loadingGroups.value = true;
   try {
-    const response = await api.get('/admin/groups/allowed');
+    const response = await api.get("/admin/groups/allowed");
     allowedGroups.value = response.data.groups || [];
   } catch (error) {
-    console.error('Error fetching groups:', error);
-    showMessage('Failed to load groups: ' + (error.response?.data?.message || error.message), 'error');
+    console.error("Error fetching groups:", error);
+    showMessage(
+      "Failed to load groups: " +
+        (error.response?.data?.message || error.message),
+      "error",
+    );
   } finally {
     loadingGroups.value = false;
   }
@@ -485,18 +583,18 @@ async function addGroup() {
 
   loading.value = true;
   try {
-    await api.post('/admin/groups/allowed', {
-      groupName: newGroupName.value.trim()
+    await api.post("/admin/groups/allowed", {
+      groupName: newGroupName.value.trim(),
     });
-    
-    showMessage(`Group "${newGroupName.value}" added successfully`, 'success');
-    newGroupName.value = '';
+
+    showMessage(`Group "${newGroupName.value}" added successfully`, "success");
+    newGroupName.value = "";
     addGroupForm.value?.reset();
     await fetchGroups();
   } catch (error) {
-    console.error('Error adding group:', error);
+    console.error("Error adding group:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to add group: ' + errorMsg, 'error');
+    showMessage("Failed to add group: " + errorMsg, "error");
   } finally {
     loading.value = false;
   }
@@ -512,36 +610,41 @@ async function deleteGroup() {
 
   deletingGroup.value = groupToDelete.value;
   try {
-    await api.delete(`/admin/groups/allowed/${encodeURIComponent(groupToDelete.value)}`);
-    
-    showMessage(`Group "${groupToDelete.value}" removed successfully`, 'success');
+    await api.delete(
+      `/admin/groups/allowed/${encodeURIComponent(groupToDelete.value)}`,
+    );
+
+    showMessage(
+      `Group "${groupToDelete.value}" removed successfully`,
+      "success",
+    );
     deleteDialog.value = false;
-    groupToDelete.value = '';
+    groupToDelete.value = "";
     await fetchGroups();
   } catch (error) {
-    console.error('Error deleting group:', error);
+    console.error("Error deleting group:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to remove group: ' + errorMsg, 'error');
+    showMessage("Failed to remove group: " + errorMsg, "error");
   } finally {
     deletingGroup.value = null;
   }
 }
 
-function showMessage(message, color = 'success') {
+function showMessage(message, color = "success") {
   snackbarMessage.value = message;
   snackbarColor.value = color;
   snackbar.value = true;
 }
 
 function formatDate(dateString) {
-  if (!dateString) return 'Unknown';
+  if (!dateString) return "Unknown";
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -550,25 +653,27 @@ async function openEditPermissions(groupName) {
   selectedGroup.value = groupName;
   editPermissionsDialog.value = true;
   // Load both group permissions and all policies to populate autocomplete
-  await Promise.all([
-    loadGroupPermissions(groupName),
-    fetchPolicies()
-  ]);
+  await Promise.all([loadGroupPermissions(groupName), fetchPolicies()]);
 }
 
 async function loadGroupPermissions(groupName) {
   loadingGroupPermissions.value = true;
   try {
-    const response = await api.get('/admin/policies');
-    const allPolicies = response.data.data?.policies || response.data.policies || [];
-    
+    const response = await api.get("/admin/policies");
+    const allPolicies =
+      response.data.data?.policies || response.data.policies || [];
+
     // Filter policies for this specific group
     groupPermissions.value = allPolicies
-      .filter(p => p.subject === groupName)
-      .map(p => ({ resource: p.object, action: p.action }));
+      .filter((p) => p.subject === groupName)
+      .map((p) => ({ resource: p.object, action: p.action }));
   } catch (error) {
-    console.error('Error loading group permissions:', error);
-    showMessage('Failed to load permissions: ' + (error.response?.data?.message || error.message), 'error');
+    console.error("Error loading group permissions:", error);
+    showMessage(
+      "Failed to load permissions: " +
+        (error.response?.data?.message || error.message),
+      "error",
+    );
   } finally {
     loadingGroupPermissions.value = false;
   }
@@ -581,20 +686,20 @@ async function addPermissionToGroup() {
 
   loadingPermission.value = true;
   try {
-    await api.post('/admin/policies', {
+    await api.post("/admin/policies", {
       subject: selectedGroup.value,
       object: newPermission.value.resource.trim(),
-      action: newPermission.value.action
+      action: newPermission.value.action,
     });
-    
-    showMessage('Permission added successfully', 'success');
-    newPermission.value = { resource: '', action: '' };
+
+    showMessage("Permission added successfully", "success");
+    newPermission.value = { resource: "", action: "" };
     addPermissionForm.value?.reset();
     await loadGroupPermissions(selectedGroup.value);
   } catch (error) {
-    console.error('Error adding permission:', error);
+    console.error("Error adding permission:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to add permission: ' + errorMsg, 'error');
+    showMessage("Failed to add permission: " + errorMsg, "error");
   } finally {
     loadingPermission.value = false;
   }
@@ -603,22 +708,22 @@ async function addPermissionToGroup() {
 async function removePermissionFromGroup(permission) {
   const permissionKey = `${permission.resource}-${permission.action}`;
   deletingPermission.value = permissionKey;
-  
+
   try {
-    await api.delete('/admin/policies', {
+    await api.delete("/admin/policies", {
       data: {
         subject: selectedGroup.value,
         object: permission.resource,
-        action: permission.action
-      }
+        action: permission.action,
+      },
     });
-    
-    showMessage('Permission removed successfully', 'success');
+
+    showMessage("Permission removed successfully", "success");
     await loadGroupPermissions(selectedGroup.value);
   } catch (error) {
-    console.error('Error removing permission:', error);
+    console.error("Error removing permission:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to remove permission: ' + errorMsg, 'error');
+    showMessage("Failed to remove permission: " + errorMsg, "error");
   } finally {
     deletingPermission.value = null;
   }
@@ -628,37 +733,46 @@ async function removePermissionFromGroup(permission) {
 async function fetchPolicies() {
   loadingPolicies.value = true;
   try {
-    const response = await api.get('/admin/policies');
-    policies.value = response.data.data?.policies || response.data.policies || [];
+    const response = await api.get("/admin/policies");
+    policies.value =
+      response.data.data?.policies || response.data.policies || [];
   } catch (error) {
-    console.error('Error fetching policies:', error);
-    showMessage('Failed to load policies: ' + (error.response?.data?.message || error.message), 'error');
+    console.error("Error fetching policies:", error);
+    showMessage(
+      "Failed to load policies: " +
+        (error.response?.data?.message || error.message),
+      "error",
+    );
   } finally {
     loadingPolicies.value = false;
   }
 }
 
 async function addPolicy() {
-  if (!newPolicy.value.subject || !newPolicy.value.object || !newPolicy.value.action) {
+  if (
+    !newPolicy.value.subject ||
+    !newPolicy.value.object ||
+    !newPolicy.value.action
+  ) {
     return;
   }
 
   loadingPolicy.value = true;
   try {
-    await api.post('/admin/policies', {
+    await api.post("/admin/policies", {
       subject: newPolicy.value.subject.trim(),
       object: newPolicy.value.object.trim(),
-      action: newPolicy.value.action
+      action: newPolicy.value.action,
     });
-    
-    showMessage('Policy added successfully', 'success');
-    newPolicy.value = { subject: '', object: '', action: '' };
+
+    showMessage("Policy added successfully", "success");
+    newPolicy.value = { subject: "", object: "", action: "" };
     addPolicyForm.value?.reset();
     await fetchPolicies();
   } catch (error) {
-    console.error('Error adding policy:', error);
+    console.error("Error adding policy:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to add policy: ' + errorMsg, 'error');
+    showMessage("Failed to add policy: " + errorMsg, "error");
   } finally {
     loadingPolicy.value = false;
   }
@@ -675,22 +789,22 @@ async function deletePolicy() {
   const policyKey = `${policyToDelete.value.subject}-${policyToDelete.value.object}-${policyToDelete.value.action}`;
   deletingPolicy.value = policyKey;
   try {
-    await api.delete('/admin/policies', {
+    await api.delete("/admin/policies", {
       data: {
         subject: policyToDelete.value.subject,
         object: policyToDelete.value.object,
-        action: policyToDelete.value.action
-      }
+        action: policyToDelete.value.action,
+      },
     });
-    
-    showMessage('Policy removed successfully', 'success');
+
+    showMessage("Policy removed successfully", "success");
     deletePolicyDialog.value = false;
     policyToDelete.value = null;
     await fetchPolicies();
   } catch (error) {
-    console.error('Error deleting policy:', error);
+    console.error("Error deleting policy:", error);
     const errorMsg = error.response?.data?.message || error.message;
-    showMessage('Failed to remove policy: ' + errorMsg, 'error');
+    showMessage("Failed to remove policy: " + errorMsg, "error");
   } finally {
     deletingPolicy.value = null;
   }
@@ -698,24 +812,24 @@ async function deletePolicy() {
 
 function getActionColor(action) {
   const colors = {
-    read: 'success',
-    write: 'warning',
-    delete: 'error',
-    manage: 'info',
-    access: 'primary'
+    read: "success",
+    write: "warning",
+    delete: "error",
+    manage: "info",
+    access: "primary",
   };
-  return colors[action] || 'grey';
+  return colors[action] || "grey";
 }
 
 function getActionIcon(action) {
   const icons = {
-    read: 'mdi-eye',
-    write: 'mdi-pencil',
-    delete: 'mdi-delete',
-    manage: 'mdi-cog',
-    access: 'mdi-login'
+    read: "mdi-eye",
+    write: "mdi-pencil",
+    delete: "mdi-delete",
+    manage: "mdi-cog",
+    access: "mdi-login",
   };
-  return icons[action] || 'mdi-lightning-bolt';
+  return icons[action] || "mdi-lightning-bolt";
 }
 
 onMounted(() => {

@@ -45,7 +45,11 @@
           </v-card-title>
           <v-card-text>
             <div class="d-flex align-center gap-3">
-              <v-icon icon="mdi-source-repository" size="24" color="primary"></v-icon>
+              <v-icon
+                icon="mdi-source-repository"
+                size="24"
+                color="primary"
+              ></v-icon>
               <div class="flex-grow-1">
                 <div class="text-subtitle-1 font-weight-medium mb-1">
                   {{ githubInfo.repositoryName }}
@@ -457,13 +461,13 @@ const breadcrumbs = computed(() => {
 // Load GitHub repository information
 onMounted(async () => {
   try {
-    const response = await apiService.get('/config/github');
+    const response = await apiService.get("/config/github");
     if (response.data.success && response.data.data) {
       githubInfo.value = response.data.data;
     }
   } catch (error) {
     // Silently fail - GitHub link is optional
-    console.warn('Failed to load GitHub repository information:', error);
+    console.warn("Failed to load GitHub repository information:", error);
   }
 });
 </script>

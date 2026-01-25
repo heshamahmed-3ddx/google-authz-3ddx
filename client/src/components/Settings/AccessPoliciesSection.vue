@@ -2,12 +2,22 @@
   <div class="access-policies-section">
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
-      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        size="64"
+      ></v-progress-circular>
       <p class="mt-4 text-body-2">Loading policies...</p>
     </div>
 
     <!-- Error State -->
-    <v-alert v-else-if="error" type="error" variant="tonal" density="compact" class="mb-3">
+    <v-alert
+      v-else-if="error"
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mb-3"
+    >
       <div class="text-caption">{{ error }}</div>
       <template #append>
         <v-btn variant="text" size="small" @click="loadPolicies">Retry</v-btn>
@@ -41,7 +51,10 @@
 
       <!-- Policies Table -->
       <v-card variant="outlined" elevation="0">
-        <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">
+        <v-card-title
+          class="text-subtitle-2 font-weight-medium pa-3"
+          style="min-height: 36px"
+        >
           Policies ({{ filteredPolicies.length }})
         </v-card-title>
         <v-data-table
@@ -81,7 +94,9 @@
               color="error"
               @click="confirmDeletePolicy(item)"
             ></v-btn>
-            <span v-else class="text-caption text-medium-emphasis">View Only</span>
+            <span v-else class="text-caption text-medium-emphasis"
+              >View Only</span
+            >
           </template>
         </v-data-table>
       </v-card>
@@ -126,8 +141,8 @@
           <v-btn
             v-if="isAdmin"
             color="primary"
-            @click="savePolicy"
             :loading="saving"
+            @click="savePolicy"
           >
             {{ editingPolicy ? "Update" : "Create" }}
           </v-btn>
@@ -150,7 +165,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="showDeleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" @click="deletePolicy" :loading="deleting">
+          <v-btn color="error" :loading="deleting" @click="deletePolicy">
             Delete
           </v-btn>
         </v-card-actions>
@@ -159,7 +174,11 @@
   </div>
 
   <!-- Snackbar for notifications -->
-  <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
+  <v-snackbar
+    v-model="snackbar.show"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+  >
     {{ snackbar.message }}
     <template #actions>
       <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
@@ -201,7 +220,15 @@ const policyForm = ref({
 });
 
 // Available options
-const availableActions = ["read", "write", "create", "delete", "update", "approve", "manage"];
+const availableActions = [
+  "read",
+  "write",
+  "create",
+  "delete",
+  "update",
+  "approve",
+  "manage",
+];
 const availableSubjects = ref([]);
 
 // Table headers
@@ -225,7 +252,7 @@ const filteredPolicies = computed(() => {
     (policy) =>
       policy.subject.toLowerCase().includes(query) ||
       policy.object.toLowerCase().includes(query) ||
-      policy.action.toLowerCase().includes(query)
+      policy.action.toLowerCase().includes(query),
   );
 });
 
@@ -247,14 +274,17 @@ const loadPolicies = async () => {
     // Load available subjects (groups/roles)
     const usersResponse = await apiService.get("/api/admin/users");
     if (usersResponse.data?.data?.groups) {
-      availableSubjects.value = usersResponse.data.data.groups.map((g) => g.name || g);
+      availableSubjects.value = usersResponse.data.data.groups.map(
+        (g) => g.name || g,
+      );
     }
     if (usersResponse.data?.data?.roles) {
       const roles = usersResponse.data.data.roles.map((r) => r.name || r);
       availableSubjects.value = [...availableSubjects.value, ...roles];
     }
   } catch (err) {
-    error.value = err.response?.data?.error?.message || "Failed to load policies";
+    error.value =
+      err.response?.data?.error?.message || "Failed to load policies";
     showSnackbar("Error loading policies", "error");
   } finally {
     loading.value = false;
@@ -283,7 +313,11 @@ const closePolicyDialog = () => {
 };
 
 const savePolicy = async () => {
-  if (!policyForm.value.subject || !policyForm.value.object || !policyForm.value.action) {
+  if (
+    !policyForm.value.subject ||
+    !policyForm.value.object ||
+    !policyForm.value.action
+  ) {
     return;
   }
 
@@ -308,15 +342,17 @@ const savePolicy = async () => {
     });
 
     showSnackbar(
-      editingPolicy.value ? "Policy updated successfully" : "Policy created successfully",
-      "success"
+      editingPolicy.value
+        ? "Policy updated successfully"
+        : "Policy created successfully",
+      "success",
     );
     closePolicyDialog();
     await loadPolicies();
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to save policy",
-      "error"
+      "error",
     );
   } finally {
     saving.value = false;
@@ -348,7 +384,7 @@ const deletePolicy = async () => {
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to delete policy",
-      "error"
+      "error",
     );
   } finally {
     deleting.value = false;
@@ -365,4 +401,3 @@ onMounted(() => {
   min-height: 300px;
 }
 </style>
-

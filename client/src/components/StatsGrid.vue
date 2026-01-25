@@ -36,7 +36,7 @@ defineProps({
           stat.label &&
           stat.icon &&
           stat.color &&
-          (stat.value !== undefined)
+          stat.value !== undefined,
       );
     },
   },
@@ -46,15 +46,15 @@ defineProps({
   },
   title: {
     type: String,
-    default: '',
+    default: "",
   },
   titleIcon: {
     type: String,
-    default: 'mdi-chart-box-outline',
+    default: "mdi-chart-box-outline",
   },
 });
 
-defineEmits(['stat-click']);
+defineEmits(["stat-click"]);
 </script>
 
 <style scoped>
@@ -188,4 +188,3 @@ defineEmits(['stat-click']);
   transform: translateX(-2px);
 }
 </style>
-

@@ -1,5 +1,7 @@
 <template>
-  <v-container class="fill-height d-flex align-center justify-center home-container">
+  <v-container
+    class="fill-height d-flex align-center justify-center home-container"
+  >
     <v-row justify="center" align="center" class="text-center home-row">
       <v-col cols="12" md="8" lg="6">
         <!-- Logo -->
@@ -17,7 +19,10 @@
           {{ $t("home.welcome") || "Welcome to InsightHub" }}
         </h1>
         <p class="text-h6 text-medium-emphasis mb-8">
-          {{ $t("home.tagline") || "Your centralized hub for insights and analytics" }}
+          {{
+            $t("home.tagline") ||
+            "Your centralized hub for insights and analytics"
+          }}
         </p>
 
         <!-- CTA Buttons -->
@@ -47,7 +52,8 @@
         <!-- Footer -->
         <div class="mt-12 pt-8">
           <p class="text-caption text-medium-emphasis">
-            {{ $t("home.version") || "Version" }} {{ appVersion }} • {{ $t("home.poweredBy") || "Powered by" }} 3DDX
+            {{ $t("home.version") || "Version" }} {{ appVersion }} •
+            {{ $t("home.poweredBy") || "Powered by" }} 3DDX
           </p>
         </div>
       </v-col>

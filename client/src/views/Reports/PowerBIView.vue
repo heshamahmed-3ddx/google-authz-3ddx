@@ -8,17 +8,22 @@
         >
           <div>
             <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
-              <v-icon
-                size="small"
-                class="header-icon"
-                color="primary"
-              >
+              <v-icon size="small" class="header-icon" color="primary">
                 mdi-chart-box-outline
               </v-icon>
-              <span>{{ $t("navigation.powerbi-reporting") || $t("navigation.powerbiReporting") || "PowerBI Reporting" }}</span>
+              <span>{{
+                $t("navigation.powerbi-reporting") ||
+                $t("navigation.powerbiReporting") ||
+                "PowerBI Reporting"
+              }}</span>
             </h1>
-            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
-              {{ $t("reports.powerbi.subtitle") || "Interactive analytics and business intelligence dashboards" }}
+            <p
+              class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle"
+            >
+              {{
+                $t("reports.powerbi.subtitle") ||
+                "Interactive analytics and business intelligence dashboards"
+              }}
             </p>
           </div>
         </div>
@@ -29,7 +34,7 @@
     <v-row no-gutters>
       <!-- Filters/Controls Section - 3 columns -->
       <v-col cols="12" md="3" class="compact-filters-col">
-        <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
+        <v-card elevation="1" class="compact-filters-card" style="height: 100%">
           <v-card-text class="compact-filters-content pa-3">
             <!-- Report Controls -->
             <div class="mb-3">
@@ -43,9 +48,9 @@
                   size="default"
                   variant="elevated"
                   class="flex-1"
-                  @click="loadReport"
                   :loading="loading"
                   :disabled="loading"
+                  @click="loadReport"
                 >
                   <template #prepend>
                     <v-icon>mdi-refresh</v-icon>
@@ -60,9 +65,11 @@
                   @click="toggleFullscreen"
                 >
                   <template #prepend>
-                    <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
+                    <v-icon>{{
+                      isFullscreen ? "mdi-fullscreen-exit" : "mdi-fullscreen"
+                    }}</v-icon>
                   </template>
-                  {{ isFullscreen ? 'Exit' : 'Fullscreen' }}
+                  {{ isFullscreen ? "Exit" : "Fullscreen" }}
                 </v-btn>
               </div>
             </div>
@@ -83,11 +90,12 @@
                     size="x-small"
                     class="ml-1"
                   >
-                    {{ error ? 'Error' : loading ? 'Loading' : 'Ready' }}
+                    {{ error ? "Error" : loading ? "Loading" : "Ready" }}
                   </v-chip>
                 </div>
                 <div v-if="!error && !loading" class="text-caption mt-2">
-                  Report is embedded and ready to view. Use the controls above to reload or enter fullscreen mode.
+                  Report is embedded and ready to view. Use the controls above
+                  to reload or enter fullscreen mode.
                 </div>
               </div>
             </div>
@@ -110,15 +118,16 @@
       <!-- Report Section - 9 columns -->
       <v-col cols="12" md="9" class="table-col pl-2">
         <v-card elevation="1" class="table-card">
-          <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
+          <v-card-title
+            class="d-flex justify-space-between align-center table-card-title compact-title"
+          >
             <div class="d-flex align-center">
-              <v-icon
-                size="small"
-                style="margin-inline-end: 6px"
-              >
+              <v-icon size="small" style="margin-inline-end: 6px">
                 mdi-chart-box-outline
               </v-icon>
-              <span class="text-subtitle-2 font-weight-medium">{{ displayReportName }}</span>
+              <span class="text-subtitle-2 font-weight-medium">{{
+                displayReportName
+              }}</span>
             </div>
             <div class="d-flex align-center">
               <v-chip
@@ -132,7 +141,10 @@
               </v-chip>
             </div>
           </v-card-title>
-          <div ref="powerbiContainer" class="powerbi-report-container position-relative">
+          <div
+            ref="powerbiContainer"
+            class="powerbi-report-container position-relative"
+          >
             <!-- Loading overlay -->
             <div v-show="loading" class="loading-overlay">
               <div class="loading-content">
@@ -143,13 +155,20 @@
                   width="6"
                   class="mb-6"
                 ></v-progress-circular>
-                <p class="text-h6 font-weight-medium mb-2">Loading PowerBI Report</p>
-                <p class="text-body-2 text-medium-emphasis">Please wait while we load your dashboard...</p>
+                <p class="text-h6 font-weight-medium mb-2">
+                  Loading PowerBI Report
+                </p>
+                <p class="text-body-2 text-medium-emphasis">
+                  Please wait while we load your dashboard...
+                </p>
               </div>
             </div>
 
             <!-- Error overlay -->
-            <div v-show="error" class="error-overlay d-flex align-center justify-center pa-4">
+            <div
+              v-show="error"
+              class="error-overlay d-flex align-center justify-center pa-4"
+            >
               <v-alert type="error" variant="tonal" class="max-width-600">
                 <v-alert-title>Failed to Load Report</v-alert-title>
                 <p class="mb-0">{{ error }}</p>
@@ -165,11 +184,7 @@
             </div>
 
             <!-- PowerBI Report Container -->
-            <div
-              ref="powerbiContainer"
-              v-once
-              class="powerbi-iframe"
-            ></div>
+            <div v-once ref="powerbiContainer" class="powerbi-iframe"></div>
           </div>
         </v-card>
       </v-col>
@@ -199,16 +214,27 @@ import { useI18n } from "vue-i18n";
 import apiService from "@/services/api";
 
 // PowerBI Configuration - Load from environment variables
-const WORKSPACE_ID = import.meta.env.VITE_POWERBI_WORKSPACE_ID || "dc128709-2496-4000-9f38-8e154f91fb0d";
-const REPORT_ID = import.meta.env.VITE_POWERBI_REPORT_ID || "0d2261f5-b24f-4696-91ab-655a833e42f0";
-const TENANT_ID = import.meta.env.VITE_POWERBI_TENANT_ID || "7153c4ca-59f2-4386-8d08-aa17f2f345ef";
-const CLIENT_ID = import.meta.env.VITE_POWERBI_CLIENT_ID || "69fd2c72-0e78-4524-ba35-23168f80153c";
+const WORKSPACE_ID =
+  import.meta.env.VITE_POWERBI_WORKSPACE_ID ||
+  "dc128709-2496-4000-9f38-8e154f91fb0d";
+const REPORT_ID =
+  import.meta.env.VITE_POWERBI_REPORT_ID ||
+  "0d2261f5-b24f-4696-91ab-655a833e42f0";
+const TENANT_ID =
+  import.meta.env.VITE_POWERBI_TENANT_ID ||
+  "7153c4ca-59f2-4386-8d08-aa17f2f345ef";
+const CLIENT_ID =
+  import.meta.env.VITE_POWERBI_CLIENT_ID ||
+  "69fd2c72-0e78-4524-ba35-23168f80153c";
 
 // i18n
 const { t } = useI18n();
 
 // Report name - can be set via environment variable or use default
-const REPORT_NAME = import.meta.env.VITE_POWERBI_REPORT_NAME || t("reports.powerbi.dashboard") || "PowerBI Dashboard";
+const REPORT_NAME =
+  import.meta.env.VITE_POWERBI_REPORT_NAME ||
+  t("reports.powerbi.dashboard") ||
+  "PowerBI Dashboard";
 
 // Component state
 const loading = ref(true);
@@ -216,12 +242,12 @@ const error = ref(null);
 const powerbiContainer = ref(null);
 const isFullscreen = ref(false);
 const reportName = ref(REPORT_NAME);
-const embedUrl = ref('');
-const embedToken = ref('');
+const embedUrl = ref("");
+const embedToken = ref("");
 
 // Computed property for the full embed URL with token
 const fullEmbedUrl = computed(() => {
-  if (!embedUrl.value || !embedToken.value) return '';
+  if (!embedUrl.value || !embedToken.value) return "";
   return `${embedUrl.value}&tokenType=Embed&accessToken=${embedToken.value}`;
 });
 
@@ -232,28 +258,33 @@ async function fetchEmbedToken() {
   try {
     loading.value = true;
     error.value = null;
-    
-    const response = await apiService.post('/api/powerbi/embed-token', {
+
+    const response = await apiService.post("/api/powerbi/embed-token", {
       reportId: REPORT_ID,
       workspaceId: WORKSPACE_ID,
     });
-    
+
     // Axios returns data in response.data
     if (response.data.success && response.data.data) {
-      const { embedUrl: url, embedToken: token, reportName: name } = response.data.data;
-      
+      const {
+        embedUrl: url,
+        embedToken: token,
+        reportName: name,
+      } = response.data.data;
+
       embedUrl.value = url;
       embedToken.value = token;
       reportName.value = name || REPORT_NAME;
-      
+
       // Use PowerBI SDK to embed the report
       embedReport(url, token);
     } else {
-      throw new Error('Failed to get embed token');
+      throw new Error("Failed to get embed token");
     }
   } catch (err) {
-    console.error('Error fetching embed token:', err);
-    error.value = err.message || 'Failed to load PowerBI report. Please try again.';
+    console.error("Error fetching embed token:", err);
+    error.value =
+      err.message || "Failed to load PowerBI report. Please try again.";
     loading.value = false;
   }
 }
@@ -263,73 +294,75 @@ async function fetchEmbedToken() {
  */
 async function embedReport(embedUrl, embedToken) {
   if (!powerbiContainer.value) {
-    console.error('PowerBI container not found');
+    console.error("PowerBI container not found");
     return;
   }
-  
+
   // Wait for Vue to finish DOM updates
   await nextTick();
-  
+
   try {
     // Get the powerbi service - it should be available globally
     let powerbi = window.powerbi;
-    
+
     // Clear the container first to avoid conflicts
     if (powerbiContainer.value) {
-      powerbiContainer.value.innerHTML = '';
+      powerbiContainer.value.innerHTML = "";
     }
-    
-    // Configuration for PowerBI report  
+
+    // Configuration for PowerBI report
     const config = {
-      type: 'report',
+      type: "report",
       tokenType: 1, // models.TokenType.Embed = 1 (for GenerateToken API)
       accessToken: embedToken,
       embedUrl: embedUrl,
       id: REPORT_ID,
       settings: {
         filterPaneEnabled: true,
-        navContentPaneEnabled: true
-      }
+        navContentPaneEnabled: true,
+      },
     };
-    
+
     // Embed using the global powerbi instance
     const report = powerbi.embed(powerbiContainer.value, config);
-    
+
     // Handle report loaded event
-    report.on('loaded', async () => {
+    report.on("loaded", async () => {
       // Use nextTick to avoid DOM manipulation conflicts
       await nextTick();
       loading.value = false;
       error.value = null;
     });
-    
+
     // Handle report rendered event
-    report.on('rendered', async () => {
+    report.on("rendered", async () => {
       await nextTick();
       // Clear any lingering errors once rendered successfully
       error.value = null;
     });
-    
+
     // Handle errors - only show critical errors
-    report.on('error', async (event) => {
+    report.on("error", async (event) => {
       const errorDetail = event.detail;
-      console.error('PowerBI report error:', errorDetail);
-      
+      console.error("PowerBI report error:", errorDetail);
+
       // Only show error for critical failures (not transient loading issues)
-      if (errorDetail?.message === 'LoadReportFailed' || 
-          errorDetail?.errorCode === '403' ||
-          errorDetail?.errorCode === '404') {
+      if (
+        errorDetail?.message === "LoadReportFailed" ||
+        errorDetail?.errorCode === "403" ||
+        errorDetail?.errorCode === "404"
+      ) {
         await nextTick();
         loading.value = false;
-        error.value = 'Failed to load PowerBI report. Please try again.';
+        error.value = "Failed to load PowerBI report. Please try again.";
       }
       // Ignore other transient errors that happen during initialization
     });
-    
   } catch (err) {
-    console.error('Error embedding PowerBI report:', err);
+    console.error("Error embedding PowerBI report:", err);
     loading.value = false;
-    error.value = 'Failed to initialize PowerBI report. Please refresh the page.';
+    error.value =
+      "Failed to initialize PowerBI report. Please refresh the page.";
   }
 }
 
@@ -343,22 +376,29 @@ function loadReport() {
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     // Enter fullscreen - use the table card (report container)
-    const container = powerbiContainer.value?.closest('.table-card') || powerbiContainer.value;
+    const container =
+      powerbiContainer.value?.closest(".table-card") || powerbiContainer.value;
     if (container && container.requestFullscreen) {
-      container.requestFullscreen().then(() => {
-        isFullscreen.value = true;
-      }).catch((err) => {
-        console.error('Error attempting to enable fullscreen:', err);
-      });
+      container
+        .requestFullscreen()
+        .then(() => {
+          isFullscreen.value = true;
+        })
+        .catch((err) => {
+          console.error("Error attempting to enable fullscreen:", err);
+        });
     }
   } else {
     // Exit fullscreen
     if (document.exitFullscreen) {
-      document.exitFullscreen().then(() => {
-        isFullscreen.value = false;
-      }).catch((err) => {
-        console.error('Error attempting to exit fullscreen:', err);
-      });
+      document
+        .exitFullscreen()
+        .then(() => {
+          isFullscreen.value = false;
+        })
+        .catch((err) => {
+          console.error("Error attempting to exit fullscreen:", err);
+        });
     }
   }
 }
@@ -376,22 +416,20 @@ function waitForPowerBISDK() {
       resolve();
       return;
     }
-    
+
     // Wait with timeout
     let attempts = 0;
     const maxAttempts = 40; // 20 seconds max
     const checkInterval = setInterval(() => {
       attempts++;
-      
+
       if (window.powerbi) {
         clearInterval(checkInterval);
         resolve();
       } else if (attempts >= maxAttempts) {
         clearInterval(checkInterval);
         // Try to load it dynamically as fallback
-        loadPowerBISDKDynamically()
-          .then(resolve)
-          .catch(reject);
+        loadPowerBISDKDynamically().then(resolve).catch(reject);
       }
     }, 500);
   });
@@ -400,25 +438,29 @@ function waitForPowerBISDK() {
 // Dynamically load PowerBI SDK if not loaded via script tag
 function loadPowerBISDKDynamically() {
   return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/powerbi-client@2.23.1/dist/powerbi.min.js';
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/powerbi-client@2.23.1/dist/powerbi.min.js";
     script.async = false;
-    
+
     script.onload = () => {
       // Wait a bit for the SDK to initialize
       setTimeout(() => {
         if (window.powerbi) {
           resolve();
         } else {
-          reject(new Error('PowerBI SDK script loaded but window.powerbi not available'));
+          reject(
+            new Error(
+              "PowerBI SDK script loaded but window.powerbi not available",
+            ),
+          );
         }
       }, 1000);
     };
-    
+
     script.onerror = () => {
-      reject(new Error('Failed to load PowerBI SDK from CDN'));
+      reject(new Error("Failed to load PowerBI SDK from CDN"));
     };
-    
+
     document.head.appendChild(script);
   });
 }
@@ -426,13 +468,15 @@ function loadPowerBISDKDynamically() {
 // Lifecycle
 // Suppress PowerBI SDK console warnings
 const originalConsoleWarn = console.warn;
-console.warn = function(...args) {
-  const msg = args.join(' ');
+console.warn = function (...args) {
+  const msg = args.join(" ");
   // Filter out PowerBI-related violations
-  if (msg.includes('Violation') || 
-      msg.includes('passive event listener') ||
-      msg.includes('handler took') ||
-      msg.includes('Forced reflow')) {
+  if (
+    msg.includes("Violation") ||
+    msg.includes("passive event listener") ||
+    msg.includes("handler took") ||
+    msg.includes("Forced reflow")
+  ) {
     return;
   }
   originalConsoleWarn.apply(console, args);
@@ -443,20 +487,20 @@ onMounted(async () => {
   try {
     await waitForPowerBISDK();
   } catch (err) {
-    console.error('Failed to load PowerBI SDK:', err);
-    error.value = 'Failed to load PowerBI library. Please refresh the page.';
+    console.error("Failed to load PowerBI SDK:", err);
+    error.value = "Failed to load PowerBI library. Please refresh the page.";
     loading.value = false;
     return;
   }
-  
+
   // Fetch embed token when component mounts
   fetchEmbedToken();
 
   // Listen for fullscreen changes
-  document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-  document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-  document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+  document.addEventListener("fullscreenchange", handleFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+  document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+  document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 });
 
 onUnmounted(() => {
@@ -464,10 +508,13 @@ onUnmounted(() => {
   console.warn = originalConsoleWarn;
 
   // Remove fullscreen listeners
-  document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-  document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-  document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+  document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  document.removeEventListener(
+    "webkitfullscreenchange",
+    handleFullscreenChange,
+  );
+  document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+  document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
 });
 </script>
 
@@ -749,4 +796,3 @@ onUnmounted(() => {
   justify-content: center;
 }
 </style>
-

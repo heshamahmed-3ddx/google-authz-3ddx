@@ -8,8 +8,8 @@
   >
     <v-card>
       <v-card-title class="d-flex align-center pa-4">
-        <v-icon class="mr-2">{{ isEdit ? 'mdi-pencil' : 'mdi-plus' }}</v-icon>
-        {{ isEdit ? 'Edit' : 'Create' }} Report Schedule
+        <v-icon class="mr-2">{{ isEdit ? "mdi-pencil" : "mdi-plus" }}</v-icon>
+        {{ isEdit ? "Edit" : "Create" }} Report Schedule
       </v-card-title>
 
       <v-divider />
@@ -18,8 +18,10 @@
         <v-form ref="formRef" v-model="valid">
           <!-- Report Configuration -->
           <div class="mb-4">
-            <h3 class="text-subtitle-1 font-weight-bold mb-2">Report Configuration</h3>
-            
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">
+              Report Configuration
+            </h3>
+
             <v-text-field
               v-model="form.reportName"
               label="Schedule Name"
@@ -54,8 +56,10 @@
 
           <!-- Schedule Configuration -->
           <div class="mb-4">
-            <h3 class="text-subtitle-1 font-weight-bold mb-2">Schedule Configuration</h3>
-            
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">
+              Schedule Configuration
+            </h3>
+
             <v-select
               v-model="form.frequency"
               :items="frequencyOptions"
@@ -118,8 +122,10 @@
 
           <!-- Recipients -->
           <div class="mb-4">
-            <h3 class="text-subtitle-1 font-weight-bold mb-2">Email Recipients</h3>
-            
+            <h3 class="text-subtitle-1 font-weight-bold mb-2">
+              Email Recipients
+            </h3>
+
             <v-combobox
               v-model="form.recipients"
               label="Recipient Emails"
@@ -135,10 +141,18 @@
               <template #chip="{ props, item }">
                 <v-chip
                   v-bind="props"
-                  :color="isValidEmail(typeof item === 'string' ? item : item.value) ? 'primary' : 'error'"
+                  :color="
+                    isValidEmail(typeof item === 'string' ? item : item.value)
+                      ? 'primary'
+                      : 'error'
+                  "
                   closable
                 >
-                  {{ typeof item === 'string' ? item : item.value || item.title || item }}
+                  {{
+                    typeof item === "string"
+                      ? item
+                      : item.value || item.title || item
+                  }}
                 </v-chip>
               </template>
             </v-combobox>
@@ -151,7 +165,7 @@
             <h3 class="text-subtitle-1 font-weight-bold mb-4">
               Report Filters (Optional)
             </h3>
-            
+
             <v-row dense>
               <v-col cols="12" md="6">
                 <v-text-field
@@ -193,19 +207,14 @@
 
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn
-          variant="text"
-          @click="close"
-        >
-          Cancel
-        </v-btn>
+        <v-btn variant="text" @click="close"> Cancel </v-btn>
         <v-btn
           color="primary"
           :loading="saving"
           :disabled="!valid"
           @click="save"
         >
-          {{ isEdit ? 'Update' : 'Create' }}
+          {{ isEdit ? "Update" : "Create" }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -213,15 +222,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { reportSchedulingService } from '@/services/reportScheduling';
+import { ref, computed, watch } from "vue";
+import { reportSchedulingService } from "@/services/reportScheduling";
 
 const props = defineProps({
   modelValue: Boolean,
-  schedule: Object
+  schedule: Object,
 });
 
-const emit = defineEmits(['update:modelValue', 'saved']);
+const emit = defineEmits(["update:modelValue", "saved"]);
 
 // State
 const formRef = ref(null);
@@ -230,19 +239,19 @@ const saving = ref(false);
 
 // Form data
 const form = ref({
-  reportName: '',
-  reportType: 'surgical_guide',
-  frequency: 'monthly',
-  time: '08:00',
+  reportName: "",
+  reportType: "surgical_guide",
+  frequency: "monthly",
+  time: "08:00",
   days: [],
-  timezone: 'America/New_York',
+  timezone: "America/New_York",
   recipients: [],
-  format: 'pdf',
+  format: "pdf",
   filters: {
-    startDate: '',
-    endDate: '',
-    status: null
-  }
+    startDate: "",
+    endDate: "",
+    status: null,
+  },
 });
 
 // Computed
@@ -250,60 +259,63 @@ const isEdit = computed(() => !!props.schedule);
 
 // Options
 const reportTypes = [
-  { title: 'Surgical Guide Report', value: 'surgical_guide' },
-  { title: 'Power BI Report', value: 'powerbi' },
-  { title: 'Custom Report', value: 'custom' }
+  { title: "Surgical Guide Report", value: "surgical_guide" },
+  { title: "Power BI Report", value: "powerbi" },
+  { title: "Custom Report", value: "custom" },
 ];
 
 const frequencyOptions = [
-  { title: 'Daily', value: 'daily' },
-  { title: 'Weekly', value: 'weekly' },
-  { title: 'Monthly', value: 'monthly' }
+  { title: "Daily", value: "daily" },
+  { title: "Weekly", value: "weekly" },
+  { title: "Monthly", value: "monthly" },
 ];
 
 const formatOptions = [
-  { title: 'PDF', value: 'pdf' },
-  { title: 'Excel (XLSX)', value: 'excel' },
-  { title: 'HTML', value: 'html' }
+  { title: "PDF", value: "pdf" },
+  { title: "Excel (XLSX)", value: "excel" },
+  { title: "HTML", value: "html" },
 ];
 
 const weekDays = [
-  { title: 'Monday', value: 'Mon' },
-  { title: 'Tuesday', value: 'Tue' },
-  { title: 'Wednesday', value: 'Wed' },
-  { title: 'Thursday', value: 'Thu' },
-  { title: 'Friday', value: 'Fri' },
-  { title: 'Saturday', value: 'Sat' },
-  { title: 'Sunday', value: 'Sun' }
+  { title: "Monday", value: "Mon" },
+  { title: "Tuesday", value: "Tue" },
+  { title: "Wednesday", value: "Wed" },
+  { title: "Thursday", value: "Thu" },
+  { title: "Friday", value: "Fri" },
+  { title: "Saturday", value: "Sat" },
+  { title: "Sunday", value: "Sun" },
 ];
 
 const monthDays = Array.from({ length: 31 }, (_, i) => ({
   title: `${i + 1}${getOrdinalSuffix(i + 1)}`,
-  value: String(i + 1)
+  value: String(i + 1),
 }));
 
 const timezones = [
-  { title: 'Eastern Time (ET)', value: 'America/New_York' },
-  { title: 'Central Time (CT)', value: 'America/Chicago' },
-  { title: 'Mountain Time (MT)', value: 'America/Denver' },
-  { title: 'Pacific Time (PT)', value: 'America/Los_Angeles' },
-  { title: 'UTC', value: 'UTC' }
+  { title: "Eastern Time (ET)", value: "America/New_York" },
+  { title: "Central Time (CT)", value: "America/Chicago" },
+  { title: "Mountain Time (MT)", value: "America/Denver" },
+  { title: "Pacific Time (PT)", value: "America/Los_Angeles" },
+  { title: "UTC", value: "UTC" },
 ];
 
 const statusOptions = [
-  { title: 'Pending', value: 'pending' },
-  { title: 'In Progress', value: 'in_progress' },
-  { title: 'Completed', value: 'completed' },
-  { title: 'Cancelled', value: 'cancelled' }
+  { title: "Pending", value: "pending" },
+  { title: "In Progress", value: "in_progress" },
+  { title: "Completed", value: "completed" },
+  { title: "Cancelled", value: "cancelled" },
 ];
 
 // Validation rules
 const rules = {
-  required: v => !!v || 'Required',
-  email: v => {
-    if (!Array.isArray(v) || v.length === 0) return 'At least one recipient required';
-    return v.every(email => isValidEmail(email)) || 'All emails must be valid';
-  }
+  required: (v) => !!v || "Required",
+  email: (v) => {
+    if (!Array.isArray(v) || v.length === 0)
+      return "At least one recipient required";
+    return (
+      v.every((email) => isValidEmail(email)) || "All emails must be valid"
+    );
+  },
 };
 
 // Methods
@@ -313,7 +325,7 @@ function isValidEmail(email) {
 }
 
 function getOrdinalSuffix(n) {
-  const s = ['th', 'st', 'nd', 'rd'];
+  const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return s[(v - 20) % 10] || s[v] || s[0];
 }
@@ -333,7 +345,7 @@ async function save() {
       days: form.value.days,
       recipients: form.value.recipients,
       format: form.value.format,
-      filters: form.value.filters
+      filters: form.value.filters,
     };
 
     if (isEdit.value) {
@@ -342,36 +354,36 @@ async function save() {
       await reportSchedulingService.createSchedule(payload);
     }
 
-    emit('saved');
+    emit("saved");
     close();
   } catch (error) {
-    console.error('Error saving schedule:', error);
-    alert('Failed to save schedule. Please try again.');
+    console.error("Error saving schedule:", error);
+    alert("Failed to save schedule. Please try again.");
   } finally {
     saving.value = false;
   }
 }
 
 function close() {
-  emit('update:modelValue', false);
+  emit("update:modelValue", false);
   resetForm();
 }
 
 function resetForm() {
   form.value = {
-    reportName: '',
-    reportType: 'surgical_guide',
-    frequency: 'monthly',
-    time: '08:00',
+    reportName: "",
+    reportType: "surgical_guide",
+    frequency: "monthly",
+    time: "08:00",
     days: [],
-    timezone: 'America/New_York',
+    timezone: "America/New_York",
     recipients: [],
-    format: 'pdf',
+    format: "pdf",
     filters: {
-      startDate: '',
-      endDate: '',
-      status: null
-    }
+      startDate: "",
+      endDate: "",
+      status: null,
+    },
   };
 }
 
@@ -385,29 +397,36 @@ function loadSchedule(schedule) {
     reportName: schedule.report_name,
     reportType: schedule.report_type,
     frequency: schedule.schedule_frequency,
-    time: schedule.schedule_time?.substring(0, 5) || '08:00',
+    time: schedule.schedule_time?.substring(0, 5) || "08:00",
     days: schedule.schedule_days || [],
-    timezone: schedule.schedule_timezone || 'America/New_York',
+    timezone: schedule.schedule_timezone || "America/New_York",
     recipients: schedule.recipients || [],
     format: schedule.format,
     filters: schedule.filters || {
-      startDate: '',
-      endDate: '',
-      status: null
-    }
+      startDate: "",
+      endDate: "",
+      status: null,
+    },
   };
 }
 
 // Watchers
-watch(() => props.schedule, (newVal) => {
-  loadSchedule(newVal);
-}, { immediate: true });
+watch(
+  () => props.schedule,
+  (newVal) => {
+    loadSchedule(newVal);
+  },
+  { immediate: true },
+);
 
-watch(() => props.modelValue, (newVal) => {
-  if (newVal) {
-    loadSchedule(props.schedule);
-  }
-});
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      loadSchedule(props.schedule);
+    }
+  },
+);
 </script>
 
 <style scoped>

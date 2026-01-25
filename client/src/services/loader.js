@@ -96,14 +96,14 @@ function debugLog(...args) {
 
 /**
  * Start loading indicator with debounced display and automatic cleanup
- * 
+ *
  * Creates a unique loader ID and activates the global loading state after a short delay
  * (150ms) to prevent flicker for very fast operations. The first loader after a page
  * reload is shown immediately. Includes automatic cleanup after 30 seconds to prevent
  * stuck loaders.
- * 
+ *
  * @returns {string} Unique loader ID to be passed to stopLoading() when done
- * 
+ *
  * @example
  * // Basic usage
  * const loaderId = startLoading();
@@ -112,7 +112,7 @@ function debugLog(...args) {
  * } finally {
  *   stopLoading(loaderId);
  * }
- * 
+ *
  * @example
  * // With API request
  * import { startLoading, stopLoading } from '@/services/loader';
@@ -166,20 +166,20 @@ export function startLoading() {
 
 /**
  * Stop loading indicator for a specific loader ID
- * 
+ *
  * Removes the loader from active state. If the loader was still pending (within the
  * 150ms debounce window), cancels its activation. If no ID is provided or the ID
  * is not found, removes any one active loader as fallback.
- * 
+ *
  * @param {string} [id] - The loader ID returned from startLoading()
  * @returns {void}
- * 
+ *
  * @example
  * // Standard usage with ID
  * const loaderId = startLoading();
  * // ... do work ...
  * stopLoading(loaderId);
- * 
+ *
  * @example
  * // Fallback (not recommended - always pass the ID)
  * stopLoading(); // Removes any one active loader

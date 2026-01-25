@@ -50,7 +50,7 @@ export const setLocale = (locale) => {
   // This keeps all locale/RTL logic in one place (App.vue)
   i18n.global.locale.value = locale;
   localStorage.setItem("locale", locale);
-  
+
   // The App.vue watcher will handle:
   // - Vuetify locale update
   // - Document direction update

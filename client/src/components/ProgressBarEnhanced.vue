@@ -27,13 +27,21 @@
     </div>
 
     <!-- Stage Indicators (Optional) -->
-    <div v-if="showStages && stages.length > 0" class="d-flex justify-space-between mt-2 stage-indicators">
+    <div
+      v-if="showStages && stages.length > 0"
+      class="d-flex justify-space-between mt-2 stage-indicators"
+    >
       <div
         v-for="stage in stages"
         :key="stage.id"
-        :class="['stage-indicator', { active: stage.completed, current: stage.current }]"
+        :class="[
+          'stage-indicator',
+          { active: stage.completed, current: stage.current },
+        ]"
       >
-        <v-icon size="small">{{ stage.completed ? 'mdi-check-circle' : 'mdi-circle-outline' }}</v-icon>
+        <v-icon size="small">{{
+          stage.completed ? "mdi-check-circle" : "mdi-circle-outline"
+        }}</v-icon>
         <span class="text-caption">{{ stage.label }}</span>
       </div>
     </div>
@@ -41,69 +49,70 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   percentage: {
     type: Number,
     default: 0,
-    validator: (value) => value >= 0 && value <= 100
+    validator: (value) => value >= 0 && value <= 100,
   },
   color: {
     type: String,
-    default: 'primary'
+    default: "primary",
   },
   startTime: {
     type: Date,
-    default: () => new Date()
+    default: () => new Date(),
   },
   estimatedTotalDuration: {
     type: Number,
-    default: null // milliseconds
+    default: null, // milliseconds
   },
   stages: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   showStages: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const elapsedTime = ref(0);
 let intervalId = null;
 
 const currentStateText = computed(() => {
-  if (props.percentage === 0) return 'Starting...';
-  if (props.percentage < 30) return 'Initializing';
-  if (props.percentage < 50) return 'Processing';
-  if (props.percentage < 90) return 'Nearly complete';
-  if (props.percentage < 100) return 'Finalizing';
-  return 'Complete';
+  if (props.percentage === 0) return "Starting...";
+  if (props.percentage < 30) return "Initializing";
+  if (props.percentage < 50) return "Processing";
+  if (props.percentage < 90) return "Nearly complete";
+  if (props.percentage < 100) return "Finalizing";
+  return "Complete";
 });
 
 const currentStateIcon = computed(() => {
-  if (props.percentage === 0) return 'mdi-play-circle-outline';
-  if (props.percentage < 30) return 'mdi-loading';
-  if (props.percentage < 50) return 'mdi-sync';
-  if (props.percentage < 90) return 'mdi-check-circle-outline';
-  if (props.percentage < 100) return 'mdi-check-all';
-  return 'mdi-check-circle';
+  if (props.percentage === 0) return "mdi-play-circle-outline";
+  if (props.percentage < 30) return "mdi-loading";
+  if (props.percentage < 50) return "mdi-sync";
+  if (props.percentage < 90) return "mdi-check-circle-outline";
+  if (props.percentage < 100) return "mdi-check-all";
+  return "mdi-check-circle";
 });
 
 const estimatedTimeRemaining = computed(() => {
   if (props.percentage === 0 || !props.estimatedTotalDuration) return null;
-  
+
   const elapsed = elapsedTime.value;
   if (elapsed === 0) return null;
 
   // Calculate estimated remaining time based on progress
-  const estimatedTotal = props.estimatedTotalDuration || (elapsed / (props.percentage / 100));
+  const estimatedTotal =
+    props.estimatedTotalDuration || elapsed / (props.percentage / 100);
   const remaining = estimatedTotal - elapsed;
 
-  if (remaining <= 0) return 'Almost done...';
-  if (remaining < 1000) return 'Less than a second';
+  if (remaining <= 0) return "Almost done...";
+  if (remaining < 1000) return "Less than a second";
   if (remaining < 60000) return `${Math.ceil(remaining / 1000)}s remaining`;
   if (remaining < 3600000) return `${Math.ceil(remaining / 60000)}m remaining`;
   return `${Math.ceil(remaining / 3600000)}h remaining`;
@@ -125,12 +134,15 @@ onUnmounted(() => {
   }
 });
 
-watch(() => props.percentage, (newVal) => {
-  if (newVal === 100 && intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
-});
+watch(
+  () => props.percentage,
+  (newVal) => {
+    if (newVal === 100 && intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  },
+);
 </script>
 
 <style scoped>
@@ -141,7 +153,6 @@ watch(() => props.percentage, (newVal) => {
 .progress-bar-enhanced {
   width: 100%;
 }
-
 
 .stage-indicators {
   margin-top: 8px;
@@ -169,4 +180,3 @@ watch(() => props.percentage, (newVal) => {
   font-weight: 600;
 }
 </style>
-

@@ -8,14 +8,8 @@
       height="56"
       class="minimal-appbar main-appbar sharp-appbar"
     >
-      <v-app-bar-title
-        class="d-flex align-center pa-0 minimal-logo-container"
-      >
-        <img
-          src="/logo.png"
-          alt="App Logo"
-          class="minimal-logo"
-        />
+      <v-app-bar-title class="d-flex align-center pa-0 minimal-logo-container">
+        <img src="/logo.png" alt="App Logo" class="minimal-logo" />
       </v-app-bar-title>
 
       <v-spacer></v-spacer>
@@ -44,7 +38,7 @@
               <v-icon v-else size="20">mdi-bullhorn-outline</v-icon>
             </v-btn>
           </template>
-          <span>{{ t('app.announcements') || 'Announcements' }}</span>
+          <span>{{ t("app.announcements") || "Announcements" }}</span>
         </v-tooltip>
 
         <!-- Menu button for overlay sidebar -->
@@ -56,15 +50,19 @@
               icon
               size="small"
               variant="text"
-              :class="['minimal-icon-btn', 'apps-menu-btn', { active: overlaySidebarOpen }]"
+              :class="[
+                'minimal-icon-btn',
+                'apps-menu-btn',
+                { active: overlaySidebarOpen },
+              ]"
               @click="overlaySidebarOpen = !overlaySidebarOpen"
             >
               <v-icon size="20">mdi-apps</v-icon>
             </v-btn>
           </template>
-          <span>{{ t('app.navigation') || 'App Navigation' }}</span>
+          <span>{{ t("app.navigation") || "App Navigation" }}</span>
         </v-tooltip>
-       
+
         <ThemeToggle />
         <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
@@ -81,24 +79,32 @@
               <v-icon size="20">mdi-logout</v-icon>
             </v-btn>
           </template>
-          <span>{{ $t('auth.logout') || 'Logout' }}</span>
+          <span>{{ $t("auth.logout") || "Logout" }}</span>
         </v-tooltip>
       </div>
     </v-app-bar>
 
     <!-- Breadcrumbs Section -->
-    <div v-if="authStore.isAuthenticated && showAppBar && route.name !== 'Home' && route.name !== 'Callback'" class="minimal-breadcrumbs-bar">
+    <div
+      v-if="
+        authStore.isAuthenticated &&
+        showAppBar &&
+        route.name !== 'Home' &&
+        route.name !== 'Callback'
+      "
+      class="minimal-breadcrumbs-bar"
+    >
       <v-container fluid class="py-0 px-3">
         <div class="d-flex align-center breadcrumb-wrapper">
-          <v-breadcrumbs 
-            :items="breadcrumbItems" 
+          <v-breadcrumbs
             :key="`breadcrumbs-${locale}-${isRtlComputed}`"
-            class="pa-0 minimal-breadcrumbs" 
+            :items="breadcrumbItems"
+            class="pa-0 minimal-breadcrumbs"
             density="compact"
           >
             <template #divider>
               <v-icon size="x-small" class="breadcrumb-divider">
-                {{ isRtlComputed ? 'mdi-chevron-left' : 'mdi-chevron-right' }}
+                {{ isRtlComputed ? "mdi-chevron-left" : "mdi-chevron-right" }}
               </v-icon>
             </template>
           </v-breadcrumbs>
@@ -168,7 +174,14 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import {
+  reactive,
+  ref,
+  watch,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
@@ -214,7 +227,7 @@ const fetchUnreadCount = async () => {
   } catch (error) {
     // Silently fail if unauthorized (user not fully authenticated yet)
     if (error?.response?.status !== 401) {
-      console.error('Failed to fetch unread announcements:', error);
+      console.error("Failed to fetch unread announcements:", error);
     }
     unreadAnnouncementsCount.value = 0;
   }
@@ -230,16 +243,19 @@ onMounted(async () => {
       announcementInterval = setInterval(fetchUnreadCount, 60000); // Every minute
     }
   }, 1000);
-  
+
   // Listen for announcement marked as read events
-  window.addEventListener('announcement-marked-read', handleAnnouncementRead);
+  window.addEventListener("announcement-marked-read", handleAnnouncementRead);
 });
 
 onBeforeUnmount(() => {
   if (announcementInterval) {
     clearInterval(announcementInterval);
   }
-  window.removeEventListener('announcement-marked-read', handleAnnouncementRead);
+  window.removeEventListener(
+    "announcement-marked-read",
+    handleAnnouncementRead,
+  );
 });
 
 // Handle announcement marked as read
@@ -253,21 +269,30 @@ const handleAnnouncementRead = () => {
 };
 
 // Watch for auth changes
-watch(() => authStore.isAuthenticated, (isAuth) => {
-  if (isAuth && authStore.user) {
-    setTimeout(fetchUnreadCount, 500);
-  } else {
-    unreadAnnouncementsCount.value = 0;
-  }
-});
+watch(
+  () => authStore.isAuthenticated,
+  (isAuth) => {
+    if (isAuth && authStore.user) {
+      setTimeout(fetchUnreadCount, 500);
+    } else {
+      unreadAnnouncementsCount.value = 0;
+    }
+  },
+);
 
 // Watch for route changes to refresh count when viewing announcements
-watch(() => route.path, (newPath) => {
-  if (newPath === '/announcements' && authStore.isAuthenticated && authStore.user) {
-    setTimeout(fetchUnreadCount, 300);
-  }
-});
-
+watch(
+  () => route.path,
+  (newPath) => {
+    if (
+      newPath === "/announcements" &&
+      authStore.isAuthenticated &&
+      authStore.user
+    ) {
+      setTimeout(fetchUnreadCount, 300);
+    }
+  },
+);
 
 // Logout handler - robust: clear local state, attempt server logout, then redirect
 const handleLogout = async () => {
@@ -314,7 +339,10 @@ const handleLogout = async () => {
     } catch (e) {
       // Router navigation failed to redirect to root; avoid full reload.
       // eslint-disable-next-line no-console
-      console.warn("Final navigation attempt to root failed, not reloading.", e);
+      console.warn(
+        "Final navigation attempt to root failed, not reloading.",
+        e,
+      );
     }
   }
 };
@@ -328,11 +356,11 @@ const handleOpenOverlaySidebar = () => {
 };
 
 onMounted(() => {
-  window.addEventListener('openOverlaySidebar', handleOpenOverlaySidebar);
+  window.addEventListener("openOverlaySidebar", handleOpenOverlaySidebar);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('openOverlaySidebar', handleOpenOverlaySidebar);
+  window.removeEventListener("openOverlaySidebar", handleOpenOverlaySidebar);
 });
 
 // Computed property for RTL state - reactive to locale changes
@@ -343,7 +371,11 @@ const isRtlComputed = computed(() => {
 // Breadcrumb items computed from current route
 const breadcrumbItems = computed(() => {
   // Don't show breadcrumbs if we're on the home page or callback page
-  if (route.name === "Home" || route.name === "home" || route.name === "Callback") {
+  if (
+    route.name === "Home" ||
+    route.name === "home" ||
+    route.name === "Callback"
+  ) {
     return [];
   }
 
@@ -403,24 +435,24 @@ watch(
   async (newLocale) => {
     // Update Vuetify locale - this will automatically update RTL based on locale.rtl config
     vuetifyLocale.current.value = newLocale;
-    
+
     // Wait for Vuetify to update
     await nextTick();
-    
+
     // Wait one more tick to ensure all reactive updates propagate
     await nextTick();
-    
+
     // Get the RTL state from Vuetify (it's now reactive based on locale.current)
     const shouldBeRTL = vuetifyLocale.isRtl.value;
-    
+
     // Update document direction to match Vuetify's RTL state
     document.documentElement.dir = shouldBeRTL ? "rtl" : "ltr";
     document.documentElement.lang = newLocale;
-    
+
     // Remove old direction classes first
     document.documentElement.classList.remove("rtl", "ltr");
     document.body.classList.remove("rtl", "ltr");
-    
+
     // Add new direction classes
     if (shouldBeRTL) {
       document.documentElement.classList.add("rtl");
@@ -429,11 +461,11 @@ watch(
       document.documentElement.classList.add("ltr");
       document.body.classList.add("ltr");
     }
-    
+
     // Force a re-render by triggering multiple events for components that might need it
     window.dispatchEvent(new Event("resize"));
     window.dispatchEvent(new Event("localechange"));
-    
+
     // Force Vue to recognize the change
     await nextTick();
   },

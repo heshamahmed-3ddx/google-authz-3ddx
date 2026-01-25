@@ -2,20 +2,29 @@
   <div class="permissions-matrix">
     <v-alert type="info" variant="tonal" density="compact" class="mb-3">
       <div class="text-caption">
-        <strong>Permissions Matrix:</strong> Shows which roles have access to which resources and actions.
+        <strong>Permissions Matrix:</strong> Shows which roles have access to
+        which resources and actions.
         <span v-if="!readOnly">Click on a cell to toggle permissions.</span>
-        <span v-else>You are viewing in read-only mode. Only administrators can modify permissions.</span>
+        <span v-else
+          >You are viewing in read-only mode. Only administrators can modify
+          permissions.</span
+        >
       </div>
     </v-alert>
 
     <v-card variant="outlined" elevation="0">
       <v-card-text class="pa-3">
         <div v-if="loading" class="text-center py-8">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          <v-progress-circular
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
         </div>
 
         <div v-else-if="resources.length === 0" class="text-center py-8">
-          <p class="text-body-2 text-medium-emphasis">No permissions data available</p>
+          <p class="text-body-2 text-medium-emphasis">
+            No permissions data available
+          </p>
         </div>
 
         <v-table v-else>
@@ -37,10 +46,10 @@
               >
                 <v-checkbox
                   :model-value="hasPermission(resource, action)"
-                  @update:model-value="togglePermission(resource, action)"
                   :disabled="readOnly"
                   density="compact"
                   hide-details
+                  @update:model-value="togglePermission(resource, action)"
                 ></v-checkbox>
               </td>
             </tr>
@@ -101,7 +110,7 @@ const hasPermission = (resource, action) => {
     (policy) =>
       policy.subject === props.selectedRole &&
       policy.object === resource &&
-      policy.action === action
+      policy.action === action,
   );
 };
 
@@ -117,7 +126,7 @@ const togglePermission = async (resource, action) => {
   }
 
   const hasPerm = hasPermission(resource, action);
-  
+
   emit("permission-changed", {
     role: props.selectedRole,
     resource,
@@ -136,4 +145,3 @@ const togglePermission = async (resource, action) => {
   min-width: 100%;
 }
 </style>
-

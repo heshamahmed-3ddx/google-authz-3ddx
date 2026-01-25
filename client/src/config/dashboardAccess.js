@@ -102,17 +102,17 @@ export const DASHBOARD_ACCESS_CONFIG = {
 
 /**
  * Get unique list of groups that can access any restricted dashboard features
- * 
+ *
  * Aggregates all group names from restricted sections (those not using wildcard '*'),
  * providing a complete list of groups with special dashboard access privileges.
  * Useful for admin interfaces showing which groups have elevated permissions.
- * 
+ *
  * @returns {string[]} Array of unique group names (excludes '*' wildcard)
- * 
+ *
  * @example
  * const restrictedGroups = getRequiredGroupsForRestrictedAccess();
  * // Returns: ['admin', 'SWD', 'developers', 'Finance22', ...]
- * 
+ *
  * @example
  * // Use to display in admin panel
  * const groups = getRequiredGroupsForRestrictedAccess();
@@ -133,19 +133,19 @@ export function getRequiredGroupsForRestrictedAccess() {
 
 /**
  * Check if a dashboard section is restricted (not open to all users)
- * 
+ *
  * Determines whether a section requires specific group membership by checking
  * if its access configuration includes the '*' wildcard. Sections with '*'
  * are accessible to all authenticated users.
- * 
+ *
  * @param {string} section - Section name from DASHBOARD_ACCESS_CONFIG keys
  * @returns {boolean} True if section requires specific groups, false if open to all
- * 
+ *
  * @example
  * // Check if developer documentation is restricted
  * const restricted = isSectionRestricted('developerDocumentation');
  * // Returns: true (requires specific groups)
- * 
+ *
  * @example
  * // Check if general reports are restricted
  * const restricted = isSectionRestricted('generalReports');
@@ -158,17 +158,17 @@ export function isSectionRestricted(section) {
 
 /**
  * Get all dashboard section names that have access restrictions
- * 
+ *
  * Returns a filtered list of dashboard sections that require specific group
  * membership (i.e., not open to all users via '*'). Useful for generating
  * reports on restricted features or admin interfaces.
- * 
+ *
  * @returns {string[]} Array of restricted section names
- * 
+ *
  * @example
  * const restricted = getRestrictedSections();
  * // Returns: ['developerDocumentation', 'surgicalGuideReport', 'adminPanel', ...]
- * 
+ *
  * @example
  * // Display restricted sections
  * getRestrictedSections().forEach(section => {

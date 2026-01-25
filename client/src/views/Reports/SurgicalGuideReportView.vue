@@ -8,16 +8,14 @@
         >
           <div>
             <h1 class="text-h6 pt-2 compact-header-title d-flex align-center">
-              <v-icon
-                size="small"
-                class="header-icon"
-                color="primary"
-              >
+              <v-icon size="small" class="header-icon" color="primary">
                 mdi-file-chart-outline
               </v-icon>
               <span>{{ t("reports.surgicalGuide.title") }}</span>
             </h1>
-            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
+            <p
+              class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle"
+            >
               {{ t("reports.surgicalGuide.subtitle") }}
             </p>
           </div>
@@ -34,7 +32,9 @@
             rel="noopener noreferrer"
           >
             {{ t("reports.surgicalGuide.apiDocs") }}
-            <v-icon size="small" style="margin-inline-start: 4px">mdi-open-in-new-outline</v-icon>
+            <v-icon size="small" style="margin-inline-start: 4px"
+              >mdi-open-in-new-outline</v-icon
+            >
           </v-btn>
         </div>
       </v-col>
@@ -60,7 +60,9 @@
             @click="openProjectDoc"
           >
             {{ t("reports.surgicalGuide.reportFeatureDoc") }}
-            <v-icon style="margin-inline-start: 8px">mdi-open-in-new-outline</v-icon>
+            <v-icon style="margin-inline-start: 8px"
+              >mdi-open-in-new-outline</v-icon
+            >
           </v-btn>
           <v-alert-title class="text-h6">{{
             t("reports.surgicalGuide.accessDenied")
@@ -92,7 +94,9 @@
           class="mt-4"
         >
           <v-alert-title class="text-h6">
-            <v-icon style="margin-inline-end: 8px">mdi-developer-board-outline</v-icon>
+            <v-icon style="margin-inline-end: 8px"
+              >mdi-developer-board-outline</v-icon
+            >
             {{ t("reports.surgicalGuide.devModeTip") }}
           </v-alert-title>
           <p class="mb-3">
@@ -137,7 +141,11 @@
     <!-- Main Report Interface (Finance22 only) -->
     <template v-if="accessInfo.hasReportAccess">
       <!-- Enhanced Progress Bar (for table loading or export) -->
-      <v-row v-if="(loading.table || loading.export) && loadingProgress > 0" no-gutters class="mb-4">
+      <v-row
+        v-if="(loading.table || loading.export) && loadingProgress > 0"
+        no-gutters
+        class="mb-4"
+      >
         <v-col cols="12">
           <v-card elevation="1">
             <v-card-text class="pa-4">
@@ -158,19 +166,23 @@
       <v-row no-gutters>
         <!-- Filters Section - 3 columns -->
         <v-col cols="12" md="3" class="compact-filters-col">
-          <v-card elevation="1" class="compact-filters-card" style="height: 100%;">
+          <v-card
+            elevation="1"
+            class="compact-filters-card"
+            style="height: 100%"
+          >
             <v-card-text class="compact-filters-content pa-3">
               <!-- Search -->
-                  <v-text-field
-                    v-model="searchQuery"
-                    :label="t('reports.surgicalGuide.searchCases')"
-                    variant="outlined"
+              <v-text-field
+                v-model="searchQuery"
+                :label="t('reports.surgicalGuide.searchCases')"
+                variant="outlined"
                 density="compact"
                 prepend-inner-icon="mdi-magnify-outline"
-                    clearable
+                clearable
                 hide-details
                 class="mb-3"
-                    @click:clear="clearSearch"
+                @click:clear="clearSearch"
               ></v-text-field>
 
               <!-- Date Range -->
@@ -219,13 +231,15 @@
                   </v-menu>
                 </v-col>
               </v-row>
-                
+
               <!-- Action Buttons -->
               <div class="d-flex gap-2 mb-3">
                 <v-btn
                   color="primary"
                   size="default"
-                  :disabled="!isDateRangeValid || loading.table || loading.export"
+                  :disabled="
+                    !isDateRangeValid || loading.table || loading.export
+                  "
                   variant="elevated"
                   class="flex-1"
                   @click="fetchReport"
@@ -240,7 +254,11 @@
                   size="default"
                   prepend-icon="mdi-download-outline"
                   variant="outlined"
-                  :disabled="!filteredReportData.length || loading.table || loading.export"
+                  :disabled="
+                    !filteredReportData.length ||
+                    loading.table ||
+                    loading.export
+                  "
                   class="flex-1"
                   @click="exportToCSV"
                 >
@@ -250,7 +268,10 @@
 
               <!-- Enhanced Statistics Cards -->
               <!-- Skeleton Loaders for Summary Cards -->
-              <div v-if="loading.table && !summary" class="enhanced-stats-section">
+              <div
+                v-if="loading.table && !summary"
+                class="enhanced-stats-section"
+              >
                 <div class="stats-section-title">
                   <v-skeleton-loader type="text" width="80"></v-skeleton-loader>
                 </div>
@@ -261,11 +282,22 @@
                     class="enhanced-stat-card"
                   >
                     <div class="stat-card-icon">
-                      <v-skeleton-loader type="avatar" width="18" height="18"></v-skeleton-loader>
+                      <v-skeleton-loader
+                        type="avatar"
+                        width="18"
+                        height="18"
+                      ></v-skeleton-loader>
                     </div>
                     <div class="stat-card-content">
-                      <v-skeleton-loader type="text" width="60" class="mb-1"></v-skeleton-loader>
-                      <v-skeleton-loader type="text" width="40"></v-skeleton-loader>
+                      <v-skeleton-loader
+                        type="text"
+                        width="60"
+                        class="mb-1"
+                      ></v-skeleton-loader>
+                      <v-skeleton-loader
+                        type="text"
+                        width="40"
+                      ></v-skeleton-loader>
                     </div>
                   </div>
                 </div>
@@ -274,28 +306,37 @@
               <div v-else-if="summary" class="enhanced-stats-section">
                 <div class="stats-section-title">
                   <v-icon size="16" class="mr-1">mdi-chart-box-outline</v-icon>
-                  <span class="text-caption font-weight-medium">{{ t("reports.surgicalGuide.summary") || "Summary" }}</span>
+                  <span class="text-caption font-weight-medium">{{
+                    t("reports.surgicalGuide.summary") || "Summary"
+                  }}</span>
                 </div>
                 <div class="enhanced-stats-grid">
                   <div
                     v-for="stat in compactStats"
                     :key="stat.key"
                     class="enhanced-stat-card"
-                    :class="{ 
+                    :class="{
                       'stat-card-active': activeFilter === stat.key,
-                      'stat-card-disabled': loading.table || loading.export
+                      'stat-card-disabled': loading.table || loading.export,
                     }"
-                    @click="!loading.table && !loading.export && filterByOrderType(stat.key)"
+                    @click="
+                      !loading.table &&
+                      !loading.export &&
+                      filterByOrderType(stat.key)
+                    "
                   >
-                    <div class="stat-card-icon" :class="`stat-icon-${stat.color}`">
+                    <div
+                      class="stat-card-icon"
+                      :class="`stat-icon-${stat.color}`"
+                    >
                       <v-icon size="18">{{ stat.icon }}</v-icon>
-              </div>
+                    </div>
                     <div class="stat-card-content">
                       <div class="stat-card-label">{{ stat.label }}</div>
                       <div class="stat-card-value">{{ stat.value }}</div>
-              </div>
-              </div>
-              </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Date Range Validation -->
@@ -315,9 +356,16 @@
         <!-- Table Section - 9 columns -->
         <v-col cols="12" md="9" class="table-col pl-2">
           <!-- Loading Skeleton for Table -->
-          <v-card v-if="loading.table" elevation="1" class="skeleton-card h-100">
+          <v-card
+            v-if="loading.table"
+            elevation="1"
+            class="skeleton-card h-100"
+          >
             <v-card-text class="pa-3">
-              <v-skeleton-loader type="heading" class="mb-3"></v-skeleton-loader>
+              <v-skeleton-loader
+                type="heading"
+                class="mb-3"
+              ></v-skeleton-loader>
               <v-skeleton-loader type="table-heading"></v-skeleton-loader>
               <v-skeleton-loader type="table-tbody"></v-skeleton-loader>
               <v-skeleton-loader type="table-tfoot"></v-skeleton-loader>
@@ -325,10 +373,16 @@
           </v-card>
           <!-- Actual Table -->
           <v-card v-else elevation="1" class="table-card">
-            <v-card-title class="d-flex justify-space-between align-center table-card-title compact-title">
+            <v-card-title
+              class="d-flex justify-space-between align-center table-card-title compact-title"
+            >
               <div class="d-flex align-center">
-                <v-icon size="small" style="margin-inline-end: 6px">mdi-table</v-icon>
-                <span class="text-subtitle-2 font-weight-medium">{{ t("reports.surgicalGuide.reportData") }}</span>
+                <v-icon size="small" style="margin-inline-end: 6px"
+                  >mdi-table</v-icon
+                >
+                <span class="text-subtitle-2 font-weight-medium">{{
+                  t("reports.surgicalGuide.reportData")
+                }}</span>
                 <v-chip
                   v-if="filterNotificationText"
                   color="orange"
@@ -467,14 +521,16 @@
 
             <!-- Data Table -->
             <v-data-table-server
-              :headers="computedTableHeaders"
-              :items="filteredReportData"
               v-model:expanded="expanded"
-              :items-length="pagination.total"
               v-model:page="currentPage"
               v-model:items-per-page="itemsPerPage"
+              :headers="computedTableHeaders"
+              :items="filteredReportData"
+              :items-length="pagination.total"
               :items-per-page-options="[10, 25, 50]"
-              :items-per-page-text="t('reports.surgicalGuide.table.itemsPerPage')"
+              :items-per-page-text="
+                t('reports.surgicalGuide.table.itemsPerPage')
+              "
               :class="[
                 'elevation-1',
 
@@ -494,20 +550,27 @@
               @update:expanded="handleExpandedChange"
             >
               <!-- Custom Footer with Page Display (replaces default page text) -->
-              <template #footer.page-text="{ pageStart, pageStop, itemsLength }">
+              <template
+                #footer.page-text="{ pageStart, pageStop, itemsLength }"
+              >
                 <span class="text-caption text-medium-emphasis">
-                  <template v-if="pagination.total > 0 && pagination.totalPages">
-                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} {{ currentPage || pagination.page || 1 }} 
-                    {{ t('reports.surgicalGuide.table.of') || 'of' }} 
+                  <template
+                    v-if="pagination.total > 0 && pagination.totalPages"
+                  >
+                    {{ t("reports.surgicalGuide.table.page") || "Page" }}
+                    {{ currentPage || pagination.page || 1 }}
+                    {{ t("reports.surgicalGuide.table.of") || "of" }}
                     {{ pagination.totalPages }}
                   </template>
                   <template v-else-if="pagination.total > 0">
-                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} {{ currentPage || pagination.page || 1 }} 
-                    {{ t('reports.surgicalGuide.table.of') || 'of' }} 
+                    {{ t("reports.surgicalGuide.table.page") || "Page" }}
+                    {{ currentPage || pagination.page || 1 }}
+                    {{ t("reports.surgicalGuide.table.of") || "of" }}
                     {{ Math.ceil(pagination.total / itemsPerPage) }}
                   </template>
                   <template v-else>
-                    {{ t('reports.surgicalGuide.table.page') || 'Page' }} - {{ t('reports.surgicalGuide.table.of') || 'of' }} -
+                    {{ t("reports.surgicalGuide.table.page") || "Page" }} -
+                    {{ t("reports.surgicalGuide.table.of") || "of" }} -
                   </template>
                 </span>
               </template>
@@ -516,7 +579,9 @@
               <template #no-data>
                 <div class="text-center py-8">
                   <template v-if="searchQuery">
-                    <v-icon size="64" color="orange">mdi-magnify-close-outline</v-icon>
+                    <v-icon size="64" color="orange"
+                      >mdi-magnify-close-outline</v-icon
+                    >
                     <p class="text-h6 mt-4">
                       {{ t("reports.surgicalGuide.table.noResultsFound") }}
                     </p>
@@ -539,7 +604,9 @@
 
                   <!-- No data loaded at all -->
                   <template v-else>
-                    <v-icon size="64" color="grey">mdi-file-search-outline</v-icon>
+                    <v-icon size="64" color="grey"
+                      >mdi-file-search-outline</v-icon
+                    >
                     <p class="text-h6 mt-4">
                       {{ t("reports.surgicalGuide.table.noDataAvailable") }}
                     </p>
@@ -721,7 +788,9 @@
                   <v-icon size="x-small" class="mr-1" color="grey"
                     >mdi-calendar-outline</v-icon
                   >
-                  <span class="text-body-2 date-text">{{ formatDate(item.createdTime) }}</span>
+                  <span class="text-body-2 date-text">{{
+                    formatDate(item.createdTime)
+                  }}</span>
                 </div>
               </template>
 
@@ -805,7 +874,9 @@
                               >
                               {{ t("reports.surgicalGuide.created") }}
                             </td>
-                            <td class="detail-value">{{ formatDate(item.createdTime) }}</td>
+                            <td class="detail-value">
+                              {{ formatDate(item.createdTime) }}
+                            </td>
                           </tr>
 
                           <!-- Designed -->
@@ -1101,59 +1172,59 @@ const loadingStages = computed(() => {
   if (loading.export) {
     // Export stages
     return [
-      { 
-        id: 1, 
-        label: t('reports.surgicalGuide.progress.preparing') || 'Preparing', 
-        completed: loadingProgress.value > 0, 
-        current: loadingProgress.value > 0 && loadingProgress.value <= 30 
+      {
+        id: 1,
+        label: t("reports.surgicalGuide.progress.preparing") || "Preparing",
+        completed: loadingProgress.value > 0,
+        current: loadingProgress.value > 0 && loadingProgress.value <= 30,
       },
-      { 
-        id: 2, 
-        label: t('reports.surgicalGuide.progress.generating') || 'Generating', 
-        completed: loadingProgress.value > 30, 
-        current: loadingProgress.value > 30 && loadingProgress.value <= 70 
+      {
+        id: 2,
+        label: t("reports.surgicalGuide.progress.generating") || "Generating",
+        completed: loadingProgress.value > 30,
+        current: loadingProgress.value > 30 && loadingProgress.value <= 70,
       },
-      { 
-        id: 3, 
-        label: t('reports.surgicalGuide.progress.downloading') || 'Downloading', 
-        completed: loadingProgress.value > 70, 
-        current: loadingProgress.value > 70 && loadingProgress.value <= 95 
+      {
+        id: 3,
+        label: t("reports.surgicalGuide.progress.downloading") || "Downloading",
+        completed: loadingProgress.value > 70,
+        current: loadingProgress.value > 70 && loadingProgress.value <= 95,
       },
-      { 
-        id: 4, 
-        label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
-        completed: loadingProgress.value === 100, 
-        current: loadingProgress.value > 95 
-      }
+      {
+        id: 4,
+        label: t("reports.surgicalGuide.progress.complete") || "Complete",
+        completed: loadingProgress.value === 100,
+        current: loadingProgress.value > 95,
+      },
     ];
   }
-  
+
   // Table loading stages (default)
   return [
-    { 
-      id: 1, 
-      label: t('reports.surgicalGuide.progress.validating') || 'Validating', 
-      completed: loadingProgress.value > 0, 
-      current: loadingProgress.value > 0 && loadingProgress.value <= 25 
+    {
+      id: 1,
+      label: t("reports.surgicalGuide.progress.validating") || "Validating",
+      completed: loadingProgress.value > 0,
+      current: loadingProgress.value > 0 && loadingProgress.value <= 25,
     },
-    { 
-      id: 2, 
-      label: t('reports.surgicalGuide.progress.fetching') || 'Fetching', 
-      completed: loadingProgress.value > 25, 
-      current: loadingProgress.value > 25 && loadingProgress.value <= 60 
+    {
+      id: 2,
+      label: t("reports.surgicalGuide.progress.fetching") || "Fetching",
+      completed: loadingProgress.value > 25,
+      current: loadingProgress.value > 25 && loadingProgress.value <= 60,
     },
-    { 
-      id: 3, 
-      label: t('reports.surgicalGuide.progress.processing') || 'Processing', 
-      completed: loadingProgress.value > 60, 
-      current: loadingProgress.value > 60 && loadingProgress.value <= 90 
+    {
+      id: 3,
+      label: t("reports.surgicalGuide.progress.processing") || "Processing",
+      completed: loadingProgress.value > 60,
+      current: loadingProgress.value > 60 && loadingProgress.value <= 90,
     },
-    { 
-      id: 4, 
-      label: t('reports.surgicalGuide.progress.complete') || 'Complete', 
-      completed: loadingProgress.value === 100, 
-      current: loadingProgress.value > 90 
-    }
+    {
+      id: 4,
+      label: t("reports.surgicalGuide.progress.complete") || "Complete",
+      completed: loadingProgress.value === 100,
+      current: loadingProgress.value > 90,
+    },
   ];
 });
 
@@ -1183,11 +1254,12 @@ const isDateRangeValid = computed(() => {
 // Computed property for page text display (e.g., "Page 2 of 5000")
 const pageTextDisplay = computed(() => {
   if (!pagination.total || pagination.total === 0) {
-    return t('reports.surgicalGuide.table.pageText') || '{0}-{1} of {2}';
+    return t("reports.surgicalGuide.table.pageText") || "{0}-{1} of {2}";
   }
-  const totalPages = pagination.totalPages || Math.ceil(pagination.total / itemsPerPage.value);
+  const totalPages =
+    pagination.totalPages || Math.ceil(pagination.total / itemsPerPage.value);
   const currentPageNum = currentPage.value || pagination.page || 1;
-  return `${t('reports.surgicalGuide.table.page') || 'Page'} ${currentPageNum} ${t('reports.surgicalGuide.table.of') || 'of'} ${totalPages}`;
+  return `${t("reports.surgicalGuide.table.page") || "Page"} ${currentPageNum} ${t("reports.surgicalGuide.table.of") || "of"} ${totalPages}`;
 });
 
 const isDevelopment = computed(() => {
@@ -1227,10 +1299,7 @@ const filterNotificationText = computed(() => {
     );
   }
 
-  if (
-    filters.startDate !== "2014-01-01" ||
-    filters.endDate !== "2020-12-31"
-  ) {
+  if (filters.startDate !== "2014-01-01" || filters.endDate !== "2020-12-31") {
     const startFormatted = formatDate(new Date(filters.startDate));
     const endFormatted = formatDate(new Date(filters.endDate));
     parts.push(
@@ -1241,7 +1310,6 @@ const filterNotificationText = computed(() => {
 
   return parts.length > 0 ? parts.join(" • ") : null;
 });
-
 
 // Computed property for vouchers used (orders with prepayment/partial prepayment)
 const vouchersUsedCount = computed(() => {
@@ -1254,78 +1322,78 @@ const vouchersUsedCount = computed(() => {
 // Computed property for compact statistics chips
 const compactStats = computed(() => {
   if (!summary.value) return [];
-  
+
   return [
     {
-      key: 'all',
-      label: t('reports.surgicalGuide.summaryCards.total'),
+      key: "all",
+      label: t("reports.surgicalGuide.summaryCards.total"),
       value: formatNumber(summary.value.totalOrders || 0),
-      icon: 'mdi-cart-outline',
-      color: 'primary'
+      icon: "mdi-cart-outline",
+      color: "primary",
     },
     {
-      key: 'free',
-      label: t('reports.surgicalGuide.summaryCards.free'),
+      key: "free",
+      label: t("reports.surgicalGuide.summaryCards.free"),
       value: formatNumber(summary.value.freeOrders || 0),
-      icon: 'mdi-gift-outline',
-      color: 'success'
+      icon: "mdi-gift-outline",
+      color: "success",
     },
     {
-      key: 'fullyPrepaid',
-      label: t('reports.surgicalGuide.summaryCards.prepaid'),
+      key: "fullyPrepaid",
+      label: t("reports.surgicalGuide.summaryCards.prepaid"),
       value: formatNumber(summary.value.fullyPrepaidOrders || 0),
-      icon: 'mdi-ticket-confirmation-outline',
-      color: 'info'
+      icon: "mdi-ticket-confirmation-outline",
+      color: "info",
     },
     {
-      key: 'fullyPostpaid',
-      label: t('reports.surgicalGuide.summaryCards.postpaid'),
+      key: "fullyPostpaid",
+      label: t("reports.surgicalGuide.summaryCards.postpaid"),
       value: formatNumber(summary.value.fullyPostpaidOrders || 0),
-      icon: 'mdi-clock-outline',
-      color: 'error'
+      icon: "mdi-clock-outline",
+      color: "error",
     },
     {
-      key: 'partiallyPostpaid',
-      label: t('reports.surgicalGuide.summaryCards.partial'),
+      key: "partiallyPostpaid",
+      label: t("reports.surgicalGuide.summaryCards.partial"),
       value: formatNumber(summary.value.partiallyPostpaidOrders || 0),
-      icon: 'mdi-cash-multiple',
-      color: 'purple'
+      icon: "mdi-cash-multiple",
+      color: "purple",
     },
     {
-      key: 'vouchers',
-      label: t('reports.surgicalGuide.summaryCards.vouchers'),
+      key: "vouchers",
+      label: t("reports.surgicalGuide.summaryCards.vouchers"),
       value: formatNumber(vouchersUsedCount.value),
-      icon: 'mdi-ticket-percent-outline',
-      color: 'cyan'
+      icon: "mdi-ticket-percent-outline",
+      color: "cyan",
     },
     {
-      key: 'rush',
-      label: t('reports.surgicalGuide.summaryCards.rush'),
+      key: "rush",
+      label: t("reports.surgicalGuide.summaryCards.rush"),
       value: formatNumber(summary.value.rushOrders || 0),
-      icon: 'mdi-fire',
-      color: 'orange'
+      icon: "mdi-fire",
+      color: "orange",
     },
     {
-      key: 'onHold',
-      label: t('reports.surgicalGuide.summaryCards.onHold'),
+      key: "onHold",
+      label: t("reports.surgicalGuide.summaryCards.onHold"),
       value: formatNumber(summary.value.onHoldOrders || 0),
-      icon: 'mdi-pause-circle-outline',
-      color: 'error'
+      icon: "mdi-pause-circle-outline",
+      color: "error",
     },
     {
-      key: 'confirmed',
-      label: t('reports.surgicalGuide.summaryCards.confirmed'),
+      key: "confirmed",
+      label: t("reports.surgicalGuide.summaryCards.confirmed"),
       value: formatNumber(summary.value.confirmedOrders || 0),
-      icon: 'mdi-check-circle-outline',
-      color: 'grey'
+      icon: "mdi-check-circle-outline",
+      color: "grey",
     },
     {
-      key: 'active',
-      label: t('reports.surgicalGuide.summaryCards.active'),
+      key: "active",
+      label: t("reports.surgicalGuide.summaryCards.active"),
       value: formatNumber(summary.value.activeOrders || 0),
-      icon: 'mdi-play-circle-outline',
-      color: 'success'
-    }
+      icon: "mdi-play-circle-outline",
+      color: "success",
+    },
   ];
 });
 
@@ -1396,7 +1464,6 @@ const computedTableHeaders = computed(() => [
   },
 ]);
 
-
 // Track last options received from v-data-table-server to avoid duplicate fetch loops
 // initialize to null so the first incoming options always trigger a load
 const lastTableOptions = reactive({
@@ -1446,7 +1513,7 @@ async function checkAccess(skipApiCall = false) {
       if (response.data.success) {
         const accessData = response.data.data;
         baseUserGroups.value = accessData.userGroups || [];
-        
+
         // In production, use API data directly
         if (!import.meta.env.DEV) {
           Object.assign(accessInfo, accessData);
@@ -1502,26 +1569,26 @@ async function fetchReport() {
  */
 function formatDateToYYYYMMDD(dateValue) {
   if (!dateValue) return null;
-  
+
   // If already in YYYY-MM-DD format, return as is
-  if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+  if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
     return dateValue;
   }
-  
+
   // If it's a Date object or ISO string, format it
   try {
     const date = new Date(dateValue);
     if (isNaN(date.getTime())) {
       return null; // Invalid date
     }
-    
+
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
     return `${year}-${month}-${day}`;
   } catch (error) {
-    console.error('Error formatting date:', error);
+    console.error("Error formatting date:", error);
     return null;
   }
 }
@@ -1553,8 +1620,10 @@ async function fetchReportData() {
     }, 500);
 
     // Format dates to YYYY-MM-DD before sending to API
-    const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
-    const formattedEndDate = formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
+    const formattedStartDate =
+      formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
+    const formattedEndDate =
+      formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
 
     const params = {
       startDate: formattedStartDate,
@@ -1569,12 +1638,12 @@ async function fetchReportData() {
 
     // Fetch report and summary in parallel for better performance
     const promises = [
-    // Fetch report data (always paginated) with timeout
+      // Fetch report data (always paginated) with timeout
       Promise.race([
-      api.get("/api/reports/surgical_guide", { params }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Request timeout")), 15000),
-      ),
+        api.get("/api/reports/surgical_guide", { params }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 15000),
+        ),
       ]),
     ];
 
@@ -1604,7 +1673,7 @@ async function fetchReportData() {
       // Update pagination from server response
       // Use Object.assign to update pagination without triggering reactivity loops
       const serverPagination = reportResponse.data.pagination;
-      
+
       // Only update if values actually changed to prevent loops
       if (
         pagination.page !== serverPagination.page ||
@@ -1620,7 +1689,7 @@ async function fetchReportData() {
           hasPrevPage: serverPagination.hasPrevPage,
         });
       }
-      
+
       // Update lastTableOptions to prevent infinite loop when pagination updates
       // This ensures loadItems() won't trigger again when table detects pagination change
       lastTableOptions.page = serverPagination.page;
@@ -1628,14 +1697,15 @@ async function fetchReportData() {
       // Sync itemsPerPage and currentPage with server response to keep UI in sync
       itemsPerPage.value = serverPagination.limit;
       currentPage.value = serverPagination.page;
-      const currentSortKey = filters.sortBy && filters.sortOrder
-        ? `${filters.sortBy}:${filters.sortOrder}`
-        : "";
+      const currentSortKey =
+        filters.sortBy && filters.sortOrder
+          ? `${filters.sortBy}:${filters.sortOrder}`
+          : "";
       lastTableOptions.sortKey = currentSortKey;
-      
+
       // Mark initial load as complete
       isInitialLoad = false;
-      
+
       // Re-enable table options after Vue finishes all reactive updates
       // Use nextTick + small delay to ensure Vuetify has also finished updating
       await nextTick();
@@ -1651,7 +1721,6 @@ async function fetchReportData() {
         summary.value = summaryResponse.data.data;
       }
     }
-
   } catch (error) {
     const message =
       error.response?.data?.error?.message || "Failed to load report data";
@@ -1790,10 +1859,12 @@ async function exportToCSV() {
 
     // Simulate progress: Preparing (0-30%)
     loadingProgress.value = 10;
-    
+
     // Format dates to YYYY-MM-DD before sending to API
-    const formattedStartDate = formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
-    const formattedEndDate = formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
+    const formattedStartDate =
+      formatDateToYYYYMMDD(filters.startDate) || "1900-01-01";
+    const formattedEndDate =
+      formatDateToYYYYMMDD(filters.endDate) || "2100-01-01";
 
     loadingProgress.value = 30;
 
@@ -1830,7 +1901,7 @@ async function exportToCSV() {
     loadingProgress.value = 80;
     const blob = await response.blob();
     loadingProgress.value = 90;
-    
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -1847,9 +1918,9 @@ async function exportToCSV() {
 
     // Complete (100%)
     loadingProgress.value = 100;
-    
+
     // Small delay to show completion
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     showSnackbar(
       t("reports.surgicalGuide.reportExported") ||
@@ -1867,7 +1938,6 @@ async function exportToCSV() {
     loadingStartTime.value = null;
   }
 }
-
 
 /**
  * Format large numbers with K suffix
@@ -1908,15 +1978,17 @@ function getSupportTypeLabel(typeValue) {
   return typeMap[typeValue] || "N/A";
 }
 
-
 /**
  * Get workflow status icon
  */
 function getWorkflowIcon(item) {
   if (item.isRush === 1) return "mdi-fire";
-  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null) return "mdi-pause-circle-outline";
-  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null) return "mdi-check-circle-outline";
-  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null) return "mdi-play-circle-outline";
+  if (item.Q11_Val_4 !== 0 && item.Q11_Val_4 != null)
+    return "mdi-pause-circle-outline";
+  if (item.Q11_Val_2 !== 0 && item.Q11_Val_2 != null)
+    return "mdi-check-circle-outline";
+  if (item.Q11_Val_1 !== 0 && item.Q11_Val_1 != null)
+    return "mdi-play-circle-outline";
   return null;
 }
 
@@ -1944,9 +2016,6 @@ function getWorkflowStatusLabel(item) {
     return t("reports.surgicalGuide.active");
   return t("reports.surgicalGuide.noStatusSet");
 }
-
-
-
 
 /**
  * Get payment status label
@@ -2069,7 +2138,7 @@ if (import.meta.env.DEV) {
       // Always recompute in dev mode, even if baseUserGroups is empty (user might have no real groups)
       checkAccess(true); // Skip API call, just recompute from base groups + dev mode
     },
-    { deep: true }
+    { deep: true },
   );
 }
 
@@ -2082,10 +2151,10 @@ watch(
   (newVal, oldVal) => {
     // Skip if value hasn't actually changed (prevents unnecessary calls)
     if (newVal === oldVal) return;
-    
+
     // Clear any pending timeout
     clearTimeout(searchTimeout);
-    
+
     // Debounce the search to avoid excessive API calls
     // Increased to 800ms to give user time to type a complete word
     searchTimeout = setTimeout(() => {
@@ -2095,7 +2164,7 @@ watch(
       }
     }, 800); // 800ms debounce - allows user to type a word before searching
   },
-  { immediate: false } // Don't trigger on initial mount
+  { immediate: false }, // Don't trigger on initial mount
 );
 
 // =====================================
@@ -2105,7 +2174,7 @@ watch(
 onMounted(async () => {
   // Disable table auto-updates during initial mount
   tableOptionsDisabled = true;
-  
+
   // Fast initial render - defer non-critical work
   await checkAccess();
 
@@ -2118,10 +2187,10 @@ onMounted(async () => {
         isInitialLoad = false;
         // Temporarily enable table options for the initial load
         tableOptionsDisabled = false;
-    loadItems({
-      page: currentPage.value || pagination.page,
-      itemsPerPage: itemsPerPage.value,
-      sortBy: [],
+        loadItems({
+          page: currentPage.value || pagination.page,
+          itemsPerPage: itemsPerPage.value,
+          sortBy: [],
         }).catch(() => {
           isInitialLoad = true; // Reset on error
           tableOptionsDisabled = false; // Ensure flag is reset
@@ -2355,7 +2424,6 @@ onMounted(async () => {
   justify-content: flex-start !important;
 }
 
-
 /* ===================================== */
 /* PREVENT SCROLLBAR FLASH - CRITICAL */
 /* ===================================== */
@@ -2490,8 +2558,6 @@ onMounted(async () => {
   transform: scaleX(-1) !important;
 }
 
-
-
 /* Header Section - Matching PowerBI */
 .header-container {
   margin-bottom: 16px;
@@ -2539,7 +2605,6 @@ onMounted(async () => {
 .v-card {
   contain: layout style paint;
 }
-
 
 .summary-card {
   height: 100%;
@@ -2624,8 +2689,6 @@ onMounted(async () => {
   font-weight: 500;
 }
 
-
-
 /* Optimize initial page load - reduce blocking */
 .surgical-guide-report {
   content-visibility: auto;
@@ -2650,7 +2713,6 @@ onMounted(async () => {
 /* Expandable Row Styles - Enhanced UX */
 
 /* Highlight Expanded Row */
-
 
 .expanded-cell {
   padding: 0 !important;
@@ -2841,7 +2903,6 @@ onMounted(async () => {
   padding: 24px;
 }
 
-
 /* Compact Vouchers Inline Display */
 .compact-vouchers {
   padding: 6px 0;
@@ -2886,7 +2947,6 @@ onMounted(async () => {
 }
 
 /* Removed old voucher expansion panel styles - now using inline chips */
-
 
 /* Workflow icon - simple static styling */
 .workflow-status-icon {
@@ -2933,16 +2993,15 @@ onMounted(async () => {
   z-index: 2;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #FFFFFF !important; /* White text */
+  color: #ffffff !important; /* White text */
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 3px solid #E65100;
+  border-bottom: 3px solid #e65100;
   padding: 12px 10px !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   contain: layout style paint; /* Performance isolation */
   border-radius: 0 !important;
 }
-
 
 .enhanced-table .v-data-table__tr {
   contain: layout style; /* Isolate row rendering */
@@ -3077,9 +3136,6 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-
-
-
 .clickable-card {
   cursor: pointer;
 }
@@ -3110,7 +3166,6 @@ onMounted(async () => {
 /* ===================================== */
 /* ENHANCED GRID LAYOUT */
 /* ===================================== */
-
 
 .compact-filters-col {
   padding: 0;
@@ -3160,7 +3215,7 @@ onMounted(async () => {
 }
 
 .stats-section-title {
-    display: flex;
+  display: flex;
   align-items: center;
   margin-bottom: 12px;
   color: rgba(var(--v-theme-on-surface), 0.7);
@@ -3326,22 +3381,22 @@ onMounted(async () => {
   .compact-filters-content {
     padding: 12px !important;
   }
-  
+
   .enhanced-stats-grid {
     grid-template-columns: 1fr;
     gap: 6px;
   }
-  
+
   .enhanced-stat-card {
     padding: 8px 10px;
     min-height: 52px;
   }
-  
+
   .stat-card-icon {
     width: 32px;
     height: 32px;
   }
-  
+
   .stat-card-value {
     font-size: 1rem;
   }
@@ -3353,11 +3408,9 @@ onMounted(async () => {
 
 .filters-card {
   height: 100%;
-    display: flex;
+  display: flex;
   flex-direction: column;
 }
-
-
 
 .filters-card-title .v-icon {
   color: white !important;
@@ -3414,7 +3467,6 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-
 .compact-card-top-bar {
   position: absolute;
   top: 0;
@@ -3468,8 +3520,6 @@ onMounted(async () => {
 .v-theme--dark .compact-card-label {
   color: rgba(255, 255, 255, 0.6);
 }
-
-
 
 .table-col {
   padding: 0;
@@ -3542,8 +3592,8 @@ onMounted(async () => {
   font-weight: 600;
   height: 30px !important;
   line-height: 1.2;
-  background: #FF8C00 !important; /* Primary orange background */
-  color: #FFFFFF !important; /* White text */
+  background: #ff8c00 !important; /* Primary orange background */
+  color: #ffffff !important; /* White text */
   border-radius: 0 !important;
 }
 
@@ -3645,7 +3695,9 @@ onMounted(async () => {
   font-size: 0.75rem;
 }
 
-.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer__items-per-page > span) {
+.v-theme--dark
+  .ultra-compact-table
+  :deep(.v-data-table-footer__items-per-page > span) {
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -3661,13 +3713,15 @@ onMounted(async () => {
   height: 28px !important;
 }
 
-.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-field__input) {
+.ultra-compact-table
+  :deep(.v-data-table-footer__items-per-page .v-field__input) {
   min-height: 24px !important;
   padding: 0 4px !important;
   font-size: 0.75rem !important;
 }
 
-.ultra-compact-table :deep(.v-data-table-footer__items-per-page .v-field__append-inner) {
+.ultra-compact-table
+  :deep(.v-data-table-footer__items-per-page .v-field__append-inner) {
   padding: 0 4px !important;
 }
 
@@ -3716,7 +3770,9 @@ onMounted(async () => {
   background: rgba(var(--v-theme-on-surface), 0.08) !important;
 }
 
-.v-theme--dark .ultra-compact-table :deep(.v-data-table-footer__pagination .v-btn:hover) {
+.v-theme--dark
+  .ultra-compact-table
+  :deep(.v-data-table-footer__pagination .v-btn:hover) {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
@@ -3839,15 +3895,12 @@ onMounted(async () => {
   }
 }
 
-
-
-
 /* Improved responsive behavior for filters */
 @media (max-width: 959px) {
   .filters-col {
     margin-bottom: 16px;
   }
-  
+
   .filters-card {
     margin-bottom: 0;
   }
@@ -3868,7 +3921,7 @@ onMounted(async () => {
   padding-left: 16px;
   padding-right: 0;
 }
-.compact-footer{
+.compact-footer {
   background: none !important;
 }
 @keyframes fade-in {

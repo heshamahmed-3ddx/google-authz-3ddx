@@ -17,16 +17,20 @@
       <v-col cols="12" md="3" class="pr-md-2 mb-4 mb-md-0">
         <v-card elevation="1" class="compact-filters-card">
           <v-card-text class="pa-3">
-            <div class="text-caption font-weight-medium mb-3 d-flex align-center">
+            <div
+              class="text-caption font-weight-medium mb-3 d-flex align-center"
+            >
               <v-icon size="16" class="mr-1">mdi-filter-outline</v-icon>
               Filters
             </div>
-            
+
             <!-- Quick Actions -->
             <div v-if="quickActions.length > 0" class="enhanced-stats-section">
               <div class="stats-section-title">
                 <v-icon size="16" class="mr-1">mdi-lightning-bolt</v-icon>
-                <span class="text-caption font-weight-medium">Quick Actions</span>
+                <span class="text-caption font-weight-medium"
+                  >Quick Actions</span
+                >
               </div>
               <div class="enhanced-stats-grid">
                 <div
@@ -34,12 +38,18 @@
                   :key="action.title"
                   class="enhanced-stat-card"
                 >
-                  <div class="stat-card-icon" :class="`stat-icon-${action.color}`">
+                  <div
+                    class="stat-card-icon"
+                    :class="`stat-icon-${action.color}`"
+                  >
                     <v-icon size="18">{{ action.icon }}</v-icon>
                   </div>
                   <div class="stat-card-content">
                     <div class="stat-card-label">{{ action.title }}</div>
-                    <div class="text-caption text-medium-emphasis" style="font-size: 0.65rem">
+                    <div
+                      class="text-caption text-medium-emphasis"
+                      style="font-size: 0.65rem"
+                    >
                       {{ action.description }}
                     </div>
                   </div>
@@ -48,15 +58,8 @@
             </div>
 
             <!-- Coming Soon Notice -->
-            <v-alert
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="mt-3"
-            >
-              <div class="text-caption">
-                Full implementation coming soon
-              </div>
+            <v-alert type="info" variant="tonal" density="compact" class="mt-3">
+              <div class="text-caption">Full implementation coming soon</div>
             </v-alert>
           </v-card-text>
         </v-card>
@@ -65,10 +68,16 @@
       <!-- Main Content Area -->
       <v-col cols="12" md="9" class="pl-md-2">
         <v-card elevation="1" class="table-card">
-          <v-card-title class="d-flex justify-space-between align-center compact-title">
+          <v-card-title
+            class="d-flex justify-space-between align-center compact-title"
+          >
             <div class="d-flex align-center">
-              <v-icon size="small" style="margin-inline-end: 6px">{{ pageIcon }}</v-icon>
-              <span class="text-subtitle-2 font-weight-medium">{{ pageTitle }}</span>
+              <v-icon size="small" style="margin-inline-end: 6px">{{
+                pageIcon
+              }}</v-icon>
+              <span class="text-subtitle-2 font-weight-medium">{{
+                pageTitle
+              }}</span>
             </div>
           </v-card-title>
 

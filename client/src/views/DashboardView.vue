@@ -1,6 +1,9 @@
 <template>
   <!-- Loading Skeleton -->
-  <v-container v-if="isPageLoading" class="fill-height dashboard-skeleton-container">
+  <v-container
+    v-if="isPageLoading"
+    class="fill-height dashboard-skeleton-container"
+  >
     <v-row class="fill-height">
       <v-col cols="12" class="d-flex flex-column">
         <v-skeleton-loader type="heading" class="mb-4"></v-skeleton-loader>
@@ -21,7 +24,10 @@
       <v-col cols="12">
         <PageHeader
           :title="$t('dashboard.title') || 'Dashboard'"
-          :subtitle="$t('dashboard.subtitle') || 'Overview of your account and system status'"
+          :subtitle="
+            $t('dashboard.subtitle') ||
+            'Overview of your account and system status'
+          "
           icon="mdi-view-dashboard"
         />
       </v-col>
@@ -57,13 +63,14 @@
         </v-alert>
 
         <!-- User Info Card -->
-        <v-card
-          class="mb-3 stable-card"
-          elevation="1"
-        >
+        <v-card class="mb-3 stable-card" elevation="1">
           <v-card-title class="compact-title pa-3">
-            <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-account-details</v-icon>
-            <span class="text-subtitle-2 font-weight-medium">{{ $t("dashboard.userDetailsOrganization") }}</span>
+            <v-icon size="small" style="margin-inline-end: 6px" color="primary"
+              >mdi-account-details</v-icon
+            >
+            <span class="text-subtitle-2 font-weight-medium">{{
+              $t("dashboard.userDetailsOrganization")
+            }}</span>
           </v-card-title>
           <v-card-text class="pa-3">
             <template v-if="loadingDetails">
@@ -170,7 +177,12 @@
               <v-row>
                 <v-col cols="12" class="pb-0">
                   <h4 class="text-subtitle-2 font-weight-medium mb-3">
-                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-badge-account</v-icon>
+                    <v-icon
+                      size="small"
+                      style="margin-inline-end: 6px"
+                      color="primary"
+                      >mdi-badge-account</v-icon
+                    >
                     Employee Information
                   </h4>
                 </v-col>
@@ -266,7 +278,12 @@
               <v-row>
                 <v-col cols="12" class="pb-0">
                   <h4 class="text-subtitle-2 font-weight-medium mb-3">
-                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-card-account-phone</v-icon>
+                    <v-icon
+                      size="small"
+                      style="margin-inline-end: 6px"
+                      color="primary"
+                      >mdi-card-account-phone</v-icon
+                    >
                     Contact Information
                   </h4>
                 </v-col>
@@ -392,7 +409,12 @@
               <v-row>
                 <v-col cols="12">
                   <h4 class="text-subtitle-2 font-weight-medium mb-3">
-                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-account-group</v-icon>
+                    <v-icon
+                      size="small"
+                      style="margin-inline-end: 6px"
+                      color="primary"
+                      >mdi-account-group</v-icon
+                    >
                     {{ $t("dashboard.groups") }}
                   </h4>
 
@@ -523,14 +545,14 @@
         </v-alert>
 
         <!-- User Rights & Permissions -->
-        <v-card
-          v-if="canViewUserRights"
-          class="mb-3 stable-card"
-          elevation="1"
-        >
+        <v-card v-if="canViewUserRights" class="mb-3 stable-card" elevation="1">
           <v-card-title class="compact-title pa-3">
-            <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-shield-account</v-icon>
-            <span class="text-subtitle-2 font-weight-medium">{{ $t("dashboard.userRightsPermissions") }}</span>
+            <v-icon size="small" style="margin-inline-end: 6px" color="primary"
+              >mdi-shield-account</v-icon
+            >
+            <span class="text-subtitle-2 font-weight-medium">{{
+              $t("dashboard.userRightsPermissions")
+            }}</span>
           </v-card-title>
           <v-card-text v-if="userRights" class="pa-3">
             <div class="mb-3">
@@ -539,7 +561,9 @@
                   <v-card variant="tonal" color="primary" elevation="0">
                     <v-card-text class="text-center py-2">
                       <v-icon size="24" class="mb-1">mdi-account</v-icon>
-                      <div class="text-subtitle-2 font-weight-medium">{{ userRights.userEmail }}</div>
+                      <div class="text-subtitle-2 font-weight-medium">
+                        {{ userRights.userEmail }}
+                      </div>
                       <div class="text-caption">
                         {{ $t("dashboard.authorizationSubject") }}
                       </div>
@@ -726,7 +750,12 @@
                   <!-- Field Descriptions Table -->
                   <v-divider class="my-6"></v-divider>
                   <h4 class="text-subtitle-2 font-weight-medium mb-3">
-                    <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-table-edit</v-icon>
+                    <v-icon
+                      size="small"
+                      style="margin-inline-end: 6px"
+                      color="primary"
+                      >mdi-table-edit</v-icon
+                    >
                     Field Descriptions
                   </h4>
                   <v-card variant="outlined" elevation="0">
@@ -1266,14 +1295,14 @@ onMounted(async () => {
 
     // Start fetching data immediately (parallel requests)
     const promises = [];
-    
+
     // Check cache first, but still fetch in background for fresh data
     if (authStore.cachedUserDetails) {
       userDetails.value = authStore.cachedUserDetails;
     } else {
       promises.push(fetchUserDetails());
     }
-    
+
     if (authStore.cachedUserRights) {
       userRights.value = authStore.cachedUserRights;
     } else {
@@ -1290,18 +1319,20 @@ onMounted(async () => {
     // Fetch fresh data in background if needed
     if (promises.length > 0) {
       // Don't wait for API calls to hide skeleton if we have cached data
-      Promise.all(promises).then(() => {
-        // Only hide if still loading (in case user navigated away)
-        if (isPageLoading.value) {
-          isPageLoading.value = false;
-        }
-      }).catch(() => {
-        // On error, still hide skeleton to show error state
-        if (isPageLoading.value) {
-          isPageLoading.value = false;
-        }
-      });
-      
+      Promise.all(promises)
+        .then(() => {
+          // Only hide if still loading (in case user navigated away)
+          if (isPageLoading.value) {
+            isPageLoading.value = false;
+          }
+        })
+        .catch(() => {
+          // On error, still hide skeleton to show error state
+          if (isPageLoading.value) {
+            isPageLoading.value = false;
+          }
+        });
+
       // If no cached data, wait for API calls (but with timeout to prevent infinite wait)
       if (!authStore.cachedUserDetails && !authStore.cachedUserRights) {
         try {

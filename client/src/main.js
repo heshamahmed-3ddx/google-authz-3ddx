@@ -154,10 +154,8 @@ const vuetify = createVuetify({
   },
 });
 
-
 const app = createApp(App);
 const pinia = createPinia();
-
 
 // Development-only: suppress specific noisy Vue warnings in headless environments
 if (import.meta.env.DEV) {
@@ -171,7 +169,7 @@ if (import.meta.env.DEV) {
         "Missing ref owner context. ref cannot be used on hoisted vnodes",
       ) ||
       msg.includes("<Suspense> is an experimental feature") ||
-      msg.includes("Suspense") && msg.includes("experimental")
+      (msg.includes("Suspense") && msg.includes("experimental"))
     ) {
       return;
     }

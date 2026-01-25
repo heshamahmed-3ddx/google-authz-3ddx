@@ -13,7 +13,9 @@
               >
               <span>Settings</span>
             </h1>
-            <p class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
+            <p
+              class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle"
+            >
               Manage system settings and configurations
             </p>
           </div>
@@ -34,19 +36,35 @@
             density="compact"
           >
             <v-tab value="general">
-              <v-icon icon="mdi-cog-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              <v-icon
+                icon="mdi-cog-outline"
+                size="small"
+                style="margin-inline-end: 6px"
+              ></v-icon>
               General
             </v-tab>
             <v-tab value="security">
-              <v-icon icon="mdi-security" size="small" style="margin-inline-end: 6px"></v-icon>
+              <v-icon
+                icon="mdi-security"
+                size="small"
+                style="margin-inline-end: 6px"
+              ></v-icon>
               Security
             </v-tab>
             <v-tab value="notifications">
-              <v-icon icon="mdi-bell-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              <v-icon
+                icon="mdi-bell-outline"
+                size="small"
+                style="margin-inline-end: 6px"
+              ></v-icon>
               Notifications
             </v-tab>
             <v-tab value="integrations">
-              <v-icon icon="mdi-puzzle-outline" size="small" style="margin-inline-end: 6px"></v-icon>
+              <v-icon
+                icon="mdi-puzzle-outline"
+                size="small"
+                style="margin-inline-end: 6px"
+              ></v-icon>
               Integrations
             </v-tab>
           </v-tabs>

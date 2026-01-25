@@ -6,7 +6,12 @@
         <div class="d-flex justify-space-between align-center mb-2">
           <div>
             <h2 class="text-subtitle-2 font-weight-medium mb-1">
-              <v-icon size="small" style="margin-inline-end: 6px" color="primary">mdi-security</v-icon>
+              <v-icon
+                size="small"
+                style="margin-inline-end: 6px"
+                color="primary"
+                >mdi-security</v-icon
+              >
               Security Settings
             </h2>
             <p class="text-caption text-medium-emphasis">
@@ -30,9 +35,12 @@
           density="compact"
           class="mt-2"
         >
-          <v-alert-title class="text-subtitle-2">Read-Only Access</v-alert-title>
+          <v-alert-title class="text-subtitle-2"
+            >Read-Only Access</v-alert-title
+          >
           <div class="text-caption">
-            You are viewing this page in read-only mode. Only administrators can make changes to roles and permissions.
+            You are viewing this page in read-only mode. Only administrators can
+            make changes to roles and permissions.
           </div>
         </v-alert>
       </div>
@@ -43,8 +51,15 @@
           <!-- Roles & Permissions Section -->
           <v-card elevation="1" class="mb-3">
             <v-card-title class="d-flex align-center compact-title pa-3">
-              <v-icon icon="mdi-shield-account" size="small" style="margin-inline-end: 6px" color="primary"></v-icon>
-              <span class="text-subtitle-2 font-weight-medium">Roles & Permissions</span>
+              <v-icon
+                icon="mdi-shield-account"
+                size="small"
+                style="margin-inline-end: 6px"
+                color="primary"
+              ></v-icon>
+              <span class="text-subtitle-2 font-weight-medium"
+                >Roles & Permissions</span
+              >
             </v-card-title>
             <v-card-text class="pa-3">
               <RolesPermissionsSection :is-admin="isAdmin" />
@@ -54,8 +69,15 @@
           <!-- Access Policies Section -->
           <v-card elevation="1" class="mb-3">
             <v-card-title class="d-flex align-center compact-title pa-3">
-              <v-icon icon="mdi-shield-lock" size="small" style="margin-inline-end: 6px" color="primary"></v-icon>
-              <span class="text-subtitle-2 font-weight-medium">Access Policies</span>
+              <v-icon
+                icon="mdi-shield-lock"
+                size="small"
+                style="margin-inline-end: 6px"
+                color="primary"
+              ></v-icon>
+              <span class="text-subtitle-2 font-weight-medium"
+                >Access Policies</span
+              >
             </v-card-title>
             <v-card-text class="pa-3">
               <AccessPoliciesSection :is-admin="isAdmin" />
@@ -65,8 +87,15 @@
           <!-- Security Options Section (Admin Only) -->
           <v-card v-if="isAdmin" elevation="1">
             <v-card-title class="d-flex align-center compact-title pa-3">
-              <v-icon icon="mdi-security" size="small" style="margin-inline-end: 6px" color="primary"></v-icon>
-              <span class="text-subtitle-2 font-weight-medium">Security Options</span>
+              <v-icon
+                icon="mdi-security"
+                size="small"
+                style="margin-inline-end: 6px"
+                color="primary"
+              ></v-icon>
+              <span class="text-subtitle-2 font-weight-medium"
+                >Security Options</span
+              >
             </v-card-title>
             <v-card-text class="pa-3">
               <SecurityOptionsSection />
@@ -130,4 +159,3 @@ const isAdmin = computed(() => {
   min-height: 36px;
 }
 </style>
-

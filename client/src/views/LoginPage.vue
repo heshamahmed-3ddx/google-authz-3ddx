@@ -8,8 +8,8 @@
     <!-- Centered login content -->
     <div class="login-content">
       <div
-        class="logo-wrapper"
         ref="logoWrapper"
+        class="logo-wrapper"
         :class="{ 'fade-in': logoAnimated }"
         :style="
           logoAnimated
@@ -18,18 +18,18 @@
         "
       >
         <img
+          ref="logoImg"
           :src="logoSrc"
           alt="Logo"
           class="login-logo"
-          ref="logoImg"
           :class="{ 'fade-in-img': logoAnimated }"
           @error="onLogoError"
         />
       </div>
 
       <v-btn
-        class="sign-in-btn"
         ref="signInBtn"
+        class="sign-in-btn"
         :class="{ 'fade-in': buttonAnimated }"
         style="background-color: #ef9043 !important; color: white !important"
         size="default"
@@ -60,12 +60,8 @@
       multi-line
     >
       {{ errorMessage }}
-      <template v-slot:actions>
-        <v-btn
-          color="white"
-          variant="text"
-          @click="showError = false"
-        >
+      <template #actions>
+        <v-btn color="white" variant="text" @click="showError = false">
           Close
         </v-btn>
       </template>
@@ -99,10 +95,11 @@ const errorMessage = ref("");
 
 // Error message mappings
 const errorMessages = {
-  access_denied: "Access Denied: You are not authorized to access this application. Please contact your administrator.",
+  access_denied:
+    "Access Denied: You are not authorized to access this application. Please contact your administrator.",
   oauth_failed: "Authentication failed. Please try again.",
   session_error: "Session error occurred. Please try signing in again.",
-  default: "An error occurred during authentication. Please try again."
+  default: "An error occurred during authentication. Please try again.",
 };
 
 function checkForErrors() {
@@ -179,7 +176,7 @@ let _animeModule = null;
 async function animateLogo() {
   if (!_animeModule) {
     try {
-      const mod = await import('animejs');
+      const mod = await import("animejs");
       _animeModule = mod.default || mod;
     } catch (e) {
       // animejs not available
@@ -198,34 +195,37 @@ async function animateLogo() {
     if (!lw && !li) return; // nothing to animate
 
     // Honor reduced-motion preference
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       if (lw) {
-        lw.style.opacity = '1';
-        lw.style.transform = 'none';
+        lw.style.opacity = "1";
+        lw.style.transform = "none";
       }
-      if (li) li.style.opacity = '1';
-      if (btn) btn.style.opacity = '1';
+      if (li) li.style.opacity = "1";
+      if (btn) btn.style.opacity = "1";
       return;
     }
 
     // Set initial hidden state then animate to visible
     if (lw) {
-      lw.style.opacity = '0';
-      lw.style.transform = 'translateY(-20px) scale(0.95)';
+      lw.style.opacity = "0";
+      lw.style.transform = "translateY(-20px) scale(0.95)";
     }
-    if (li) li.style.opacity = '0';
-    if (btn) btn.style.opacity = '0';
+    if (li) li.style.opacity = "0";
+    if (btn) btn.style.opacity = "0";
 
     const tl = anime.timeline();
     let _failSafe = null;
     _failSafe = setTimeout(() => {
       try {
         if (lw) {
-          lw.style.opacity = '';
-          lw.style.transform = '';
+          lw.style.opacity = "";
+          lw.style.transform = "";
         }
-        if (li) li.style.opacity = '';
-        if (btn) btn.style.opacity = '';
+        if (li) li.style.opacity = "";
+        if (btn) btn.style.opacity = "";
       } catch (e) {
         // ignore
       }
@@ -236,49 +236,63 @@ async function animateLogo() {
       translateY: lw ? [-20, 0] : undefined,
       scale: lw ? [0.95, 1] : undefined,
       duration: 720,
-      easing: 'easeOutCubic',
+      easing: "easeOutCubic",
     })
-      .add({
-        targets: li,
-        opacity: [0, 1],
-        duration: 360,
-        easing: 'linear',
-      }, '-=420')
-      .add({
-        targets: btn,
-        opacity: [0, 1],
-        translateY: [-10, 0],
-        duration: 640,
-        easing: 'easeOutCubic',
-      }, '+=160');
+      .add(
+        {
+          targets: li,
+          opacity: [0, 1],
+          duration: 360,
+          easing: "linear",
+        },
+        "-=420",
+      )
+      .add(
+        {
+          targets: btn,
+          opacity: [0, 1],
+          translateY: [-10, 0],
+          duration: 640,
+          easing: "easeOutCubic",
+        },
+        "+=160",
+      );
 
     // Ensure we clear inline styles after animation so CSS rules take over
-    if (tl.finished && typeof tl.finished.then === 'function') {
-      tl.finished.then(() => {
-        try {
-          if (_failSafe) { clearTimeout(_failSafe); _failSafe = null; }
-          if (lw) {
-            lw.style.opacity = '';
-            lw.style.transform = '';
+    if (tl.finished && typeof tl.finished.then === "function") {
+      tl.finished
+        .then(() => {
+          try {
+            if (_failSafe) {
+              clearTimeout(_failSafe);
+              _failSafe = null;
+            }
+            if (lw) {
+              lw.style.opacity = "";
+              lw.style.transform = "";
+            }
+            if (li) li.style.opacity = "";
+            if (btn) btn.style.opacity = "";
+          } catch (e) {
+            // ignore
           }
-          if (li) li.style.opacity = '';
-          if (btn) btn.style.opacity = '';
-        } catch (e) {
-          // ignore
-        }
-      }).catch(() => {
-        if (_failSafe) { clearTimeout(_failSafe); _failSafe = null; }
-      });
+        })
+        .catch(() => {
+          if (_failSafe) {
+            clearTimeout(_failSafe);
+            _failSafe = null;
+          }
+        });
     }
   } catch (e) {
     // On any error, reveal elements so they don't stay hidden
     try {
       if (logoWrapper.value) {
-        logoWrapper.value.style.opacity = '1';
-        logoWrapper.value.style.transform = 'none';
+        logoWrapper.value.style.opacity = "1";
+        logoWrapper.value.style.transform = "none";
       }
-      if (logoImg.value) logoImg.value.style.opacity = '1';
-      if (signInBtn.value) signInBtn.value.style.opacity = '1';
+      if (logoImg.value) logoImg.value.style.opacity = "1";
+      if (signInBtn.value) signInBtn.value.style.opacity = "1";
     } catch (err) {
       // ignore
     }
@@ -294,7 +308,7 @@ onMounted(async () => {
     router.push("/home");
     return;
   }
-  
+
   // Also check with server if not cached
   const isAuthenticated = await authStore.checkAuth();
   if (isAuthenticated) {
@@ -350,7 +364,13 @@ onMounted(async () => {
 
   // Generate pattern directly for full page (no worker needed for simplicity)
   const run = () => {
-    const svgString = generateBinaryPatternSVG(viewportWidth, viewportHeight, color, fontSize, spacing);
+    const svgString = generateBinaryPatternSVG(
+      viewportWidth,
+      viewportHeight,
+      color,
+      fontSize,
+      spacing,
+    );
     applySvgString(svgString);
   };
   if ("requestIdleCallback" in window) {
@@ -607,8 +627,14 @@ onUnmounted(() => {
 }
 
 @keyframes fadeInImage {
-  from { opacity: 0; transform: translateY(-8px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Respect users who prefer reduced motion */
@@ -776,4 +802,3 @@ onUnmounted(() => {
   }
 }
 </style>
-

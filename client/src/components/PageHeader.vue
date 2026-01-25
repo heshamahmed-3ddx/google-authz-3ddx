@@ -1,13 +1,23 @@
 <template>
-  <div class="d-flex justify-space-between mb-2 header-container compact-header">
+  <div
+    class="d-flex justify-space-between mb-2 header-container compact-header"
+  >
     <div>
       <h1 class="text-h6 pt-2 compact-header-title">
-        <v-icon v-if="icon" size="small" style="margin-inline-end: 6px" :color="iconColor">
+        <v-icon
+          v-if="icon"
+          size="small"
+          style="margin-inline-end: 6px"
+          :color="iconColor"
+        >
           {{ icon }}
         </v-icon>
         {{ title }}
       </h1>
-      <p v-if="subtitle" class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle">
+      <p
+        v-if="subtitle"
+        class="text-caption text-medium-emphasis header-subtitle compact-header-subtitle"
+      >
         {{ subtitle }}
       </p>
     </div>
@@ -27,15 +37,15 @@ defineProps({
   },
   subtitle: {
     type: String,
-    default: '',
+    default: "",
   },
   icon: {
     type: String,
-    default: '',
+    default: "",
   },
   iconColor: {
     type: String,
-    default: 'primary',
+    default: "primary",
   },
 });
 </script>
@@ -71,4 +81,3 @@ defineProps({
   margin-inline-start: 0;
 }
 </style>
-

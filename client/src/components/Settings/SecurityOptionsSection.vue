@@ -3,7 +3,11 @@
     <v-row no-gutters>
       <v-col cols="12" md="6" class="pr-md-2">
         <v-card variant="outlined" elevation="0" class="mb-3">
-          <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">Casbin Cache</v-card-title>
+          <v-card-title
+            class="text-subtitle-2 font-weight-medium pa-3"
+            style="min-height: 36px"
+            >Casbin Cache</v-card-title
+          >
           <v-card-text class="pa-3">
             <p class="text-caption mb-3">
               Manage Casbin policy cache for better performance
@@ -13,8 +17,8 @@
               variant="outlined"
               size="small"
               prepend-icon="mdi-cached"
-              @click="invalidateCache"
               :loading="cacheLoading"
+              @click="invalidateCache"
             >
               Invalidate Cache
             </v-btn>
@@ -24,18 +28,20 @@
 
       <v-col cols="12" md="6" class="pl-md-2">
         <v-card variant="outlined" elevation="0" class="mb-3">
-          <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">Reload Policies</v-card-title>
+          <v-card-title
+            class="text-subtitle-2 font-weight-medium pa-3"
+            style="min-height: 36px"
+            >Reload Policies</v-card-title
+          >
           <v-card-text class="pa-3">
-            <p class="text-caption mb-3">
-              Reload all policies from database
-            </p>
+            <p class="text-caption mb-3">Reload all policies from database</p>
             <v-btn
               color="primary"
               variant="outlined"
               size="small"
               prepend-icon="mdi-refresh"
-              @click="reloadPolicies"
               :loading="reloadLoading"
+              @click="reloadPolicies"
             >
               Reload Policies
             </v-btn>
@@ -45,27 +51,43 @@
 
       <v-col cols="12">
         <v-card variant="outlined" elevation="0">
-          <v-card-title class="text-subtitle-2 font-weight-medium pa-3" style="min-height: 36px;">Performance Metrics</v-card-title>
+          <v-card-title
+            class="text-subtitle-2 font-weight-medium pa-3"
+            style="min-height: 36px"
+            >Performance Metrics</v-card-title
+          >
           <v-card-text class="pa-3">
             <div v-if="metricsLoading" class="text-center py-4">
-              <v-progress-circular indeterminate color="primary" size="32"></v-progress-circular>
+              <v-progress-circular
+                indeterminate
+                color="primary"
+                size="32"
+              ></v-progress-circular>
             </div>
             <div v-else-if="metrics" class="metrics-grid">
               <div class="metric-item">
                 <div class="metric-label">Cache Hit Rate</div>
-                <div class="metric-value">{{ metrics.cacheHitRate || "N/A" }}</div>
+                <div class="metric-value">
+                  {{ metrics.cacheHitRate || "N/A" }}
+                </div>
               </div>
               <div class="metric-item">
                 <div class="metric-label">Average Query Time</div>
-                <div class="metric-value">{{ metrics.averageQueryTime || "N/A" }}</div>
+                <div class="metric-value">
+                  {{ metrics.averageQueryTime || "N/A" }}
+                </div>
               </div>
               <div class="metric-item">
                 <div class="metric-label">Policies Loaded</div>
-                <div class="metric-value">{{ metrics.loadPolicyCount || 0 }}</div>
+                <div class="metric-value">
+                  {{ metrics.loadPolicyCount || 0 }}
+                </div>
               </div>
               <div class="metric-item">
                 <div class="metric-label">Policies Saved</div>
-                <div class="metric-value">{{ metrics.savePolicyCount || 0 }}</div>
+                <div class="metric-value">
+                  {{ metrics.savePolicyCount || 0 }}
+                </div>
               </div>
             </div>
             <div v-else class="text-caption text-medium-emphasis">
@@ -78,7 +100,11 @@
   </div>
 
   <!-- Snackbar for notifications -->
-  <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
+  <v-snackbar
+    v-model="snackbar.show"
+    :color="snackbar.color"
+    :timeout="snackbar.timeout"
+  >
     {{ snackbar.message }}
     <template #actions>
       <v-btn variant="text" @click="snackbar.show = false">Close</v-btn>
@@ -106,7 +132,7 @@ const invalidateCache = async () => {
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to invalidate cache",
-      "error"
+      "error",
     );
   } finally {
     cacheLoading.value = false;
@@ -122,7 +148,7 @@ const reloadPolicies = async () => {
   } catch (err) {
     showSnackbar(
       err.response?.data?.error?.message || "Failed to reload policies",
-      "error"
+      "error",
     );
   } finally {
     reloadLoading.value = false;
@@ -178,4 +204,3 @@ onMounted(() => {
   color: rgb(var(--v-theme-primary));
 }
 </style>
-

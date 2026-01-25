@@ -6,7 +6,7 @@
  * @copyright 2026 InsightHub. All rights reserved.
  */
 
-import apiClient from './api.js';
+import apiClient from "./api.js";
 
 /**
  * Announcement API Service
@@ -22,8 +22,8 @@ const announcementService = {
    * @returns {Promise<Array>} List of announcements
    */
   async getAllForAdmin({ limit = 50, offset = 0, activeOnly = false } = {}) {
-    const response = await apiClient.get('/api/announcements/admin', {
-      params: { limit, offset, activeOnly }
+    const response = await apiClient.get("/api/announcements/admin", {
+      params: { limit, offset, activeOnly },
     });
     return response.data.data;
   },
@@ -33,7 +33,7 @@ const announcementService = {
    * @returns {Promise<Array>} List of active announcements
    */
   async getActive() {
-    const response = await apiClient.get('/api/announcements');
+    const response = await apiClient.get("/api/announcements");
     return response.data.data;
   },
 
@@ -50,7 +50,10 @@ const announcementService = {
    * @returns {Promise<Object>} Created announcement
    */
   async create(announcementData) {
-    const response = await apiClient.post('/api/announcements', announcementData);
+    const response = await apiClient.post(
+      "/api/announcements",
+      announcementData,
+    );
     return response.data;
   },
 
@@ -90,9 +93,9 @@ const announcementService = {
    * @returns {Promise<number>} Unread count
    */
   async getUnreadCount() {
-    const response = await apiClient.get('/api/announcements/unread-count');
+    const response = await apiClient.get("/api/announcements/unread-count");
     return response.data.count || 0;
-  }
+  },
 };
 
 export default announcementService;
