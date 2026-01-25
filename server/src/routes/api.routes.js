@@ -24,6 +24,8 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import surgicalGuideOrdersRoutes from './surgicalGuideOrders.routes.js'
 import powerbiRoutes from './powerbi.routes.js'
+import announcementRoutes from './announcement.routes.js'
+import reportScheduleRoutes from './reportSchedule.routes.js'
 
 // SWD-only page access middleware
 const requireSWD = async (req, res, next) => {
@@ -2380,6 +2382,18 @@ router.use('/reports', surgicalGuideOrdersRoutes);
 // ========================================
 // Mount PowerBI routes at /api/powerbi/*
 router.use('/powerbi', powerbiRoutes);
+
+// ========================================
+// ANNOUNCEMENT ROUTES
+// ========================================
+// Mount Announcement routes at /api/announcements/*
+router.use('/announcements', announcementRoutes);
+
+// ========================================
+// REPORT SCHEDULING ROUTES
+// ========================================
+// Mount Report Scheduling routes at /api/reports/*
+router.use('/reports', reportScheduleRoutes);
 
 export default router
 

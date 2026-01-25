@@ -77,6 +77,13 @@ export const NAVIGATION_CONFIG = [
         route: "/reports/grafana",
         permissions: ["admin", "SWD"],
       },
+      {
+        id: "report-scheduling",
+        titleKey: "navigation.report-scheduling",
+        icon: "mdi-calendar-clock",
+        route: "/reports/scheduling",
+        permissions: ["admin", "SWD"],
+      },
     ],
   },
 
@@ -136,6 +143,9 @@ export function getRequiredGroupsForNavigation() {
  */
 export function hasNavigationAccess(itemPermissions, userGroups) {
   if (!itemPermissions || itemPermissions.length === 0) return false;
+
+  // Super admin (SWD) can access everything
+  if (userGroups && userGroups.includes("SWD")) return true;
 
   // If item allows all users
   if (itemPermissions.includes("*")) return true;

@@ -88,6 +88,7 @@
   "powerbi-reporting": "PowerBI Reporting",
   "grafana": "Grafana Monitoring",
   "grafana-monitoring": "Grafana Monitoring",
+  "report-scheduling": "Report Scheduling",
   "admin-settings": "Admin Settings",
   "userActivity": "User Activity",
   "user-activity": "User Activity",
