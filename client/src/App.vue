@@ -21,6 +21,32 @@
       <v-spacer></v-spacer>
 
       <div class="minimal-appbar-actions">
+        <!-- Announcements button with badge -->
+        <v-tooltip location="bottom" :disabled="false">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-if="authStore.isAuthenticated"
+              v-bind="tooltipProps"
+              icon
+              size="small"
+              variant="text"
+              class="minimal-icon-btn"
+              to="/announcements"
+            >
+              <v-badge
+                v-if="unreadAnnouncementsCount > 0"
+                :content="unreadAnnouncementsCount"
+                color="error"
+                overlap
+              >
+                <v-icon size="20">mdi-bullhorn</v-icon>
+              </v-badge>
+              <v-icon v-else size="20">mdi-bullhorn-outline</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ t('app.announcements') || 'Announcements' }}</span>
+        </v-tooltip>
+
         <!-- Menu button for overlay sidebar -->
         <v-tooltip location="bottom" :disabled="false">
           <template #activator="{ props: tooltipProps }">
@@ -161,6 +187,7 @@ const DevToolbar = defineAsyncComponent(
 import { useI18n } from "vue-i18n";
 import { useTheme, useLocale } from "vuetify";
 import { nextTick } from "vue";
+import announcementService from "@/services/announcementService";
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
@@ -174,6 +201,71 @@ const appVersion = pkg.version || "1.1.0";
 // Hide AppBar on login page (landing page)
 const showAppBar = computed(() => {
   return route.name !== "Login" && route.path !== "/";
+});
+
+// Unread announcements count
+const unreadAnnouncementsCount = ref(0);
+
+// Fetch unread announcements count
+const fetchUnreadCount = async () => {
+  if (!authStore.isAuthenticated || !authStore.user) return;
+  try {
+    unreadAnnouncementsCount.value = await announcementService.getUnreadCount();
+  } catch (error) {
+    // Silently fail if unauthorized (user not fully authenticated yet)
+    if (error?.response?.status !== 401) {
+      console.error('Failed to fetch unread announcements:', error);
+    }
+    unreadAnnouncementsCount.value = 0;
+  }
+};
+
+// Refresh unread count periodically
+let announcementInterval = null;
+onMounted(async () => {
+  // Wait a bit for auth to be fully established
+  setTimeout(() => {
+    if (authStore.isAuthenticated && authStore.user) {
+      fetchUnreadCount();
+      announcementInterval = setInterval(fetchUnreadCount, 60000); // Every minute
+    }
+  }, 1000);
+  
+  // Listen for announcement marked as read events
+  window.addEventListener('announcement-marked-read', handleAnnouncementRead);
+});
+
+onBeforeUnmount(() => {
+  if (announcementInterval) {
+    clearInterval(announcementInterval);
+  }
+  window.removeEventListener('announcement-marked-read', handleAnnouncementRead);
+});
+
+// Handle announcement marked as read
+const handleAnnouncementRead = () => {
+  // Immediately decrement the counter for instant feedback
+  if (unreadAnnouncementsCount.value > 0) {
+    unreadAnnouncementsCount.value--;
+  }
+  // Fetch actual count after a short delay to ensure server is updated
+  setTimeout(fetchUnreadCount, 500);
+};
+
+// Watch for auth changes
+watch(() => authStore.isAuthenticated, (isAuth) => {
+  if (isAuth && authStore.user) {
+    setTimeout(fetchUnreadCount, 500);
+  } else {
+    unreadAnnouncementsCount.value = 0;
+  }
+});
+
+// Watch for route changes to refresh count when viewing announcements
+watch(() => route.path, (newPath) => {
+  if (newPath === '/announcements' && authStore.isAuthenticated && authStore.user) {
+    setTimeout(fetchUnreadCount, 300);
+  }
 });
 
 
@@ -1021,5 +1113,33 @@ authStore.checkAuth();
 
 .v-theme--dark .apps-menu-btn.active {
   background: rgba(255, 183, 77, 0.2) !important;
+}
+
+/* Announcement Badge Styling */
+.minimal-icon-btn :deep(.v-badge) {
+  display: inline-flex;
+}
+
+.minimal-icon-btn :deep(.v-badge__wrapper) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minimal-icon-btn :deep(.v-badge__badge) {
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+  font-size: 0.625rem !important;
+  font-weight: 700 !important;
+  line-height: 16px !important;
+  border-radius: 8px !important;
+  transform: translate(50%, -50%) !important;
+  border: 2px solid rgb(var(--v-theme-surface)) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.v-theme--dark .minimal-icon-btn :deep(.v-badge__badge) {
+  border-color: #1e1e1e !important;
 }
 </style>

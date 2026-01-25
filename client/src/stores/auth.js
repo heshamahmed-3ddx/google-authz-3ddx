@@ -213,7 +213,7 @@ export const useAuthStore = defineStore("auth", () => {
       return data;
     } catch (err) {
       // Fallback to Google profile endpoint
-      const { data } = await apiService.get("/api/profile");
+      const { data } = await apiService.get("/profile");
       if (data.profile) {
         user.value = { ...user.value, ...data.profile };
       }
