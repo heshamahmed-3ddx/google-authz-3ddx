@@ -264,6 +264,12 @@ const routes = [
     component: () => import("@/views/Reports/AuditView.vue"),
     meta: { requiresAuth: true, requiredGroups: ["admin"] },
   },
+  {
+    path: "/reports/scheduling",
+    name: "ReportScheduling",
+    component: () => import("@/views/Reports/ReportSchedulingView.vue"),
+    meta: { requiresAuth: true, requiredGroups: ["admin", "SWD"] },
+  },
 
   // ========================================
   // SYSTEM ROUTES
@@ -313,6 +319,18 @@ const routes = [
     name: "AdminSettings",
     component: () => import("@/views/AdminSettingsView.vue"),
     meta: { requiresAuth: true, requiredGroups: ["SWD", "SWDD", "SW"] },
+  },
+  {
+    path: "/announcements",
+    name: "Announcements",
+    component: () => import("@/views/AnnouncementsView.vue"),
+    meta: { requiresAuth: true, requiredGroups: ["*"] },
+  },
+  {
+    path: "/admin/announcements",
+    name: "AnnouncementManagement",
+    component: () => import("@/views/Admin/AnnouncementManagement.vue"),
+    meta: { requiresAuth: true, requiredGroups: ["SWD", "admin"] },
   },
   {
     path: "/help/faq",
