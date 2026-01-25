@@ -144,10 +144,6 @@ jobs:
           POWERBI_CLIENT_SECRET=${{ secrets.POWERBI_CLIENT_SECRET }}
           EOF
 
-      - name: Stop PM2 processes
-        run: |
-          pm2 stop insighthub-backend-${{ steps.env.outputs.environment }} || true
-
       - name: Install server dependencies
         working-directory: ./server
         run: npm install --production
@@ -155,5 +151,5 @@ jobs:
       - name: Start/Restart PM2
         working-directory: ./server
         run: |
-          pm2 restart ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }} --update-env || pm2 start ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --name insighthub-backend-${{ steps.env.outputs.environment }}
+          pm2 restart ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }} --update-env || pm2 start ecosystem.config.cjs --env ${{ steps.env.outputs.pm2_env }}
           pm2 save
