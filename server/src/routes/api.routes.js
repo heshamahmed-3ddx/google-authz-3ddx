@@ -51,6 +51,32 @@ const __dirname = path.dirname(__filename)
 const router = Router()
 const logger = createContextLogger(__filename)
 
+// Development-only helper routes for testing metrics
+if (process.env.NODE_ENV !== 'production') {
+  router.post('/dev/trigger-metrics', async (req, res) => {
+    try {
+      const { type = 'export', userEmail = 'dev@local', userUsername = 'dev', format = 'csv', errorType = 'db_error' } = req.body || {}
+
+      if (type === 'timeout' && typeof global.queryTimeoutTotal !== 'undefined') {
+        global.queryTimeoutTotal.labels(userEmail, userUsername).inc();
+      }
+
+      if (type === 'dberror' && typeof global.dbErrorTotal !== 'undefined') {
+        global.dbErrorTotal.labels(userEmail, userUsername, errorType).inc();
+      }
+
+      if (type === 'export' && typeof global.exportRequests !== 'undefined') {
+        global.exportRequests.labels(userEmail, userUsername, format).inc();
+      }
+
+      return res.json({ success: true, type, userEmail, userUsername })
+    } catch (err) {
+      logger.error('Failed to trigger dev metric', { error: err.message })
+      return res.status(500).json({ success: false, error: err.message })
+    }
+  })
+}
+
 /**
  * Authentication guard middleware
  * Ensures a valid user session is present. If the session is missing or

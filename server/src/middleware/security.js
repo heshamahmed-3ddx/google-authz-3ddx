@@ -349,23 +349,22 @@ export const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true)
-    
+
     const allowedOrigins = [
-      'http://localhost:5173', // Development frontend
-      'http://localhost:3000', // Development backend
+      'http://localhost:5173', // Vite dev server
+      'http://localhost:3000', // React/production dev server
       'https://app.3ddiagnostix.com', // Production frontend
       'https://api.3ddiagnostix.com',  // Production backend
       'https://insighthub.3ddx.link'  // InsightHub production
     ]
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
       logger.warn('CORS origin not allowed', {
         origin,
         type: 'cors_violation'
       })
-      
       callback(new Error('Not allowed by CORS'), false)
     }
   },

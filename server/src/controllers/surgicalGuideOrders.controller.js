@@ -419,7 +419,14 @@ class SurgicalGuideOrdersController {
       }
 
       const exportStartTime = Date.now();
-      const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate);
+      
+      // Pass user context for metrics
+      const userContext = {
+        userEmail,
+        userUsername: req.session?.user?.name || req.session?.user?.username || 'unknown'
+      };
+      
+      const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate, userContext);
       const exportDuration = Date.now() - exportStartTime;
 
       // Generate filename in format: OSG_YYYYMMDD.csv

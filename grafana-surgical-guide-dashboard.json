@@ -1,0 +1,73 @@
+{
+  "__inputs": [],
+  "title": "Surgical Guide Report Metrics",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Total Report Requests",
+      "targets": [
+        { "expr": "sum(sg_report_requests_total) by (endpoint)", "legendFormat": "{{endpoint}}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Unique Users",
+      "targets": [
+        { "expr": "sg_report_unique_users_total", "legendFormat": "Unique Users" }
+      ],
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "Export Requests (CSV/PDF)",
+      "targets": [
+        { "expr": "sum(sg_report_export_requests_total) by (format)", "legendFormat": "{{format}}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+    },
+    {
+      "type": "graph",
+      "title": "API Fulfillment Duration (s)",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(sg_report_api_fulfillment_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+    },
+    {
+      "type": "graph",
+      "title": "DB Query Duration (s)",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(sg_report_db_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 }
+    },
+    {
+      "type": "graph",
+      "title": "Processing Duration (s)",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(sg_report_processing_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
+    },
+    {
+      "type": "stat",
+      "title": "Query Timeouts",
+      "targets": [
+        { "expr": "sum(sg_report_query_timeout_total)", "legendFormat": "Timeouts" }
+      ],
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 24 }
+    },
+    {
+      "type": "stat",
+      "title": "DB Errors",
+      "targets": [
+        { "expr": "sum(sg_report_db_error_total)", "legendFormat": "Errors" }
+      ],
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 24 }
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "5s"
+}

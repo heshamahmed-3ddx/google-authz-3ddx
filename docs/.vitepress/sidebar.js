@@ -94,6 +94,14 @@ module.exports = [
     ]
   },
   {
+    text: 'Admin Features',
+    collapsible: true,
+    items: [
+      { text: '📢 Admin Announcements Guide', link: '/admin-announcements-guide' },
+      { text: '📊 Report Scheduling Guide', link: '/report-scheduling-guide' },
+    ]
+  },
+  {
     text: 'Testing & Quality',
     collapsible: true,
     items: [

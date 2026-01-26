@@ -194,6 +194,10 @@ async function processOAuthCallback(code, req, res) {
   // Set session data early (before slow operations)
   req.session.user = userInfo;
   req.session.tokens = tokens;
+  console.log('[Auth] session.user set during login:', {
+    email: userInfo.email,
+    name: userInfo.name
+  });
 
   // Save session synchronously before Casbin sync
   await new Promise((resolve, reject) => {

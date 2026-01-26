@@ -122,7 +122,8 @@ onMounted(() => {
   // Update elapsed time every second
   intervalId = setInterval(() => {
     if (props.startTime) {
-      elapsedTime.value = Date.now() - props.startTime.getTime();
+      const startTime = props.startTime instanceof Date ? props.startTime : new Date(props.startTime);
+      elapsedTime.value = Date.now() - startTime.getTime();
     }
   }, 1000);
 });

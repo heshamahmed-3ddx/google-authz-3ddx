@@ -55,9 +55,13 @@ class SurgicalGuideOrdersService {
       const page = Math.max(1, parseInt(params.page) || 1);
       const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 10)); // Max 100 per page, default 10
 
+      // Replace with actual user context if available
+      const userEmail = params.userEmail || 'unknown';
+      const userUsername = params.userUsername || 'unknown';
+
       // Instrument DB query timing
-      const start = process.hrtime();
-  const result = await surgicalGuideOrdersModel.getReportData({
+      const dbStart = process.hrtime();
+      const result = await surgicalGuideOrdersModel.getReportData({
         startDate: params.startDate,
         endDate: params.endDate,
         page,
@@ -67,13 +71,27 @@ class SurgicalGuideOrdersService {
         searchQuery: params.searchQuery || '',
         orderTypeFilter: params.orderTypeFilter || 'all'
       });
-      const duration = process.hrtime(start);
-      const seconds = duration[0] + duration[1] / 1e9;
-      // Replace with actual user context if available
-      const userEmail = params.userEmail || 'unknown';
-      const userUsername = params.userUsername || 'unknown';
-      if (typeof global.dbQueryDuration === 'function') {
-        global.dbQueryDuration.labels(userEmail, userUsername).observe(seconds);
+      const dbDuration = process.hrtime(dbStart);
+      const dbSeconds = dbDuration[0] + dbDuration[1] / 1e9;
+      
+      // Track DB query duration
+      if (global.dbQueryDuration) {
+        global.dbQueryDuration.labels(userEmail, userUsername).observe(dbSeconds);
+      }
+
+      // Instrument processing time (data formatting, pagination metadata, etc.)
+      const processStart = process.hrtime();
+      
+      // Processing logic (already done by model, but track the time anyway)
+      // In a real scenario, you might do additional formatting here
+      const processedResult = result; // Placeholder for any additional processing
+      
+      const processDuration = process.hrtime(processStart);
+      const processSeconds = processDuration[0] + processDuration[1] / 1e9;
+      
+      // Track processing duration
+      if (global.processingDuration) {
+        global.processingDuration.labels(userEmail, userUsername, 'report_formatting').observe(processSeconds);
       }
 
       logger.info('Report processed successfully', {
@@ -81,13 +99,37 @@ class SurgicalGuideOrdersService {
         total: result.pagination.total
       });
 
-      return result;
+      return processedResult;
     } catch (error) {
+      // Track database errors
+      const userEmail = params.userEmail || 'unknown';
+      const userUsername = params.userUsername || 'unknown';
+      
+      // Determine error type
+      let errorType = 'unknown';
+      if (error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
+        errorType = 'timeout';
+        // Track timeout
+        if (global.queryTimeoutTotal) {
+          global.queryTimeoutTotal.labels(userEmail, userUsername).inc();
+        }
+      } else if (error.code && error.code.startsWith('ER_')) {
+        errorType = 'db_error';
+      } else if (error.isValidationError) {
+        errorType = 'validation';
+      }
+      
+      // Track DB errors
+      if (errorType !== 'validation' && global.dbErrorTotal) {
+        global.dbErrorTotal.labels(userEmail, userUsername, errorType).inc();
+      }
+
       // Log detailed error information
       logger.error('Failed to process report request', {
         error: error.message,
         errorCode: error.code,
         errorName: error.name,
+        errorType,
         params,
         stack: error.stack,
         isValidationError: error.isValidationError,
@@ -234,24 +276,47 @@ class SurgicalGuideOrdersService {
    * 
    * @param {string} startDate - Start date in YYYY-MM-DD format
    * @param {string} endDate - End date in YYYY-MM-DD format
+   * @param {Object} userContext - User context for metrics
    * @returns {Promise<string>} CSV formatted string with headers and data
    * @throws {Error} If dates are invalid or export fails
    * @throws {Error} If date range validation fails
    * @example
-   * const csv = await service.exportToCSV('2024-01-01', '2024-12-31');
+   * const csv = await service.exportToCSV('2024-01-01', '2024-12-31', { userEmail, userUsername });
    * // Returns: "ID,Cost,Amount Paid,...\n1,100.00,50.00,...\n..."
    */
-  async exportToCSV(startDate, endDate) {
+  async exportToCSV(startDate, endDate, userContext = {}) {
     try {
       logger.info('Processing CSV export request', { startDate, endDate });
 
       // Validate date range
-  surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
+      surgicalGuideOrdersModel.validateDateRange(startDate, endDate);
 
+      const userEmail = userContext.userEmail || 'unknown';
+      const userUsername = userContext.userUsername || 'unknown';
+
+      // Track export request
+      if (global.exportRequests) {
+        global.exportRequests.labels(userEmail, userUsername, 'csv').inc();
+      }
+
+      // Instrument export duration
+      const exportStart = process.hrtime();
+      
       // Export data
-  const csv = await surgicalGuideOrdersModel.exportToCSV(startDate, endDate);
+      const csv = await surgicalGuideOrdersModel.exportToCSV(startDate, endDate);
+      
+      const exportDuration = process.hrtime(exportStart);
+      const exportSeconds = exportDuration[0] + exportDuration[1] / 1e9;
+      
+      // Track export duration
+      if (global.exportDuration) {
+        global.exportDuration.labels(userEmail, userUsername, 'csv').observe(exportSeconds);
+      }
 
-      logger.info('CSV export processed successfully');
+      logger.info('CSV export processed successfully', {
+        duration: exportSeconds,
+        sizeBytes: csv.length
+      });
 
       return csv;
     } catch (error) {

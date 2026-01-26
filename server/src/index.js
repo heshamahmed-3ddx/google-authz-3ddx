@@ -9,6 +9,7 @@ dotenv.config();
 import authRoutes from './routes/auth.routes.js'
 import apiRoutes from './routes/api.routes.js'
 import adminRoutes from './routes/admin.routes.js'
+import surgicalGuideOrdersService from './services/surgicalGuideOrders.service.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import casbinService from './services/casbin.js'
 import databaseService from './services/database.js'
@@ -95,15 +96,6 @@ app.use(securityHeaders)
 
 // CORS with secure configuration
 app.use(cors(corsOptions))
-        // Populate req.user from session for metrics and downstream middleware
-        app.use((req, res, next) => {
-          if (req.session && req.session.user) {
-            req.user = req.user || {};
-            req.user.email = req.session.user.email;
-            req.user.username = req.session.user.username || req.session.user.name || 'unknown';
-          }
-          next();
-        });
 
 import promClient from 'prom-client'
 // Prometheus metrics registry
@@ -121,32 +113,99 @@ const apiFulfillmentDuration = new promClient.Histogram({
   help: 'End-to-end API latency, including DB time, processing, and response generation',
   labelNames: ['user_email', 'user_username']
 })
+
+// Phase 2 metrics - Performance & Efficiency
+const processingDuration = new promClient.Histogram({
+  name: 'sg_report_processing_duration_seconds',
+  help: 'Time spent on non-DB backend logic (data formatting, aggregation)',
+  labelNames: ['user_email', 'user_username', 'operation']
+})
+const exportDuration = new promClient.Histogram({
+  name: 'sg_report_export_duration_seconds',
+  help: 'Time to generate CSV/PDF exports',
+  labelNames: ['user_email', 'user_username', 'format']
+})
+const queryTimeoutTotal = new promClient.Counter({
+  name: 'sg_report_query_timeout_total',
+  help: 'Count of report queries that timed out',
+  labelNames: ['user_email', 'user_username']
+})
+const dbErrorTotal = new promClient.Counter({
+  name: 'sg_report_db_error_total',
+  help: 'Number of DB query failures or connection errors',
+  labelNames: ['user_email', 'user_username', 'error_type']
+})
+
+// Phase 2 metrics - Usage & User Behavior
+const requestsTotal = new promClient.Counter({
+  name: 'sg_report_requests_total',
+  help: 'Total count of report requests',
+  labelNames: ['user_email', 'user_username', 'status_code', 'user_group', 'endpoint']
+})
+const requestsByGroup = new promClient.Counter({
+  name: 'sg_report_requests_by_group_total',
+  help: 'Total requests grouped by user group',
+  labelNames: ['user_group']
+})
+const uniqueUsers = new promClient.Gauge({
+  name: 'sg_report_unique_users_total',
+  help: 'Unique users accessing the report (for adoption tracking)',
+  labelNames: []
+})
+const exportRequests = new promClient.Counter({
+  name: 'sg_report_export_requests_total',
+  help: 'Number of export-to-CSV/PDF requests',
+  labelNames: ['user_email', 'user_username', 'format']
+})
+
+// Register all metrics
 register.registerMetric(dbQueryDuration)
 register.registerMetric(apiFulfillmentDuration)
+register.registerMetric(processingDuration)
+register.registerMetric(exportDuration)
+register.registerMetric(queryTimeoutTotal)
+register.registerMetric(dbErrorTotal)
+register.registerMetric(requestsTotal)
+register.registerMetric(requestsByGroup)
+register.registerMetric(uniqueUsers)
+register.registerMetric(exportRequests)
 
-// Expose dbQueryDuration globally for service instrumentation
+// Expose metrics globally for service instrumentation
 global.dbQueryDuration = dbQueryDuration;
+global.processingDuration = processingDuration;
+global.exportDuration = exportDuration;
+global.queryTimeoutTotal = queryTimeoutTotal;
+global.dbErrorTotal = dbErrorTotal;
+global.requestsTotal = requestsTotal;
+global.requestsByGroup = requestsByGroup;
+global.uniqueUsers = uniqueUsers;
+global.exportRequests = exportRequests;
+
+// Track unique users
+const uniqueUsersSet = new Set();
+global.trackUniqueUser = (userEmail) => {
+  if (userEmail && userEmail !== 'unknown') {
+    uniqueUsersSet.add(userEmail);
+    uniqueUsers.set(uniqueUsersSet.size);
+  }
+};
 
 // Export metrics for use in controllers if needed
-export { dbQueryDuration, apiFulfillmentDuration, register };
+export { 
+  dbQueryDuration, 
+  apiFulfillmentDuration, 
+  processingDuration,
+  exportDuration,
+  queryTimeoutTotal,
+  dbErrorTotal,
+  requestsTotal,
+  requestsByGroup,
+  uniqueUsers,
+  exportRequests,
+  register 
+};
 
-// Instrument API fulfillment timing for surgical guide report endpoints only
-// This middleware tracks end-to-end latency for report API requests
-app.use((req, res, next) => {
-  // Only track metrics for surgical guide report endpoints
-  if (req.path.startsWith('/api/reports/surgical_guide')) {
-    const start = process.hrtime();
-    res.on('finish', () => {
-      const duration = process.hrtime(start);
-      const seconds = duration[0] + duration[1] / 1e9;
-      // Get user context from session (set by auth middleware)
-      const userEmail = req.session?.user?.email || req.user?.email || 'unknown';
-      const userUsername = req.session?.user?.name || req.session?.user?.username || req.user?.username || 'unknown';
-      apiFulfillmentDuration.labels(userEmail, userUsername).observe(seconds);
-    });
-  }
-  next();
-});
+
 
 // /metrics endpoint
 app.get('/metrics', async (req, res) => {
@@ -176,6 +235,59 @@ app.use(sanitizeInput)
 // Session with enhanced security
 app.use(session(sessionSecurity))
 
+// Populate req.user from session for metrics and downstream middleware
+app.use((req, res, next) => {
+  // Debug: show session presence and user mapping
+  try {
+    if (req.session && req.session.user) {
+      req.user = req.user || {};
+      req.user.email = req.session.user.email;
+      req.user.username = req.session.user.username || req.session.user.name || 'unknown';
+    }
+  } catch (err) {
+    // silence debug in production
+  }
+  next();
+});
+
+// Instrument API fulfillment timing for surgical guide report endpoints only
+// This middleware tracks end-to-end latency for report API requests
+app.use((req, res, next) => {
+  // Only track metrics for surgical guide report endpoints
+  if (req.path.startsWith('/api/reports/surgical_guide')) {
+    const start = process.hrtime();
+
+    // Track unique users
+    const userEmail = req.session?.user?.email || req.user?.email || 'unknown';
+    if (typeof global.trackUniqueUser === 'function') {
+      global.trackUniqueUser(userEmail);
+    }
+
+    res.on('finish', () => {
+      const duration = process.hrtime(start);
+      const seconds = duration[0] + duration[1] / 1e9;
+      // Get user context from session (set by auth middleware)
+      const userUsername = req.session?.user?.name || req.session?.user?.username || req.user?.username || 'unknown';
+      const userGroup = req.session?.user?.groups?.[0] || req.user?.groups?.[0] || 'unknown';
+      const statusCode = res.statusCode.toString();
+
+      // Track API fulfillment duration
+      apiFulfillmentDuration.labels(userEmail, userUsername).observe(seconds);
+
+      // Track total requests with labels
+      if (typeof global.requestsTotal !== 'undefined') {
+        global.requestsTotal.labels(userEmail, userUsername, statusCode, userGroup, req.path).inc();
+      }
+
+      // Track requests by group
+      if (typeof global.requestsByGroup !== 'undefined') {
+        global.requestsByGroup.labels(userGroup).inc();
+      }
+    });
+  }
+  next();
+});
+
 // Enhanced request logging middleware
 app.use(requestLogger)
 
@@ -190,6 +302,23 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use('/auth', authRateLimit, authRoutes) // Stricter rate limit for auth
 app.use('/api', apiRoutes)
 app.use('/admin', authRateLimit, adminRoutes) // Admin routes with stricter rate limit
+
+// Development-only helper to trigger surgical guide export (increments metrics)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/dev/trigger-sg-export', async (req, res) => {
+    try {
+      const startDate = req.query.startDate || '2014-01-01'
+      const endDate = req.query.endDate || '2020-12-31'
+      const userEmail = req.query.userEmail || 'dev@local'
+      const userUsername = req.query.userUsername || 'dev'
+      const csv = await surgicalGuideOrdersService.exportToCSV(startDate, endDate, { userEmail, userUsername })
+      return res.json({ ok: true, bytes: csv.length })
+    } catch (err) {
+      console.error('Dev export trigger failed', err)
+      return res.status(500).json({ ok: false, error: err.message })
+    }
+  })
+}
 import fs from 'fs'
 import yaml from 'js-yaml'
 import path from 'path'
